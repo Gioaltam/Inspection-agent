@@ -1,0 +1,22 @@
+Location:
+- Outdoor condenser for a one-four split-type system, mounted on exterior wall near gravel/ground level.
+
+Observations:
+- White outdoor cabinet with labeled spec plate visible.
+- Refrigerant line set(s) insulated; outer insulation appears aged/deteriorated and partially frayed.
+- Moss/algae growth on adjacent vertical surface near the unit.
+- Some surface discoloration/corrosion on metal surface near the line entry.
+- Electrical/line-set conduit present; no visible damage to wiring from this view.
+
+Potential Issues:
+- Deteriorated insulation on refrigerant lines (energy loss and condensation risk).
+- Moisture/moss growth indicating persistent dampness or drainage issues.
+- Surface corrosion on cabinet/frame (potential weatherproofing and structural concerns).
+- Potential airflow restriction if debris or vegetation increases around unit.
+
+Recommendations:
+- Have HVAC tech replace or re-insulate line set with proper outdoor insulation and seal penetrations.
+- Clean moss/algae; investigate and correct drainage or splash exposure; verify condensate drain is clear and angled properly.
+- Inspect cabinet for corrosion; treat or replace affected areas to restore weatherproofing.
+- Improve clearance around unit (remove vegetation/debris); ensure minimum 12–24 inches of unobstructed space for airflow.
+- Consider a routine service to check for refrigerant leaks, electrical connections, and overall unit performance.

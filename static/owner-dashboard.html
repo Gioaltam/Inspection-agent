@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Owner Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      background: #f5f7fa; 
+      color: #2c3e50; 
+    }
+    .header { 
+      background: #fff; 
+      padding: 1.5rem; 
+      box-shadow: 0 2px 4px rgba(0,0,0,.06); 
+      margin-bottom: 2rem;
+    }
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 0 1rem; 
+    }
+    h1 { 
+      font-size: 1.75rem; 
+      margin: 0 0 .5rem; 
+      color: #1a202c;
+    }
+    .subtitle { 
+      color: #718096; 
+      font-size: 1rem; 
+    }
+    
+    .stats-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+      gap: 1.5rem; 
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card { 
+      background: #fff; 
+      border-radius: 12px; 
+      padding: 1.5rem; 
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      border-left: 4px solid #3182ce;
+    }
+    .stat-card.critical { 
+      border-left-color: #e53e3e; 
+    }
+    .stat-card.important { 
+      border-left-color: #ed8936; 
+    }
+    .stat-label { 
+      color: #718096; 
+      font-size: .875rem; 
+      margin-bottom: .5rem; 
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-value { 
+      font-size: 2.5rem; 
+      font-weight: 700; 
+      color: #1a202c;
+    }
+    
+    .properties-section {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    
+    .section-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .properties-list {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    
+    .property-item {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      transition: background .2s;
+      cursor: pointer;
+    }
+    
+    .property-item:hover {
+      background: #f7fafc;
+    }
+    
+    .property-item:last-child {
+      border-bottom: none;
+    }
+    
+    .property-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: .75rem;
+    }
+    
+    .property-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1a202c;
+      margin: 0 0 .25rem;
+    }
+    
+    .property-address {
+      color: #4a5568;
+      font-size: .95rem;
+    }
+    
+    .property-stats {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: .75rem;
+    }
+    
+    .property-stat {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .875rem;
+      color: #718096;
+    }
+    
+    .property-stat strong {
+      color: #2d3748;
+      font-weight: 600;
+    }
+    
+    .report-badge {
+      background: #edf2f7;
+      color: #4a5568;
+      padding: .25rem .75rem;
+      border-radius: 999px;
+      font-size: .875rem;
+      font-weight: 600;
+    }
+    
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: #718096;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 3rem;
+    }
+    
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #3182ce;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .error {
+      background: #fed7d7;
+      color: #c53030;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 2rem 0;
+      text-align: center;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Modal styles */
+    #property-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+    }
+    
+    #property-modal.hidden {
+      display: none;
+    }
+    
+    .modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      position: relative;
+      background: white;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      margin: 5vh auto;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: #718096;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .close-btn:hover {
+      color: #2d3748;
+    }
+    
+    .modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+    
+    .property-info {
+      background: #f7fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .property-info p {
+      margin: 0.5rem 0;
+    }
+    
+    .reports-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .report-item {
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .report-stats {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .report-stats span {
+      background: #e2e8f0;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+    
+    .badge-critical {
+      background: #fed7d7 !important;
+      color: #c53030;
+    }
+    
+    .badge-important {
+      background: #feebc8 !important;
+      color: #c05621;
+    }
+    
+    .report-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn-view, .btn-download {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    
+    .btn-view {
+      background: #3182ce;
+      color: white;
+    }
+    
+    .btn-download {
+      background: #48bb78;
+      color: white;
+    }
+    
+    .btn-view:hover, .btn-download:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <h1 id="owner-name">Loading Dashboard...</h1>
+      <div class="subtitle">Property Owner Portal</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <div>Loading your dashboard...</div>
+    </div>
+    
+    <div id="error" class="error hidden"></div>
+
+    <div id="dashboard" class="hidden">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Properties</div>
+          <div class="stat-value" id="total-properties">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Reports</div>
+          <div class="stat-value" id="total-reports">0</div>
+        </div>
+        <div class="stat-card critical">
+          <div class="stat-label">Critical Issues</div>
+          <div class="stat-value" id="total-critical">0</div>
+        </div>
+        <div class="stat-card important">
+          <div class="stat-label">Important Issues</div>
+          <div class="stat-value" id="total-important">0</div>
+        </div>
+      </div>
+
+      <div class="properties-section">
+        <div class="section-header">
+          <h2 class="section-title">Your Properties</h2>
+        </div>
+        <ul id="properties-list" class="properties-list">
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    
+    // Get token from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (!token) {
+      showError('No access token provided. Please use a valid portal link.');
+    } else {
+      loadDashboard();
+    }
+    
+    async function loadDashboard() {
+      try {
+        const response = await fetch(`${API_BASE}/api/portal?token=${encodeURIComponent(token)}`);
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Invalid or expired access token');
+          }
+          throw new Error(`Failed to load dashboard: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        renderDashboard(data);
+        
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+    
+    function renderDashboard(data) {
+      // Hide loading, show dashboard
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      
+      // Update owner name
+      document.getElementById('owner-name').textContent = `Welcome, ${data.owner.name}`;
+      
+      // Update statistics
+      document.getElementById('total-properties').textContent = data.totals.properties || 0;
+      document.getElementById('total-reports').textContent = data.totals.reports || 0;
+      document.getElementById('total-critical').textContent = data.totals.critical || 0;
+      document.getElementById('total-important').textContent = data.totals.important || 0;
+      
+      // Render properties list
+      const propertiesList = document.getElementById('properties-list');
+      
+      if (data.properties && data.properties.length > 0) {
+        propertiesList.innerHTML = data.properties.map(property => {
+          const lastReport = property.latest_report_at 
+            ? new Date(property.latest_report_at).toLocaleDateString() 
+            : 'No reports';
+          
+          return `
+            <li class="property-item" onclick="viewProperty('${property.id}')">
+              <div class="property-header">
+                <div>
+                  <h3 class="property-title">${property.label || property.address}</h3>
+                  <div class="property-address">${property.address}</div>
+                </div>
+                <span class="report-badge">${property.report_count} report${property.report_count !== 1 ? 's' : ''}</span>
+              </div>
+              <div class="property-stats">
+                <div class="property-stat">
+                  <span>Last inspection:</span>
+                  <strong>${lastReport}</strong>
+                </div>
+              </div>
+            </li>
+          `;
+        }).join('');
+      } else {
+        propertiesList.innerHTML = '<li class="empty-state">No properties found</li>';
+      }
+    }
+    
+    async function viewProperty(propertyId) {
+      // Show property details with reports
+      try {
+        const response = await fetch(`${API_BASE}/api/portal/properties/${propertyId}?token=${encodeURIComponent(token)}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to load property details');
+        }
+        
+        const data = await response.json();
+        showPropertyModal(data);
+        
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+    
+    function showPropertyModal(data) {
+      // Create modal if it doesn't exist
+      let modal = document.getElementById('property-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'property-modal';
+        modal.className = 'hidden';
+        modal.innerHTML = `
+          <div class="modal-backdrop" onclick="closeModal()"></div>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 id="modal-title"></h2>
+              <button onclick="closeModal()" class="close-btn">&times;</button>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      
+      // Update modal content
+      document.getElementById('modal-title').textContent = data.property.label || data.property.address;
+      
+      const reports = data.reports || [];
+      let bodyHtml = `
+        <div class="property-info">
+          <p><strong>Address:</strong> ${data.property.address}</p>
+          <p><strong>Total Reports:</strong> ${reports.length}</p>
+        </div>
+        <h3>Inspection Reports</h3>
+      `;
+      
+      if (reports.length > 0) {
+        bodyHtml += '<ul class="reports-list">';
+        reports.forEach(report => {
+          const date = new Date(report.created_at).toLocaleDateString();
+          bodyHtml += `
+            <li class="report-item">
+              <div class="report-header">
+                <div>
+                  <strong>Report from ${date}</strong>
+                  <div class="report-stats">
+                    <span>${report.photos} photos</span>
+                    ${report.critical > 0 ? `<span class="badge-critical">${report.critical} critical</span>` : ''}
+                    ${report.important > 0 ? `<span class="badge-important">${report.important} important</span>` : ''}
+                  </div>
+                </div>
+                <div class="report-actions">
+                  <a href="${API_BASE}/static/report-viewer.html?id=${report.report_id}&token=${encodeURIComponent(token)}" 
+                     class="btn-view" target="_blank">View Report</a>
+                  <a href="${API_BASE}/api/portal/reports/${report.report_id}/pdf?token=${encodeURIComponent(token)}" 
+                     class="btn-download" target="_blank">Download PDF</a>
+                </div>
+              </div>
+            </li>
+          `;
+        });
+        bodyHtml += '</ul>';
+      } else {
+        bodyHtml += '<p class="empty-state">No inspection reports available for this property.</p>';
+      }
+      
+      document.getElementById('modal-body').innerHTML = bodyHtml;
+      modal.classList.remove('hidden');
+    }
+    
+    function closeModal() {
+      const modal = document.getElementById('property-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    }
+    
+    function showError(message) {
+      document.getElementById('loading').classList.add('hidden');
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = `Error: ${message}`;
+      errorEl.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

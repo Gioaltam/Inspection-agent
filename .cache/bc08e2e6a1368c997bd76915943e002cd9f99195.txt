@@ -1,0 +1,23 @@
+Location:
+- Under-sink drain area (kitchen or vanity).
+
+Observations:
+- White PVC P-trap connected to vertical pipe with a brass/copper tailpiece.
+- Rust/brown staining around the drain flange underside of the sink.
+- Discolored metal tailpiece showing corrosion.
+- Slip-joint area with a white plastic nut; limited clearance visible.
+- Electrical outlet and cords/tubing nearby under the sink.
+
+Potential Issues:
+- Corrosion at drain flange and on tailpiece; potential leak point.
+- Rust/staining suggests prior or ongoing moisture intrusion.
+- Material mismatch (copper/brass tailpiece with plastic PVC trap) can accelerate galvanic corrosion.
+- Possible hidden leak at slip-joint connection.
+- Electrical outlet in close proximity to water/condensation; potential safety concern (need GFCI and proper clearance).
+
+Recommendations:
+- Replace corroded drain components with all-plastic/Vinyl-compatible fittings or properly matched materials; inspect and replace flange, nut, and washers as needed.
+- Rework tailpiece/trap with corrosion-resistant materials; ensure proper alignment and tight, leak-free joints; reseal as per standard plumbing practices.
+- Perform a water test to confirm leaks after replacement.
+- Inspect surrounding area for moisture damage; address any mold if found.
+- Improve electrical safety: ensure outlet is GFCI-protected and maintain safe clearance from splash zone; organize cords away from water.

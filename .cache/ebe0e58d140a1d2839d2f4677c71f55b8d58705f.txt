@@ -1,0 +1,20 @@
+Location:
+- Under kitchen sink, garbage disposal connected to sink drain.
+
+Observations:
+- Black garbage disposal unit installed.
+- Yellow flexible hose connected to the disposal side inlet with a hose clamp.
+- White PVC drain pipe runs to the right; likely part of the drain/trap assembly.
+- Cabinet clutter and cleaning supplies present; no active leaks visible in photo.
+
+Potential Issues:
+- Dishwasher drain connection appears improvised with a clamp on the disposal inlet; potential for leaks and code violation.
+- No visible air gap/high loop for dishwasher drain; backflow risk.
+- P-trap configuration not clearly visible; potential missing or misaligned trap.
+- Electrical/cording for disposal not visible; ensure proper, code-compliant connection (GFCI if required) and strain relief.
+
+Recommendations:
+- Have a plumber verify dishwasher drain connection and install proper high loop or air gap per code.
+- Confirm a correctly configured P-trap with proper slope; install or repair as needed.
+- Inspect connections for signs of leakage; replace clamps/fittings with manufacturer-approved hardware.
+- Ensure electrical supply for the disposal is correctly wired and protected.

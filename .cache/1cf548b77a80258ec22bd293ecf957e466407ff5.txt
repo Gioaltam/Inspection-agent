@@ -1,0 +1,21 @@
+Location:
+- Inside HVAC equipment area (likely furnace/air handler plenum). Front circular opening in plenum.
+
+Observations:
+- Circular cutout/opening at front of plenum with a blue nitrile glove stuffed inside.
+- Dirt/dust build-up on bottom surface of the plenum.
+- Black blower housing and flexible conduit/wiring nearby.
+
+Potential Issues:
+- Obstruction of return/supply opening by glove (restricted airflow, potential overheating, efficiency loss).
+- Improvised sealing (glove) that may deteriorate and release debris or harbor mold/pests.
+- No proper duct cap or sealing around the opening; potential air leakage.
+- Visible dirt accumulation; potential moisture/mold risk if moisture present.
+- Edge of cutout appears rough; possible improper fabrication/sealing needs.
+
+Recommendations:
+- Remove the glove and install a proper cap/duct closure or replace with correct boot and seal with approved duct sealant or foil tape.
+- Have HVAC technician inspect for airflow balance, clean interior surfaces, and replace/clean filters as needed.
+- Inspect for moisture or mold; treat or remediate if found; reseal plenum joints properly.
+- Verify electrical wiring is properly protected and routed away from heat/moisture; secure as per code.
+- If components show rust/damage, replace or repair as needed; ensure adequate clearances around the unit.

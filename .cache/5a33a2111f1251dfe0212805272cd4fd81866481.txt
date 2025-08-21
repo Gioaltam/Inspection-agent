@@ -1,0 +1,23 @@
+Location:
+- Utility closet/mechanical space housing a residential water heater.
+
+Observations:
+- Electric-style vertical storage water heater; enamel tank with EnergyGuide label.
+- Top area partially covered by a plastic bag.
+- No visible drip pan or floor drain around the unit.
+- Exterior appears dirty but no obvious active leaks visible from/photo.
+- Piping/valves at the top not clearly visible.
+
+Potential Issues:
+- Plastic bag covering top could obstruct access and venting (if gas-fired) or maintenance.
+- No visible TPR valve discharge pipe (not clearly seen in image).
+- No drain pan or secondary containment noted (leak risk).
+- Unclear age of unit; potential remaining life unknown.
+- Cramped installation; limited side clearance could affect service/venting.
+
+Recommendations:
+- Remove bag to inspect top connections and venting (if gas) or access panel (if electric).
+- Verify TPR valve and proper discharge piping directed to a safe location.
+- Install a drain pan with a drain or ensure floor drain is present; locate and route a safe leak path.
+- Confirm need for expansion tank per local code.
+- Have a licensed plumber/tech inspect for proper venting (gas) or electrical connections and consider replacement if unit shows signs of wear or is near end of life.

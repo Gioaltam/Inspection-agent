@@ -1,0 +1,22 @@
+Location:
+- Outdoor condenser unit (Ameristar) on a metal stand, adjacent to stucco wall, under overhead vegetation.
+
+Observations:
+- Debris/leaves on top of unit; palm fronds above and around unit.
+- Unit has limited side/top clearance against wall and framework.
+- Frame shows some surface rust/dirt buildup.
+- Electrical disconnect box mounted on wall nearby; conduit/wiring not clearly visible.
+- No obvious visible dents/cracks in the cabinet; overall light cosmetic wear.
+
+Potential Issues:
+- Debris and vegetation can restrict airflow and promote corrosion.
+- Inadequate clearance around the condenser (airflow and service access) may reduce efficiency and shorten life.
+- Rust on framing members could worsen and compromise support if unsurfaced.
+- Proximity to vegetation/pests; potential for ingress and moisture issues.
+- Need to confirm electrical disconnect is weatherproof and properly wired.
+
+Recommendations:
+- Remove debris and trim vegetation to maintain at least 3 ft clearance around the unit and 1 ft above the top.
+- Inspect and treat/repair frame rust; repaint or replace as needed.
+- Have HVAC tech clean coils and verify refrigerant pressures; check condensate drain if applicable.
+- Verify electrical disconnect condition, enclosure rating, and wiring; ensure proper conduit routing and grounding.

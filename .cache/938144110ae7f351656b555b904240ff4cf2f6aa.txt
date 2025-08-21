@@ -1,0 +1,14 @@
+Location:
+- HVAC return air/filter housing near furnace closet (filter size 18x20x1).
+
+Observations:
+- Pleated filter visibly very dusty/dirt-laden; media appears clogged.
+
+Potential Issues:
+- Clogged/dirty filter leading to restricted airflow, reduced efficiency, potential coil freezing or equipment strain.
+- No visible moisture, stains, or mold in photo; no evident gaps around filter frame.
+
+Recommendations:
+- Replace filter with new 18x20x1 filter (consider higher MERV only if system allows).
+- Schedule HVAC maintenance; inspect/clean blower compartment and ducts for dust buildup.
+- Verify filter seats properly to avoid bypass; monitor and replace regularly (every 1–3 months depending on use).

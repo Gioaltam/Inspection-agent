@@ -1,0 +1,5 @@
+- Model M4AH4032A1000AA; Cabinet: metal (steel) air handling unit enclosure. Likely indoor mechanical space (utility closet/room).
+- Electrical: 208/230 V, 1/4 HP motor, FLA 1.5 A, 1 phase, 60 Hz; MCA 1.9 A; max fuse 15 A HACR.
+- Refrigerant/pressure: R410A; High side ~550 psig; Low side ~250 psig.
+- Installation notes: Test static 0.15 in. W.C.; heat kit compatible for 4-way AHU installation; max outlet air temperature 200°F with electric heat; clearance to combustible materials required when heaters installed.
+- Certifications/label: AHRI certified, ETL listed; manufacturer Ingersoll Rand; unit label includes model, electrical, refrigerant, and safety information.

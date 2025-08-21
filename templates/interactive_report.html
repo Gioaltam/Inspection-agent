@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Report - {{ report_id }}</title>
+    <link rel="stylesheet" href="/static/interactive_report.css">
+</head>
+<body>
+    <!-- Skip to main content link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="report-container" id="main-content">
+        <!-- Header -->
+        <header class="report-header">
+            <div class="header-content">
+                <h1>Inspection Report</h1>
+                <div class="property-info">
+                    <span class="property-address">{{ address }}</span>
+                    <span class="report-date">{{ inspection_date }}</span>
+                </div>
+                <button type="button" class="btn-download" onclick="downloadPDF()" aria-label="Download PDF report">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation" role="tablist" aria-label="Report sections">
+            <button type="button" class="tab-button active" data-tab="overview" onclick="switchTab('overview')" role="tab" aria-selected="true" aria-controls="overview" id="overview-tab" tabindex="0">Overview</button>
+            <button type="button" class="tab-button" data-tab="findings" onclick="switchTab('findings')" role="tab" aria-selected="false" aria-controls="findings" id="findings-tab" tabindex="-1">Findings</button>
+            <button type="button" class="tab-button" data-tab="photos" onclick="switchTab('photos')" role="tab" aria-selected="false" aria-controls="photos" id="photos-tab" tabindex="-1">Photos</button>
+            <button type="button" class="tab-button" data-tab="systems" onclick="switchTab('systems')" role="tab" aria-selected="false" aria-controls="systems" id="systems-tab" tabindex="-1">Systems</button>
+            <button type="button" class="tab-button" data-tab="documents" onclick="switchTab('documents')" role="tab" aria-selected="false" aria-controls="documents" id="documents-tab" tabindex="-1">Documents</button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-pane active" role="tabpanel" aria-labelledby="overview-tab" tabindex="0">
+                <div class="overview-grid">
+                    <div class="stat-card">
+                        <h3>Total Issues</h3>
+                        <div class="stat-value" id="total-issues">0</div>
+                    </div>
+                    <div class="stat-card critical">
+                        <h3>Critical Issues</h3>
+                        <div class="stat-value" id="critical-issues">0</div>
+                    </div>
+                    <div class="stat-card important">
+                        <h3>Important Issues</h3>
+                        <div class="stat-value" id="important-issues">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Photos</h3>
+                        <div class="stat-value" id="photo-count">0</div>
+                    </div>
+                </div>
+                
+                <div class="summary-section">
+                    <h2>Property Summary</h2>
+                    <div id="property-summary" class="summary-content">
+                        <p>Loading property information...</p>
+                    </div>
+                </div>
+
+                <div class="highlights-section">
+                    <h2>Key Findings</h2>
+                    <div id="key-findings" class="highlights-content">
+                        <p>Loading key findings...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Findings Tab -->
+            <div id="findings" class="tab-pane" role="tabpanel" aria-labelledby="findings-tab" tabindex="0" hidden>
+                <div class="findings-controls">
+                    <!-- Search Bar -->
+                    <div class="search-container">
+                        <input type="text" id="findings-search" placeholder="Search findings..." class="search-input" onkeyup="handleFindingsSearch()" aria-label="Search findings">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Filter Controls -->
+                    <div class="filter-controls">
+                        <select id="severity-filter" class="filter-select" onchange="applyFilters()" aria-label="Filter by severity">
+                            <option value="">All Severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="important">Important</option>
+                            <option value="informational">Informational</option>
+                        </select>
+                        
+                        <select id="status-filter" class="filter-select" onchange="applyFilters()" aria-label="Filter by status">
+                            <option value="">All Statuses</option>
+                            <option value="open">Open</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="deferred">Deferred</option>
+                        </select>
+                        
+                        <select id="area-filter" class="filter-select" onchange="applyFilters()" aria-label="Filter by area">
+                            <option value="">All Areas</option>
+                        </select>
+                        
+                        <select id="system-filter" class="filter-select" onchange="applyFilters()" aria-label="Filter by system">
+                            <option value="">All Systems</option>
+                        </select>
+                        
+                        <select id="sort-filter" class="filter-select" onchange="applyFilters()" aria-label="Sort findings">
+                            <option value="severity-desc">Severity (High to Low)</option>
+                            <option value="severity-asc">Severity (Low to High)</option>
+                            <option value="updated-desc">Most Recent</option>
+                            <option value="updated-asc">Oldest First</option>
+                            <option value="area-asc">Area (A-Z)</option>
+                            <option value="area-desc">Area (Z-A)</option>
+                        </select>
+                        
+                        <button type="button" class="btn-clear-filters" onclick="clearFilters()" aria-label="Clear all filters">Clear Filters</button>
+                    </div>
+                    
+                    <!-- Quick Filter Pills -->
+                    <div class="quick-filters">
+                        <button type="button" class="filter-pill active" data-quick="all" onclick="quickFilter('all')" aria-label="Show all findings">All</button>
+                        <button type="button" class="filter-pill" data-quick="critical" onclick="quickFilter('critical')" aria-label="Show critical findings only">Critical Only</button>
+                        <button type="button" class="filter-pill" data-quick="unresolved" onclick="quickFilter('unresolved')" aria-label="Show unresolved findings">Unresolved</button>
+                        <button type="button" class="filter-pill" data-quick="today" onclick="quickFilter('today')" aria-label="Show today's findings">Today's Findings</button>
+                    </div>
+                    
+                    <!-- Results Summary -->
+                    <div class="filter-summary">
+                        Showing <span id="findings-count">0</span> of <span id="findings-total">0</span> findings
+                    </div>
+                </div>
+                
+                <div id="findings-list" class="findings-container">
+                    <p>Loading findings...</p>
+                </div>
+            </div>
+
+            <!-- Photos Tab -->
+            <div id="photos" class="tab-pane" role="tabpanel" aria-labelledby="photos-tab" tabindex="0" hidden>
+                <div class="photos-controls">
+                    <div class="search-container">
+                        <input type="text" id="photos-search" placeholder="Search photo captions..." class="search-input" onkeyup="handlePhotosSearch()" aria-label="Search photos">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </div>
+                    <div class="filter-summary">
+                        Showing <span id="photos-count">0</span> of <span id="photos-total">0</span> photos
+                    </div>
+                </div>
+                <div class="photos-grid" id="photos-grid">
+                    <p>Loading photos...</p>
+                </div>
+            </div>
+
+            <!-- Systems Tab -->
+            <div id="systems" class="tab-pane" role="tabpanel" aria-labelledby="systems-tab" tabindex="0" hidden>
+                <div id="systems-list" class="systems-container">
+                    <p>Loading systems information...</p>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div id="documents" class="tab-pane" role="tabpanel" aria-labelledby="documents-tab" tabindex="0" hidden>
+                <div class="documents-container">
+                    <h2>Available Documents</h2>
+                    <div class="document-list">
+                        <div class="document-item">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <div class="document-info">
+                                <h3>Full Inspection Report</h3>
+                                <p>Complete PDF report with all findings and photos</p>
+                            </div>
+                            <button type="button" class="btn-download-doc" onclick="downloadPDF()" aria-label="Download full PDF report">Download PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Modal -->
+    <div id="photo-modal" class="modal" role="dialog" aria-labelledby="modal-caption" aria-modal="true">
+        <button type="button" class="modal-close" onclick="closePhotoModal()" aria-label="Close photo">&times;</button>
+        <img class="modal-content" id="modal-image" alt="Inspection photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
+        <div id="modal-caption" role="heading" aria-level="2"></div>
+    </div>
+
+    <!-- Embed report data -->
+    <script>
+        window.REPORT_DATA = {{ report_json | tojson | safe }};
+        window.REPORT_ID = "{{ report_id }}";
+        {% if is_readonly %}
+        window.IS_READONLY = true;
+        window.PDF_URL = "{{ pdf_url }}";
+        {% else %}
+        window.IS_READONLY = false;
+        window.PDF_URL = "/api/portal/reports/{{ report_id }}/pdf?token={{ token }}";
+        window.TOKEN = "{{ token }}";
+        {% endif %}
+    </script>
+    
+    <script src="/static/interactive_report.js"></script>
+</body>
+</html>

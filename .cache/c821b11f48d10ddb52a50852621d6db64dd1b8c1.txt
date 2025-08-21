@@ -1,0 +1,24 @@
+Location:
+- Exterior sidewall at ground level along a concrete block foundation, near HVAC equipment and a small utility area.
+
+Observations:
+- Painted concrete block foundation with visible joints and minor surface patching in several spots.
+- Electrical cord/wire runs along the wall to a white plastic connector; appears not weatherproofed for outdoor use.
+- Coiled cords/hoses on the ground adjacent to the wall.
+- Metal frame/component (likely part of equipment) leaning near the wall.
+- Ground surface consisting of pavers with leaves and debris present.
+- A bucket/container at the base area.
+
+Potential Issues:
+- Unprotected outdoor electrical connection and loose extension cord (moisture risk, electrical hazard).
+- Trip/fall hazard from cords/hoses on the ground.
+- Visible cracks/gaps in wall joints and some patching that may indicateSealant/caulking gaps or mortar joint separations.
+- Debris and leaves near foundation potentially contributing to moisture retention/pest access.
+- Unclear where conduit/junctions are; lack of visible proper conduit or weatherproof enclosure for electrical connections.
+
+Recommendations:
+- Replace or relocate outdoor wiring with weatherproof, outdoor-rated supply and install a proper outdoor GFCI outlet with weatherproof cover; secure and route cords away from walking paths.
+- Seal or repoint cracks and gaps in block wall joints; apply exterior masonry sealant as needed to reduce moisture intrusion.
+- Clear debris and maintain a 6–12 inch clearance around the foundation to improve drainage and pest control.
+- Inspect HVAC/Electrical connections for proper mounting and protection; replace any damaged fasteners or supports.
+- If unsure about electrical code compliance, have a licensed electrician evaluate and remediate outdoor wiring and connections.

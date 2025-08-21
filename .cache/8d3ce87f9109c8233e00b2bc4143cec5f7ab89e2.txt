@@ -1,0 +1,19 @@
+Location:
+- Indoor wall-mounted HVAC/air-handling unit in a corner of a room near the ceiling.
+
+Observations:
+- White curved cabinet with top vent grille; dust/dirt visible on grill.
+- Front panel seam appears slightly misaligned with a small gap near the lower edge.
+- No visible wiring or conduit in the photo; sticker “WiFi Included” on the front.
+- Wall/ceiling surface shows textured finish; no obvious moisture staining or corrosion.
+
+Potential Issues:
+- Panel seam/misalignment with small gaps (possible loose panel or damage).
+- Dust buildup on intake vent (reduced efficiency; potential need for cleaning/service).
+- Absence of visible service disconnect or electrical conduit (verify accessible shutoff and code compliance).
+
+Recommendations:
+- Have HVAC tech reseat/secure the front panel; replace or repair if cracked.
+- Clean the vent grille and inspect/replace air filters; check overall airflow.
+- Confirm electrical disconnect and mounting hardware are present and accessible; ensure proper clearance.
+- Seal any small gaps if present to reduce dust/pest intrusion and monitor for moisture ingress.

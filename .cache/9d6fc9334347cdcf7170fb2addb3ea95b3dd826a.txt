@@ -1,0 +1,24 @@
+Location:
+- Furnace/air handler cabinet in a utility closet; lower return air opening visible.
+
+Observations:
+- 18x18x1 filter box present; filter appears not fully seated or is still in packaging box.
+- Insulation/board material at right side of opening appears torn or deteriorated.
+- Dust/dirt buildup inside the opening and on adjacent surfaces.
+- PVC condensate drain lines visible under the unit (no obvious pan seen in view).
+- CO hazard warning label on unit (indicates combustion appliance; no active leak detected in photo).
+
+Potential Issues:
+- Unseated or missing filter could cause bypass and reduced air quality/efficiency.
+- Damaged insulation around return opening may cause air leakage and energy loss.
+- Debris/dust buildup in the plenum could affect comfort and IAQ.
+- Visible drain lines; no evident secondary pan or overflow protection in view (potential water damage risk if pan/drain fails).
+- If gas-fired, CO risk requires proper venting and functioning detectors.
+
+Recommendations:
+- Replace with correctly sized 18x18x1 filter and ensure it sits squarely with arrow toward unit.
+- Repair or replace torn insulation; seal gaps around the opening.
+- Clean the return opening area and inspect for mold or moisture; address as needed.
+- Inspect condensate drainage: verify proper slope, clear trap, and confirm a secondary overflow pan/alarm if not present.
+- Have a licensed HVAC technician verify unit venting (if gas) and test for CO; install/verify functioning CO detectors.
+- Secure access panel and consider a protective cover/draft stop to prevent debris ingress.

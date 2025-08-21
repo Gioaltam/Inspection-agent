@@ -1,0 +1,25 @@
+Location:
+- Exterior outdoor HVAC/condenser unit mounted on a concrete pad at the side of the house, surrounding gravel ground.
+
+Observations:
+- Multiple cables and refrigerant lines enter the unit; black cables and gray corrugated conduit present.
+- Insulated refrigerant lines have white foam insulation, some wear/dirt visible.
+- Gray flexible conduit appears loose and resting on the unit/ground.
+- Rust staining on the lower metal surface near the base.
+- Unit sits close to the wall with limited visible clearance; some vegetation at the base.
+- Wiring/lines appear not neatly secured or clamped to the wall.
+
+Potential Issues:
+- Deteriorated/abrasive insulation on refrigerant lines (wear evident).
+- Exposed/loose electrical conduits and lack of proper strain relief/clamps.
+- Rust and corrosion on the unit base/frame.
+- Possible inadequate clearance around the condenser lines and electrical entries (restricted access/ventilation).
+- Potential moisture ingress pathways around penetrations and gaps (caulk/sealant may be missing or deteriorated).
+
+Recommendations:
+- Have a licensed HVAC tech inspect and service; secure and properly clamp all conduits and wires; install strain relief where required.
+- Replace or repair damaged insulation on refrigerant lines; ensure foam jackets are intact and properly sealed.
+- Treat/repair rust on base/frame and repaint or protect metal surfaces as needed.
+- Verify and improve clearance around the unit per manufacturer specs; trim vegetation if needed.
+- Seal penetrations at the wall with appropriate sealant or gaskets to reduce moisture ingress.
+- Ensure clean, unobstructed airflow and no debris accumulation around the unit.

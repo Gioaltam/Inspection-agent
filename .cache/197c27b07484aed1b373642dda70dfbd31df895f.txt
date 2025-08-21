@@ -1,0 +1,20 @@
+Location:
+- Under kitchen sink in cabinet.
+
+Observations:
+- White PVC waste piping with a P-trap and slip-joint compression fittings.
+- Brown/orange staining at the top joint near the sink flange.
+- Purple primer visible on a vertical riser (solvent-weld area).
+- Cabinet clutter around the base.
+
+Potential Issues:
+- Possible active or past leak at the top compression joint (staining).
+- Trap arrangement may form an S-trap/poor-vented path (potential siphon/odor risk).
+- Aging fittings/joints; potential for further leaks.
+- Limited accessibility due to clutter, hindering inspection/maintenance.
+
+Recommendations:
+- Inspect for leaks and reseal/replace stained joints as needed.
+- Reconfigure to a proper P-trap with a horizontal trap arm to the wall drain (avoid S-trap). 
+- Replace aged fittings if integrity is questionable; ensure correct gaskets and tight, clean joints.
+- Clear clutter and test the drain with water to verify no leaks.

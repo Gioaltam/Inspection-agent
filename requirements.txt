@@ -1,0 +1,35 @@
+# Core Python dependencies for inspection-agent
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sqlalchemy==2.0.32
+alembic==1.13.2
+pydantic==2.9.2
+pydantic-settings==2.4.0
+python-dotenv==1.0.1
+python-multipart==0.0.9
+
+# Authentication & Security
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# HTTP & API
+requests==2.32.3
+
+# AWS
+boto3==1.34.162
+botocore==1.34.162
+
+# Image Processing
+Pillow==10.4.0
+
+# PDF Generation
+reportlab==4.2.2
+
+# AI/ML
+openai==1.99.6
+
+# GUI (Tkinter extensions)
+tkinterdnd2==0.3.0
+
+# Database (PostgreSQL - optional, uncomment if using PostgreSQL)
+# psycopg2-binary==2.9.9

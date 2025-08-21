@@ -1,0 +1,24 @@
+Location:
+- Exterior side of the house near the condenser unit; electrical disconnect mounted on the wall; line-set and cables run along the wall to the unit; gravel surface with some vegetation at the base.
+
+Observations:
+- Line-set insulation appears dirty/oxidized with sections that look worn or exposed.
+- Cables/lines seem loosely routed and partially strapped with improvised materials; several bends near the ground.
+- Some rust/dirt on a mounting clamp at the line entry.
+- Vegetation at the base and minimal clearance around the unit/wall.
+- No visible leaks or staining from this angle.
+
+Potential Issues:
+- Deteriorated line-set insulation (energy loss, condensation, potential leaks).
+- Unsecured/worn wiring and refrigerant lines (risk of movement and abrasion).
+- Corrosion on mounting hardware (compromised fasteners).
+- Inadequate clearance for airflow and service access.
+- Pest/rodent entry risk at ground level; vegetation touching the equipment.
+
+Recommendations:
+- Replace or properly re-wrap damaged line-set insulation with approved pre-insulated conduit and secure with proper clamps.
+- Re-secure all lines and wires with appropriate straps; maintain clearances from wall and unit.
+- Inspect for refrigerant leaks and perform a system check if any odor/oil residue is present.
+- Address corrosion; replace any compromised clamps/hardware.
+- Clear vegetation and debris; ensure recommended clearance (12 inches or more) around condenser for airflow and maintenance.
+- Verify weatherproof integrity of the disconnect box and seals to prevent moisture ingress.

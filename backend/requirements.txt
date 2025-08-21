@@ -1,0 +1,19 @@
+# Python requirements
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sqlalchemy==2.0.32
+psycopg2-binary==2.9.9
+alembic==1.13.2
+pydantic==2.8.2
+pydantic-settings==2.4.0
+requests==2.32.3
+boto3==1.34.162
+botocore==1.34.162
+python-dotenv==1.0.1
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.9
+Pillow==10.4.0
+reportlab==4.2.2
+openai==1.99.6
+tkinterdnd2==0.3.0
