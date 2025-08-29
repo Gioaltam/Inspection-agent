@@ -1,0 +1,26 @@
+Location:
+- Interior wall/ceiling vent grille (appears to be exhaust/return) on painted drywall
+
+Observations:
+- Metal louvered grille; fan blades visible behind
+- Heavy dust/lint accumulation on slats and inside housing
+- Multiple paint coats; drips/overspray; chipped paint at edges
+- Frame misaligned; perimeter gaps; old caulk/paint bead
+- One visible screw on right; other fasteners missing/painted over
+- Minor surface rust at screw holes/edges
+- Slight dents/bends at corners
+
+Potential Issues:
+- Restricted airflow from heavy dust buildup
+- Gaps/voids and failed caulk at perimeter allowing air leakage and pest entry points
+- Loose/missing fasteners; grille not fully secured; misalignment
+- Dents/bends and exposed substrate at chips
+- Early corrosion/rust at edges/screw holes
+- No visible water stains or mold
+
+Recommendations:
+- Remove grille; vacuum/clean grille, fan housing, and accessible duct
+- Re-secure with proper matching screws/anchors; ensure flush fit
+- Reseal perimeter with paintable caulk; touch up or repaint with rust-inhibiting paint
+- Replace grille if damaged/corroded or cannot be secured
+- If this is an exhaust fan, service and test operation/airflow; verify duct/backdraft damper condition

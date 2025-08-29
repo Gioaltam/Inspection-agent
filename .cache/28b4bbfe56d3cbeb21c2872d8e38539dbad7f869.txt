@@ -1,0 +1,27 @@
+Location:
+- Indoor HVAC air handler (floor-mounted utility/garage area)
+
+Observations:
+- Metal cabinet with electric heat package labels
+- Refrigerant suction line with aging foam insulation and tape repair
+- PVC condensate drain with tee; discharge not visible; no obvious P-trap
+- Open vertical tee used as vent/cleanout (no cap)
+- Rust staining along lower cabinet seam, base stand, and on floor
+- Low-voltage wiring splices with wire nuts lying on the floor, unsecured
+- Spare 18x20x1 filter resting on condensate piping
+
+Potential Issues:
+- Corrosion/rust at cabinet base and stand
+- Water stains at base/floor indicating prior or active condensate leakage
+- No visible condensate P-trap; risk of poor drainage/air draw and overflow
+- Open tee on condensate line; potential air loss, splash, and debris entry
+- Suction line insulation damaged/gapped; may cause condensation/drip
+- Exposed/unsecured low-voltage wiring on floor; vulnerable to damage and trip hazard
+
+Recommendations:
+- Have licensed HVAC technician inspect for active leaks; clean/flush condensate system; install proper P-trap and vent per manufacturer; add capped cleanout; verify slope to drain
+- Replace/repair suction line insulation; seal penetrations as needed
+- Treat/repair rusted cabinet/base; evaluate evaporator drain pan for deterioration
+- Secure electrical: place low-voltage splices in approved enclosure or inside unit; elevate/fasten wiring; add conduit/strain relief if needed
+- Clean and dry area; monitor for recurring moisture
+- Maintain clear service access around the unit and keep items off piping

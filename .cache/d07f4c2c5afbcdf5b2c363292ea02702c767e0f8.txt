@@ -1,0 +1,26 @@
+Location:
+- Mechanical room / utility space with an under-unit air handler/furnace.
+
+Observations:
+- Cardboard filter box (18x20x1) stored under the unit.
+- Dusty/dirt-encrusted metal base and framing; visible rust.
+- PVC condensate/drain line with elbow connected to unit.
+- Exposed yellow low-voltage wiring and other cables on the floor; some loose.
+- Concrete floor with stains and signs of moisture.
+- Left side shows a red-handled valve knob (potential gas line component) partially visible.
+
+Potential Issues:
+- Rust/corrosion on the cabinet base and surrounding metal.
+- Missing/absent proper air filter in the unit (cardboard box suggests filter not in place).
+- Condensate line appears unsecured and potentially leaky (drain integrity questionable).
+- Exposed/loose wiring on the floor (electrical shock/short risk; not properly protected).
+- Evidence of moisture/dampness on floor; possible leak or high humidity; potential mold risk.
+- Debris and dust buildup that can affect airflow and coil performance.
+
+Recommendations:
+- Remove cardboard box and install the correct size filter in the unit housing.
+- Have a tech inspect for rust and repair/replace corroded panels; treat/coat as needed.
+- Inspect and secure the condensate drain line; ensure proper slope and install/verify trap or condensate pan condition.
+- Route and protect low-voltage wiring (use conduit or proper wire raceway; keep off the floor).
+- Check for moisture source; address leaks or water intrusion; dry and evaluate for mold if needed.
+- Schedule a professional HVAC inspection/maintenance to confirm coil, blower, gas connections (if gas furnace), and overall safety.

@@ -1,0 +1,19 @@
+Location:
+- Exterior, ground-mounted HVAC condenser (Ameristar)
+
+Observations:
+- Louvered metal cabinet with exposed condenser fins
+- Brand badge scuffed; cabinet paint intact
+- Panels/fasteners present; no visible rust
+- Light dust on fins
+- Vegetation present near base corner
+
+Potential Issues:
+- Bent/flattened condenser fins in several areas (airflow/efficiency impact)
+- Vegetation encroachment at base (airflow restriction, pest harborage)
+
+Recommendations:
+- Carefully straighten fins with a fin comb; avoid coil damage
+- Clean condenser coil with low-pressure water/HVAC-safe cleaner
+- Maintain 12–24 in. clearance around all sides; trim vegetation
+- Include unit in routine HVAC service for performance check

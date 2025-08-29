@@ -1,0 +1,25 @@
+Location:
+- Exterior side yard; condenser set on concrete pad beside house siding
+
+Observations:
+- Tempstar outdoor A/C condenser; wire-guarded coil and top fan
+- Pad at grade with grass/vegetation around base
+- Coil shows dirt buildup and scattered bent fins
+- Very close to house wall and adjacent plastic structure
+- Metal vertical chase/flashing on wall with visible open seam
+- Electrical disconnect/line set not visible from this angle
+
+Potential Issues:
+- Inadequate side clearance to walls/structure; restricted airflow and service access
+- Bent/creased coil fins and dirty coil; reduced efficiency/overheating risk
+- Vegetation contacting unit; blockage and corrosion/moisture retention risk
+- Open seam/gap at adjacent metal chase to siding; potential water intrusion/pest entry
+- Top panel appears weathered/warped; may allow water entry at shroud over time
+
+Recommendations:
+- Reposition or shift unit to provide manufacturer-required clearances (typically 12–24 in. sides, ~60 in. above)
+- Clean condenser coils; carefully straighten fins; schedule HVAC service
+- Cut back and maintain vegetation clearance; consider gravel border around pad
+- Seal/flash the metal chase-to-siding seam with exterior-rated sealant/flashing
+- Verify pad is sound and level; re-level if settlement is present
+- Have licensed HVAC technician evaluate overall condition and confirm proper electrical disconnect and insulated line set are present and serviceable

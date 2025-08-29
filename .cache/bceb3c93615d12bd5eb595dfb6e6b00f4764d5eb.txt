@@ -1,0 +1,20 @@
+Location:
+- Behind a sink cabinet drain assembly (P-trap area).
+
+Observations:
+- Metal P-trap and vertical drain show white mineral buildup/corrosion.
+- Compression/union joints appear aged with rust staining.
+- Small 90-degree elbow connected near the trap; appears dry but deposits present.
+- Partial round perforated metal object in view (unrelated to main drain; not clearly identifiable).
+
+Potential Issues:
+- Corrosion at trap and joints with mineral buildup; potential for leaking.
+- Possible slow leak indicated by deposits; risk of future water intrusion.
+- Aged fittings may require replacement to reduce failure risk.
+- Unclear stub/ elbow nearby; ensure no open/unfinished drain path (cap or connect as required).
+
+Recommendations:
+- Replace corroded P-trap and adjacent fittings with new brass or PVC equivalents; install proper gaskets/seals.
+- Remove mineral buildup and reseal joints; test for leaks after reassembly.
+- Inspect nearby elbow for proper alignment and sealing; correct if needed.
+- If any unknown/open stub exists, cap or connect per drainage plan; address moisture in cabinet and monitor for mold.

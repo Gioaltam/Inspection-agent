@@ -1,0 +1,24 @@
+Location:
+- Basement/utility closet; electric water heater (two access panels on front).
+
+Observations:
+- Electric WH with two front access panels; copper cold/hot water lines on top with shut-offs.
+- T&P relief valve present but discharge path not clearly visible.
+- Unit sits directly on tile floor; no visible drip pan or secondary containment.
+- Cramped alcove with some debris/wood pieces; exposed wiring/conduit nearby.
+- Minor floor staining at base area; possible past leak.
+
+Potential Issues:
+- No drip pan or secondary containment under water heater.
+- T&P relief valve discharge piping not clearly visible or may be improperly routed.
+- Limited clearance/ventilation in the tight closet (servicing and heat dissipation concerns).
+- Cramped wiring/conduit near the unit; potential protection/strapping concerns.
+- Floor staining suggests possible past leakage; check for active leaks.
+
+Recommendations:
+- Verify and, if needed, install proper T&P relief discharge pipe directed to a safe location (floor drain or exterior).
+- Install a drain pan with an appropriate drain if local code requires, and ensure area is dry.
+- Ensure minimum clearances per manufacturer (and local code) and improve ventilation for the closet if required.
+- Inspect and secure piping; replace or re-seat any aged/shaky valves; add supports/straps as needed.
+- Have an electrician verify the feed/disconnect is accessible and properly installed.
+- Investigate and address any active leaks; monitor for further staining and consider WH replacement if age or leaks persist.

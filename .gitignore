@@ -22,3 +22,11 @@ NUL
 
 # (If you see an AMD driver folder in your tree, exclude it)
 AMD/
+
+# Databases and secrets
+*.db
+juliana_demo_credentials.json
+
+# Temp/workspace
+temp_zips/
+workspace/

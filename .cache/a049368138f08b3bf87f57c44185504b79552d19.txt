@@ -1,0 +1,24 @@
+Location:
+- Outdoor condenser unit – top fan grille area
+
+Observations:
+- Metal top grille with visible fan motor beneath
+- Electrical wires routed through grille opening; mid-wire splice with pink crimp connector
+- Outer jacket/tape around splice torn and frayed; insulation appears compromised
+- Splice not enclosed in a junction box/conduit; unsecured on top of unit
+- Rusted/oxidized fasteners on grille/fan motor
+- Vegetation growing close to unit
+
+Potential Issues:
+- Improper wiring/missing conduit: exposed, weather‑unprotected splice on exterior
+- Insulation damage/failed wrap at splice; potential exposed conductors
+- Water intrusion risk to electrical connection; shock/fire hazard
+- Wire unsecured and routed through guard opening; could contact fan blades (unsafe condition)
+- Corrosion on fasteners may weaken attachment
+- Vegetation encroachment may restrict airflow
+
+Recommendations:
+- Have a licensed HVAC/electrician repair wiring: replace damaged conductors, relocate splice inside approved junction box, use proper weather‑rated connectors and conduit; secure routing away from fan
+- Restore full insulation/heat‑shrink and strain relief on all conductors
+- Replace corroded fasteners as needed; inspect fan guard/motor mounts
+- Clear vegetation; maintain recommended clearance around unit (typically 12–24 in.) and schedule full condenser service/inspection

@@ -1,0 +1,16 @@
+Location:
+- Bathroom sink base cabinet
+
+Observations:
+- White plastic P-trap to wall stub with slip-joint nuts
+- Corrugated flexible tailpiece/extension from gray sink tailpiece to trap
+- Braided water-supply lines/angle stop visible
+- Cabinet base and fittings appear dry; no active drips noted
+
+Potential Issues:
+- Corrugated/accordion drain connector used as tailpiece; not code-approved in many areas, interior ridges trap debris and biofilm, restrict flow, and increase clog/odor/leak risk
+
+Recommendations:
+- Replace the flexible accordion tailpiece with a smooth, rigid tailpiece and proper slip-joint fittings; align trap with rigid offsets as needed
+- Test run after replacement and check all joints for leaks
+- Keep area under sink clear to allow early leak detection

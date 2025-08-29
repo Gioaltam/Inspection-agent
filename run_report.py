@@ -410,8 +410,48 @@ def _analyze_one(p: Path) -> tuple[Path, str, Exception | None]:
         logger.warning(f"Failed to analyze {p.name}: {e}")
         return p, "Analysis failed - using fallback.", e
 
+# ---------------- Photo preservation for gallery ----------------
+def preserve_photos_for_gallery(report_id: str, images: list[Path], property_folder: Path) -> dict[Path, str]:
+    """Copy photos to property folder for web gallery viewing."""
+    photo_dir = property_folder / "photos"
+    photo_dir.mkdir(parents=True, exist_ok=True)
+    
+    photo_mapping = {}
+    for idx, img_path in enumerate(images):
+        # Create a clean filename
+        ext = img_path.suffix.lower()
+        new_filename = f"photo_{idx+1:03d}{ext}"
+        dest_path = photo_dir / new_filename
+        
+        # Copy and optionally resize for web
+        try:
+            img = Image.open(img_path)
+            img = ImageOps.exif_transpose(img)
+            
+            # Resize if too large (max 1920px wide for web)
+            if img.width > 1920:
+                ratio = 1920 / img.width
+                new_size = (1920, int(img.height * ratio))
+                img = img.resize(new_size, Image.Resampling.LANCZOS)
+            
+            # Save with optimization
+            if ext in ['.jpg', '.jpeg']:
+                img.save(dest_path, 'JPEG', quality=85, optimize=True)
+            else:
+                img.save(dest_path, 'PNG', optimize=True)
+            
+            # Store the path relative to the property folder
+            web_path = f"photos/{new_filename}"
+            photo_mapping[img_path] = web_path
+            
+        except Exception as e:
+            logger.warning(f"Failed to preserve photo {img_path.name}: {e}")
+            photo_mapping[img_path] = None
+    
+    return photo_mapping
+
 # ---------------- JSON generation ----------------
-def generate_json_report(report_id: str, address: str, images: list[Path], results: dict[Path, str]) -> dict:
+def generate_json_report(report_id: str, address: str, images: list[Path], results: dict[Path, str], photo_mapping: dict[Path, str] = None) -> dict:
     """Generate JSON report with normalized notes and flags."""
     photos = []
     critical_count = 0
@@ -427,14 +467,20 @@ def generate_json_report(report_id: str, address: str, images: list[Path], resul
         if important:
             important_count += 1
         
-        photos.append({
+        photo_data = {
             "file_name": img_path.name,
             "notes": normalized,
             "flags": {
                 "critical": critical,
                 "important": important
             }
-        })
+        }
+        
+        # Add image path if available
+        if photo_mapping and img_path in photo_mapping:
+            photo_data["image_path"] = photo_mapping[img_path]
+        
+        photos.append(photo_data)
     
     return {
         "report_id": report_id,
@@ -543,11 +589,15 @@ def main():
     report_id = str(uuid.uuid4())
     
     address = args.address or args.zip.stem.replace("_", " ").replace("-", " ")
-    out_pdf = args.out or Path("output") / f"{address}.pdf"
-    out_pdf.parent.mkdir(parents=True, exist_ok=True)
     
-    # JSON output path based on report_id
-    out_json = Path("output") / f"{report_id}.json"
+    # Create a clean folder name for this property
+    safe_address = re.sub(r'[^\w\s-]', '', address).strip().replace(' ', '_').lower()
+    property_folder = Path("output") / "properties" / safe_address
+    property_folder.mkdir(parents=True, exist_ok=True)
+    
+    # All files for this property go in its folder
+    out_pdf = args.out or property_folder / f"{safe_address}.pdf"
+    out_json = property_folder / f"{report_id}.json"
 
     with tempfile.TemporaryDirectory() as td:
         imgs = collect_images_from_zip(args.zip, Path(td))
@@ -557,8 +607,11 @@ def main():
         # Generate PDF and get results
         results = generate_pdf(address, imgs, out_pdf)
         
-        # Generate JSON report
-        json_report = generate_json_report(report_id, address, imgs, results)
+        # Preserve photos for gallery
+        photo_mapping = preserve_photos_for_gallery(report_id, imgs, property_folder)
+        
+        # Generate JSON report with photo paths
+        json_report = generate_json_report(report_id, address, imgs, results, photo_mapping)
         
         # Save JSON file
         with open(out_json, 'w') as f:
@@ -574,10 +627,36 @@ def main():
             critical_count=json_report["totals"]["critical_issues"],
             important_count=json_report["totals"]["important_issues"]
         )
+        
+        # Copy gallery template to create individual HTML file for this report
+        template_path = Path("output") / "gallery_template.html"
+        if template_path.exists():
+            # HTML file goes in the property folder
+            out_html = property_folder / "report.html"
+            
+            # Read template and replace the default report ID
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template_content = f.read()
+            
+            # Replace the default report ID with this specific report's ID
+            template_content = template_content.replace(
+                "const reportId = urlParams.get('id') || 'eab3af62-1ce6-4086-bcf3-8be09e930e61';",
+                f"const reportId = urlParams.get('id') || '{report_id}';"
+            )
+            
+            # Write the customized template
+            with open(out_html, 'w', encoding='utf-8') as f:
+                f.write(template_content)
+            
+            print(f"Wrote: {out_html}")
 
     print(f"Wrote: {out_pdf}")
     print(f"Wrote: {out_json}")
     print(f"REPORT_ID={report_id}")
+    print(f"Property folder: {property_folder}")
+    print(f"Photos saved: {property_folder / 'photos'}")
+    print(f"HTML Report: {property_folder / 'report.html'}")
+    print(f"Interactive Gallery: Open {property_folder / 'report.html'} in browser")
 
 if __name__ == "__main__":
     main()

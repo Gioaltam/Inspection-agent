@@ -1,0 +1,22 @@
+Location:
+- Exterior, ground-mounted AC condenser adjacent to siding
+
+Observations:
+- Tempstar outdoor condensing unit with metal coil-guard grille
+- Top fan guard/grille visibly bent/deformed; small rust spot at edge
+- Coil fins dirty with lint/plant debris; localized fin flattening
+- Debris accumulation along top perimeter under cap
+- Appears limited clearance to wall
+
+Potential Issues:
+- Bends/deformation at top fan guard; reduced protection/possible fan interference
+- Corrosion/rust starting on fan guard
+- Blocked/dirty condenser fins; restricted airflow/efficiency; overheating risk
+- Bent/flattened fins; airflow restriction
+- Possible inadequate clearance to wall, impeding airflow/service access
+
+Recommendations:
+- Clean coils and remove all debris from and around unit; maintain 12–24 in clearance on all sides
+- Straighten fins with fin comb; replace damaged sections if needed
+- Treat rusted areas (clean/prime/paint) or replace fan guard if weakened
+- HVAC technician to service unit and verify proper operation, clearances, and that fan guard is secure and not contacting blades

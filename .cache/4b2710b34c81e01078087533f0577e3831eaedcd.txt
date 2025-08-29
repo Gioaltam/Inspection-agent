@@ -1,0 +1,21 @@
+Location:
+- Exterior; outdoor A/C condenser (Comfortmaker)
+
+Observations:
+- Metal grille over aluminum condenser fins
+- Fins heavily soiled with lint/dirt; dark/plugged areas
+- Multiple areas of bent/flattened fins
+- Vegetation/weeds contacting cabinet and lower coil
+- Manufacturer label worn; grille appears intact
+
+Potential Issues:
+- Airflow restriction from dirt/debris on fins → reduced cooling/overheating risk
+- Bent/flattened fins further restrict heat exchange
+- Vegetation contact blocks airflow and can trap moisture/pests
+- Possible efficiency loss and increased compressor strain
+
+Recommendations:
+- Clear vegetation around unit; maintain ~2–3 ft side and 4–5 ft top clearance
+- Professionally clean condenser coil (non-corrosive cleaner; rinse from inside out)
+- Comb/straighten fins where possible; replace damaged coil sections if not restorable
+- Have HVAC technician service the unit post-cleaning to verify operation/pressures and efficiency

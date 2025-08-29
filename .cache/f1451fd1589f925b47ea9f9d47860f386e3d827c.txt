@@ -1,0 +1,17 @@
+Location:
+- Outdoor condenser unit (AC) mounted/placed against exterior, with label on the right panel.
+
+Observations:
+- Condenser coil fins visible behind grille; cabinet panels appear intact.
+- Label present and legible.
+- Debris/vegetation at the base (dried grass, straw) around the lower enclosure.
+- No obvious dents, cracks, or loose/missing fasteners seen in the visible area.
+
+Potential Issues:
+- Debris/vegetation at the base could impede airflow and trap moisture.
+- Unknown clearance around sides/top; may be insufficient for proper condenser airflow.
+
+Recommendations:
+- Clear debris and vegetation from around the unit; maintain several inches to feet of clearance on all sides.
+- If fins are dirty, gently clean or use a fin comb to straighten any bent sections.
+- Have a technician verify refrigerant charge and electrical connections during the next service.

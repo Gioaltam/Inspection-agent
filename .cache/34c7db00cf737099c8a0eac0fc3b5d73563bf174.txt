@@ -1,0 +1,21 @@
+Location:
+- Exterior ground-mounted air-conditioner condenser; adjacent to vegetation
+
+Observations:
+- Manufacturer: International Comfort Products (ICP); outdoor A/C condenser
+- Model: CAC030AKA5; Serial: E031954283 (likely 2003 manufacture)
+- Refrigerant: R-22; factory/ship charge listed 74 oz
+- Electrical: 208/230V 1φ; MCA 18.9A; Max fuse/CB 30A
+- Fan 1/5 HP; data plate present but weathered/faded
+- Unit partially obscured by plants/foliage
+
+Potential Issues:
+- Vegetation in contact with cabinet—restricts airflow and access; can trap moisture and promote corrosion
+- Data plate partially illegible—may hinder servicing/verification
+- No other visible dents, cracks, gaps, loose/missing parts, corrosion, wiring defects, or leak stains from this view
+
+Recommendations:
+- Trim/clear vegetation; maintain ~12–24 in clearance around and ~5 ft above unit
+- Clean exterior coil and cabinet after clearing vegetation
+- Record data-plate info; replace/label as needed if it becomes unreadable
+- Because unit uses R-22 and appears older, have a licensed HVAC contractor evaluate performance and discuss replacement planning

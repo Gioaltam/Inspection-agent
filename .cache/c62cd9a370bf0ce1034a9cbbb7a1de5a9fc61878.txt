@@ -1,0 +1,25 @@
+Location:
+- Mechanical/storage area floor near a condensate pump
+
+Observations:
+- White condensate pump with clear vinyl discharge tube and low‑voltage wires
+- Metal floor/pan with heavy rusting and widespread water staining; damp areas visible
+- Corroded vertical pipe at base/penetration
+- Debris/mineral deposits on floor; dark discoloration on adjacent surfaces
+- Visible seam/penetration in pan around piping
+
+Potential Issues:
+- Water intrusion/leak likely from condensate pump/tubing or nearby plumbing (active moisture present)
+- Corrosion/rust on metal pan and pipe; potential weakening and future leakage
+- Possible microbial growth due to prolonged moisture
+- Gaps/voids at floor pan seams/penetrations; potential pathway for water migration and pests
+- Unsecured wiring to pump presents snag/strain risk
+
+Recommendations:
+- Diagnose and repair leak source: test/clean/replace condensate pump and tubing; verify discharge line is clear and connections are tight and sloped
+- Thoroughly dry area; clean and disinfect surfaces; remove debris
+- Treat or replace corroded pan; apply rust inhibitor/waterproof coating as needed
+- Seal penetrations/seams around piping with appropriate sealant
+- Inspect corroded pipe for damage; repair/replace and protect against future corrosion
+- Secure wiring/cables; ensure pump is properly powered and grounded
+- Monitor area after repairs for recurring moisture

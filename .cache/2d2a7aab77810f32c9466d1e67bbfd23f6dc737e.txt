@@ -1,0 +1,21 @@
+Location:
+- Interior steel entry door for unit 100 (appears to be a stairwell/corridor access).
+
+Observations:
+- Green-painted, metal door with numbers “100.”
+- Electronic keypad lock on the left side; door knob below.
+- Small peephole in the center of the door.
+- Overhead door closer-type apparatus with a long arm/hold-open strap attached to the ceiling (mounted across the top of the door).
+- Patch of chipped paint on the left edge of the frame.
+- Hinges visible on the right side; frame and wall painted light green.
+
+Potential Issues:
+- Hold-open strap/arm mounted to ceiling could be non-code compliant or unsafe if not tied to an approved fire alarm system or properly installed; risk of sudden release or bracket failure.
+- Chipped paint on the jamb may indicate bare metal exposure and potential rust/water intrusion if not addressed.
+- Overall hardware appears aged; potential looseness of screws or misalignment could affect security and proper latching.
+
+Recommendations:
+- Have the hold-open device and mounting inspected by a qualified door hardware technician; verify compliance and proper operation (consider removing or replacing with an approved UL-listed hold-open linked to fire alarm if applicable).
+- Repair/repaint chipped jamb area to protect against corrosion and moisture.
+- Check door alignment, tighten screws, and ensure proper latching with the strike plate; confirm door closes fully without binding.
+- Verify keypad lock operation and maintenance; replace or upgrade hardware if reliability is in question.
