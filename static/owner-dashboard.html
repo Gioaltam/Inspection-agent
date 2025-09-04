@@ -689,6 +689,73 @@
       border: 0; 
     }
     
+    /* Photo gallery styles */
+    .photo-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .photo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    
+    body.dark-mode .photo-card {
+      background: rgba(30,37,48,0.6) !important;
+      border-color: rgba(56,68,89,0.3) !important;
+    }
+    
+    /* Modal navigation buttons */
+    .modal-nav:hover {
+      background: rgba(0,0,0,0.7) !important;
+      transform: scale(1.1);
+    }
+    
+    /* Search input in dark mode */
+    body.dark-mode #gallerySearch {
+      background: rgba(17,22,31,0.6);
+      color: #cbd5e1;
+      border-color: rgba(56,68,89,0.4);
+    }
+    
+    /* Photo gallery grid dark mode */
+    body.dark-mode #photoGalleryView {
+      color: #cbd5e1;
+    }
+    
+    body.dark-mode #reportContent {
+      background: rgba(30,37,48,0.6) !important;
+      color: #cbd5e1;
+    }
+    
+    body.dark-mode .issue-card {
+      background: rgba(30,37,48,0.8) !important;
+      border-color: rgba(56,68,89,0.3) !important;
+    }
+    
+    body.dark-mode #statsGrid > div {
+      background: rgba(30,37,48,0.6) !important;
+    }
+    
+    body.dark-mode #reportActionsBar {
+      background: rgba(30,37,48,0.6) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+    }
+    
+    body.dark-mode #reportActionsBar label {
+      color: #94a3b8;
+    }
+    
+    body.dark-mode #severityFilter {
+      background: rgba(17,22,31,0.6);
+      color: #cbd5e1;
+      border-color: rgba(56,68,89,0.4);
+    }
+    
+    body.dark-mode #emptyState {
+      background: rgba(30,37,48,0.6) !important;
+      color: #cbd5e1;
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .header-content {
@@ -696,7 +763,8 @@
       }
       
       .properties-grid, 
-      .gallery-grid {
+      .gallery-grid,
+      #photoGalleryGrid {
         grid-template-columns: 1fr;
       }
       
@@ -711,6 +779,14 @@
       
       .user-menu #owner-name {
         display: none;
+      }
+      
+      .modal-content {
+        max-width: 95% !important;
+      }
+      
+      #gallerySearch {
+        width: 150px !important;
       }
     }
   </style>
@@ -764,7 +840,7 @@
             <span>All Properties</span>
             <span id="properties-count" style="margin-left: 6px; background: rgba(231,76,60,0.2); color: #e74c3c; padding: 2px 8px; border-radius: 10px; font-size: 0.85rem;">0</span>
           </button>
-          <button id="tab-gallery" type="button" class="main-tab" role="tab" aria-selected="false" aria-controls="gallerySection" data-tab="gallery" style="display:none">
+          <button id="tab-gallery" type="button" class="main-tab" role="tab" aria-selected="false" aria-controls="gallerySection" data-tab="gallery">
             <span aria-hidden="true">📸</span>
             <span id="galleryTabText">Property Gallery</span>
           </button>
@@ -812,11 +888,15 @@
         <div id="inspectionSelector" style="display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.75rem 0; margin-bottom: 2rem;"></div>
         
         <!-- Report Actions Bar -->
-        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div id="reportActionsBar" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <button type="button" onclick="toggleGalleryView()" class="btn" style="background: #8b5cf6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">
+            <span id="viewToggleIcon">📸</span> <span id="viewToggleText">Photo Gallery</span>
+          </button>
           <button type="button" onclick="downloadCurrentPdf()" class="btn" style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">
             📄 Download PDF
           </button>
           <div style="margin-left: auto; display: flex; gap: 0.5rem; align-items: center;">
+            <input type="text" id="gallerySearch" placeholder="Search photos..." style="padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 6px; width: 200px;" onkeyup="filterGalleryItems()">
             <label for="severityFilter">Filter:</label>
             <select id="severityFilter" aria-label="Filter by severity" onchange="filterReportIssues()" style="padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 6px;">
               <option value="all">All Issues</option>
@@ -829,6 +909,11 @@
         
         <!-- Report Summary Stats -->
         <div id="statsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+        
+        <!-- Photo Gallery View -->
+        <div id="photoGalleryView" style="display: none;">
+          <div id="photoGalleryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;"></div>
+        </div>
         
         <!-- Report Content Area -->
         <div id="reportContent" style="background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
@@ -844,11 +929,18 @@
   </main>
   
   <div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 1200px;">
       <h2 id="modalTitle" class="visually-hidden">Photo details</h2>
       <button type="button" aria-label="Close" class="modal-close" onclick="closeModal()">×</button>
-      <img id="modalImage" alt="" style="width: 100%; max-height: 500px; object-fit: contain; background: #f8f9fa;" />
-      <div id="modalInfo" style="padding: 1.5rem;"></div>
+      
+      <!-- Navigation arrows for modal -->
+      <button type="button" class="modal-nav modal-nav-prev" onclick="navigateModal(-1)" aria-label="Previous photo" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 1rem; border-radius: 8px; cursor: pointer; font-size: 1.5rem; z-index: 10;">‹</button>
+      <button type="button" class="modal-nav modal-nav-next" onclick="navigateModal(1)" aria-label="Next photo" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 1rem; border-radius: 8px; cursor: pointer; font-size: 1.5rem; z-index: 10;">›</button>
+      
+      <div style="display: flex; flex-direction: column; height: 100%;">
+        <img id="modalImage" alt="" style="width: 100%; max-height: 60vh; object-fit: contain; background: #f8f9fa;" />
+        <div id="modalInfo" style="padding: 1.5rem; flex: 1; overflow-y: auto;"></div>
+      </div>
     </div>
   </div>
   
@@ -857,7 +949,9 @@
     let currentProperty = null;
     let currentInspection = null;
     let currentReportData = null;
-    let currentView = 'grid';
+    let currentView = 'report';  // 'report' or 'gallery'
+    let galleryPhotos = [];
+    let currentPhotoIndex = 0;
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const API_BASE = window.location.origin;
@@ -961,7 +1055,8 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
               ${property.inspections.slice(0, 3).map(i => `
-                <div class="inspection-item" style="padding: 0.75rem; border: 1px solid #e5e5e5; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                <div class="inspection-item" style="padding: 0.75rem; border: 1px solid #e5e5e5; border-radius: 8px; cursor: pointer; transition: all 0.2s;" 
+                     onclick="event.stopPropagation(); viewReport('${i.report_id}')">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <div>
                       <div style="font-size: 0.95rem; font-weight: 500;">${new Date(i.date).toLocaleDateString()}</div>
@@ -969,7 +1064,7 @@
                     </div>
                     <div style="display: flex; gap: 0.25rem;">
                       ${i.hasPdf ? `<button onclick="event.stopPropagation(); downloadPdf('${i.report_id}')" title="Download PDF" style="padding: 4px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">📄 PDF</button>` : ''}
-                      ${i.hasInteractiveView ? `<button onclick="event.stopPropagation(); viewReport('${i.report_id}')" title="View Interactive Report" style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">👁️ View</button>` : ''}
+                      <button onclick="event.stopPropagation(); viewReport('${i.report_id}')" title="View Gallery & Report" style="padding: 4px 8px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">📸 Gallery</button>
                     </div>
                   </div>
                   <div style="display: flex; gap: 0.5rem;">
@@ -980,6 +1075,9 @@
                 </div>
               `).join('')}
             </div>
+            <button onclick="event.stopPropagation(); openPropertyGallery('${property.id}')" style="width: 100%; margin-top: 1rem; padding: 0.75rem; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+              📸 View All Photos & Reports
+            </button>
           </div>
         ` : `<div style="font-size: 0.9rem; color: #94a3b8;">No inspections available</div>`}
       `;
@@ -1028,15 +1126,6 @@
         document.getElementById('currentPropertyAddress').textContent = property.address;
         document.getElementById('emptyState').style.display = 'block';
         document.getElementById('reportContent').style.display = 'none';
-      }
-    }
-        
-        loadGallery();
-        showTab('gallery');
-        document.title = `${currentProperty.label || currentProperty.address} - Inspection Gallery`;
-      } catch(e) {
-        console.error(e);
-        alert('Error: Failed to load property details');
       }
     }
     
@@ -1394,6 +1483,9 @@
     function displayReportSections(reportData) {
       const container = document.getElementById('reportSections');
       
+      // Prepare photo gallery data
+      galleryPhotos = [];
+      
       if (!reportData || !reportData.sections) {
         container.innerHTML = `
           <div style="padding: 2rem; text-align: center; color: #6b7280;">
@@ -1403,8 +1495,44 @@
         return;
       }
       
+      // Extract all photos from report for gallery view
+      reportData.sections.forEach((section, sectionIndex) => {
+        if (section.issues && section.issues.length > 0) {
+          section.issues.forEach((issue, issueIndex) => {
+            if (issue.images && issue.images.length > 0) {
+              issue.images.forEach((img, imgIndex) => {
+                galleryPhotos.push({
+                  url: img.url || img,
+                  section: section.name || section.title || `Section ${sectionIndex + 1}`,
+                  location: section.location || '',
+                  issue: issue.title || issue.name || 'Issue',
+                  severity: issue.severity || 'minor',
+                  description: issue.description || issue.details || '',
+                  index: galleryPhotos.length
+                });
+              });
+            }
+          });
+        }
+        
+        // Also add any section-level photos
+        if (section.photos && section.photos.length > 0) {
+          section.photos.forEach(photo => {
+            galleryPhotos.push({
+              url: photo.url || photo,
+              section: section.name || section.title || `Section ${sectionIndex + 1}`,
+              location: section.location || photo.location || '',
+              issue: photo.caption || '',
+              severity: 'info',
+              description: photo.description || '',
+              index: galleryPhotos.length
+            });
+          });
+        }
+      });
+      
       container.innerHTML = reportData.sections.map((section, index) => `
-        <div class="report-section" style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb;">
+        <div class="report-section" data-section="${section.name || index}" style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb;">
           <h3 style="font-size: 1.3rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">
             ${section.name || section.title || `Section ${index + 1}`}
           </h3>
@@ -1412,7 +1540,7 @@
           
           <div class="issues-list">
             ${section.issues && section.issues.length > 0 ? section.issues.map(issue => `
-              <div class="issue-card" data-severity="${issue.severity}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #fafafa;">
+              <div class="issue-card" data-severity="${issue.severity}" data-searchable="${(issue.title + ' ' + issue.description).toLowerCase()}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #fafafa;">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
                   <div style="font-weight: 600; color: #374151;">${issue.title || issue.name || 'Issue'}</div>
                   <span class="severity-badge" style="
@@ -1430,11 +1558,14 @@
                 <div style="color: #4b5563; line-height: 1.6;">${issue.description || issue.details || ''}</div>
                 ${issue.images && issue.images.length > 0 ? `
                   <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
-                    ${issue.images.map(img => `
-                      <img src="${img.url || img}" alt="${issue.title}" 
-                           style="width: 120px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer;"
-                           onclick="openModal('${img.url || img}')">
-                    `).join('')}
+                    ${issue.images.map((img, imgIdx) => {
+                      const photoIndex = galleryPhotos.findIndex(p => p.url === (img.url || img));
+                      return `
+                        <img src="${img.url || img}" alt="${issue.title}" 
+                             style="width: 120px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer;"
+                             onclick="openPhotoFromGallery(${photoIndex})">
+                      `;
+                    }).join('')}
                   </div>
                 ` : ''}
               </div>
@@ -1442,20 +1573,164 @@
           </div>
         </div>
       `).join('');
+      
+      // Update photo gallery view
+      updatePhotoGallery();
     }
     
     // Filter report issues by severity
     function filterReportIssues() {
-      const filter = document.getElementById('severityFilter').value;
-      const issues = document.querySelectorAll('.issue-card');
+      filterGalleryItems();
+    }
+    
+    // Toggle between gallery and report view
+    function toggleGalleryView() {
+      currentView = currentView === 'gallery' ? 'report' : 'gallery';
+      const galleryView = document.getElementById('photoGalleryView');
+      const reportView = document.getElementById('reportContent');
+      const toggleIcon = document.getElementById('viewToggleIcon');
+      const toggleText = document.getElementById('viewToggleText');
       
-      issues.forEach(issue => {
-        if (filter === 'all' || issue.dataset.severity === filter) {
-          issue.style.display = 'block';
-        } else {
-          issue.style.display = 'none';
-        }
-      });
+      if (currentView === 'gallery') {
+        galleryView.style.display = 'block';
+        reportView.style.display = 'none';
+        toggleIcon.textContent = '📋';
+        toggleText.textContent = 'Report View';
+        updatePhotoGallery();
+      } else {
+        galleryView.style.display = 'none';
+        reportView.style.display = 'block';
+        toggleIcon.textContent = '📸';
+        toggleText.textContent = 'Photo Gallery';
+      }
+    }
+    
+    // Update photo gallery grid
+    function updatePhotoGallery() {
+      const grid = document.getElementById('photoGalleryGrid');
+      
+      if (galleryPhotos.length === 0) {
+        grid.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 2rem;">No photos available for this inspection.</div>';
+        return;
+      }
+      
+      grid.innerHTML = galleryPhotos.map((photo, index) => `
+        <div class="photo-card" data-index="${index}" data-severity="${photo.severity}" data-searchable="${(photo.section + ' ' + photo.issue + ' ' + photo.description).toLowerCase()}" 
+             style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s;"
+             onclick="openPhotoFromGallery(${index})">
+          <img src="${photo.url}" alt="${photo.issue}" style="width: 100%; height: 200px; object-fit: cover;" 
+               onerror="this.src='/static/placeholder.jpg'; this.onerror=null;">
+          <div style="padding: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <div style="font-weight: 600; color: #374151; font-size: 0.9rem;">${photo.section}</div>
+              ${photo.severity !== 'info' ? `
+                <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;
+                  ${photo.severity === 'critical' ? 'background: #fee2e2; color: #dc2626;' : 
+                    photo.severity === 'important' ? 'background: #fef3c7; color: #d97706;' : 
+                    'background: #dbeafe; color: #2563eb;'}">
+                  ${photo.severity.toUpperCase()}
+                </span>
+              ` : ''}
+            </div>
+            <div style="color: #6b7280; font-size: 0.85rem; line-height: 1.4;">
+              ${photo.issue || 'View Details'}
+            </div>
+            ${photo.location ? `<div style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.25rem;">📍 ${photo.location}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Open photo from gallery
+    function openPhotoFromGallery(index) {
+      if (index < 0 || index >= galleryPhotos.length) return;
+      
+      currentPhotoIndex = index;
+      const photo = galleryPhotos[index];
+      
+      const modal = document.getElementById('photoModal');
+      const img = document.getElementById('modalImage');
+      const info = document.getElementById('modalInfo');
+      
+      img.src = photo.url;
+      img.alt = photo.issue || 'Inspection photo';
+      
+      info.innerHTML = `
+        <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <h3 style="font-size: 1.2rem; font-weight: 600; color: #1f2937; margin: 0;">${photo.section}</h3>
+            ${photo.severity !== 'info' ? `
+              <span style="padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
+                ${photo.severity === 'critical' ? 'background: #fee2e2; color: #dc2626;' : 
+                  photo.severity === 'important' ? 'background: #fef3c7; color: #d97706;' : 
+                  'background: #dbeafe; color: #2563eb;'}">
+                ${photo.severity.toUpperCase()}
+              </span>
+            ` : ''}
+          </div>
+          ${photo.location ? `<div style="color: #6b7280; margin-top: 0.5rem;">📍 Location: ${photo.location}</div>` : ''}
+        </div>
+        
+        ${photo.issue ? `
+          <div style="margin-bottom: 1rem;">
+            <h4 style="color: #374151; font-weight: 600; margin-bottom: 0.5rem;">Issue</h4>
+            <p style="color: #4b5563; line-height: 1.6;">${photo.issue}</p>
+          </div>
+        ` : ''}
+        
+        ${photo.description ? `
+          <div>
+            <h4 style="color: #374151; font-weight: 600; margin-bottom: 0.5rem;">Details</h4>
+            <p style="color: #4b5563; line-height: 1.6;">${photo.description}</p>
+          </div>
+        ` : ''}
+        
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #94a3b8; font-size: 0.85rem;">
+          Photo ${index + 1} of ${galleryPhotos.length}
+        </div>
+      `;
+      
+      // Update navigation buttons
+      document.querySelector('.modal-nav-prev').style.display = index > 0 ? 'block' : 'none';
+      document.querySelector('.modal-nav-next').style.display = index < galleryPhotos.length - 1 ? 'block' : 'none';
+      
+      modal.classList.add('active');
+    }
+    
+    // Navigate modal photos
+    function navigateModal(direction) {
+      const newIndex = currentPhotoIndex + direction;
+      if (newIndex >= 0 && newIndex < galleryPhotos.length) {
+        openPhotoFromGallery(newIndex);
+      }
+    }
+    
+    // Filter gallery items
+    function filterGalleryItems() {
+      const searchTerm = document.getElementById('gallerySearch').value.toLowerCase();
+      const severityFilter = document.getElementById('severityFilter').value;
+      
+      if (currentView === 'gallery') {
+        // Filter photo cards in gallery view
+        document.querySelectorAll('.photo-card').forEach(card => {
+          const matchesSearch = !searchTerm || card.dataset.searchable.includes(searchTerm);
+          const matchesSeverity = severityFilter === 'all' || card.dataset.severity === severityFilter;
+          card.style.display = matchesSearch && matchesSeverity ? 'block' : 'none';
+        });
+      } else {
+        // Filter issue cards in report view
+        document.querySelectorAll('.issue-card').forEach(card => {
+          const matchesSearch = !searchTerm || card.dataset.searchable.includes(searchTerm);
+          const matchesSeverity = severityFilter === 'all' || card.dataset.severity === severityFilter;
+          card.style.display = matchesSearch && matchesSeverity ? 'block' : 'none';
+        });
+        
+        // Hide sections with no visible issues
+        document.querySelectorAll('.report-section').forEach(section => {
+          const visibleIssues = section.querySelectorAll('.issue-card[style*="block"]').length;
+          section.style.display = visibleIssues > 0 ? 'block' : 'none';
+        });
+      }
     }
     
     // Download PDF for current report
@@ -1471,6 +1746,20 @@
     document.addEventListener('DOMContentLoaded', function() {
       initTheme();
       generateStars();
+    });
+    
+    // Keyboard navigation for modal
+    document.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('photoModal');
+      if (modal.classList.contains('active')) {
+        if (e.key === 'Escape') {
+          closeModal();
+        } else if (e.key === 'ArrowLeft') {
+          navigateModal(-1);
+        } else if (e.key === 'ArrowRight') {
+          navigateModal(1);
+        }
+      }
     });
     
     // Listen for theme changes from other tabs

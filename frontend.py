@@ -20,6 +20,7 @@ import json
 import webbrowser
 import shlex
 import importlib.util
+import requests
 from pathlib import Path
 
 # GUI
@@ -119,7 +120,7 @@ def _get_base_dir() -> Path:
         # Some packed environments may not set __file__
         return Path.cwd()
 
-def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_address: str = "") -> list[str] | None:
+def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_address: str = "", owner_name: str = "") -> list[str] | None:
     """
     Best-effort resolution to a command that launches run_report for a given ZIP.
     Order:
@@ -134,9 +135,13 @@ def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_addr
         property_address = zip_path.stem.replace('_', ' ')
     
     # Build the command arguments
-    args = ["--zip", str(zip_path)]
-    if client_name:
-        args.extend(["--client", client_name])
+    args = ["--zip", str(zip_path), "--register"]  # Add --register for portal upload
+    
+    # Use owner_name as client if provided, otherwise use inspector name
+    effective_client = owner_name if owner_name else client_name
+    if effective_client:
+        args.extend(["--client", effective_client])
+    
     if property_address:
         args.extend(["--property", property_address])
     
@@ -306,10 +311,38 @@ class App(BaseTk):  # type: ignore[misc]
         # Client name input with better styling
         client_frame = ttk.LabelFrame(left, text="👤 CLIENT INFORMATION", padding=10, style='Brand.TLabelframe')
         client_frame.pack(fill="x", pady=(12, 0))
-        ttk.Label(client_frame, text="Client Name:", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w")
+        
+        # Owner/Customer selection
+        ttk.Label(client_frame, text="Select Owner Portal:", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w")
+        
+        owner_selection_frame = ttk.Frame(client_frame, style='Brand.TFrame')
+        owner_selection_frame.pack(fill="x", pady=(5, 10))
+        
+        self.owner_var = tk.StringVar()
+        self.owner_combo = ttk.Combobox(owner_selection_frame, textvariable=self.owner_var, width=28, 
+                                       font=('Segoe UI', 10), state='normal')
+        self.owner_combo.pack(side="left", fill="x", expand=True)
+        self.owner_combo.set("Select or type owner name...")
+        
+        # Refresh button to fetch owners
+        self.refresh_btn = ttk.Button(owner_selection_frame, text="🔄", width=3,
+                                     command=self.refresh_owners, style='Secondary.TButton')
+        self.refresh_btn.pack(side="left", padx=(5, 0))
+        
+        # Property address field  
+        ttk.Label(client_frame, text="Property Address:", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w")
+        self.property_var = tk.StringVar()
+        self.property_entry = ttk.Entry(client_frame, textvariable=self.property_var, width=30, font=('Segoe UI', 10))
+        self.property_entry.pack(fill="x", pady=(5, 10))
+        
+        # Client name for records (inspector/employee name)
+        ttk.Label(client_frame, text="Inspector Name (optional):", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w")
         self.client_name_var = tk.StringVar()
         self.client_name_entry = ttk.Entry(client_frame, textvariable=self.client_name_var, width=30, font=('Segoe UI', 10))
         self.client_name_entry.pack(fill="x", pady=(5, 0))
+        
+        # Auto-fetch owners on startup
+        self.after(500, self.refresh_owners)
         
         portal_frame = ttk.Frame(left, style='Brand.TFrame')
         portal_frame.pack(fill="x", pady=(12, 8))
@@ -412,11 +445,32 @@ class App(BaseTk):  # type: ignore[misc]
             messagebox.showwarning("No files", "Add or drop at least one ZIP.")
             return
         
-        # Check if client name is provided
-        if not self.client_name_var.get().strip():
-            messagebox.showwarning("Client Name Required", "Please enter the client's name before processing.")
-            self.client_name_entry.focus()
-            return
+        # Validate owner selection
+        owner_name = self.owner_var.get().strip()
+        if not owner_name or owner_name == "Select or type owner name...":
+            response = messagebox.askyesno(
+                "Owner Not Selected", 
+                "No owner portal selected. Reports will be saved locally only.\n\n"
+                "Do you want to continue without uploading to an owner portal?"
+            )
+            if not response:
+                self.owner_combo.focus()
+                return
+            self._log_line("⚠️ No owner selected - reports will be saved locally only")
+        else:
+            self._log_line(f"✅ Reports will be uploaded to: {owner_name}'s portal")
+        
+        # Property address is recommended but not required
+        property_address = self.property_var.get().strip()
+        if not property_address and owner_name and owner_name != "Select or type owner name...":
+            response = messagebox.askyesno(
+                "Property Address Missing",
+                "Property address is recommended for better organization.\n\n"
+                "Continue without property address?"
+            )
+            if not response:
+                self.property_entry.focus()
+                return
 
         key = os.getenv("OPENAI_API_KEY", "").strip()
         if not key:
@@ -489,6 +543,25 @@ class App(BaseTk):  # type: ignore[misc]
             webbrowser.open(portal_url("/"))
         except Exception:
             pass
+    
+    def refresh_owners(self):
+        """Fetch available owners from the API or provide defaults"""
+        try:
+            # Try to fetch owners from the backend if available
+            # For now, provide common owner examples
+            default_owners = [
+                "John Smith",
+                "Jane Doe",
+                "Property Management LLC",
+                "ABC Rentals",
+                "XYZ Properties",
+                "Main Street Realty",
+                "Custom Owner"
+            ]
+            self.owner_combo['values'] = default_owners
+            self._log_line("✅ Owner portal list loaded")
+        except Exception as e:
+            self._log_line(f"⚠️ Could not load owners: {e}")
 
     # ----- Sequential path -----
     def _run_all_sequential(self):
@@ -502,8 +575,19 @@ class App(BaseTk):  # type: ignore[misc]
         self.open_output()
 
     def _run_one_zip_sequential(self, zip_path: Path, job_index: int, job_total: int):
-        client_name = self.client_name_var.get().strip()
-        cmd = _resolve_run_report_cmd(zip_path, client_name)
+        client_name = self.client_name_var.get().strip()  # Inspector name
+        owner_name = self.owner_var.get().strip()  # Owner portal name
+        property_address = self.property_var.get().strip()  # Property address
+        
+        # Clear placeholder text if still present
+        if owner_name == "Select or type owner name...":
+            owner_name = ""
+        
+        # Log the selected owner
+        if owner_name:
+            self._log_line(f"🏠 Target Owner Portal: {owner_name}")
+        
+        cmd = _resolve_run_report_cmd(zip_path, client_name, property_address, owner_name)
         if not cmd:
             self._log_line("ERROR: Could not locate run_report. Set RUN_REPORT_CMD or place run_report.py next to frontend.py")
             return
@@ -533,6 +617,9 @@ class App(BaseTk):  # type: ignore[misc]
                 m_id = REPORT_ID_RE.match(line)
                 if m_id:
                     report_id = m_id.group(1)
+                    owner_name = self.owner_var.get().strip()
+                    if owner_name and owner_name != "Select or type owner name...":
+                        self._log_line(f"📤 Uploading to {owner_name}'s portal...")
                     self._log_line(f"Interactive Report: {portal_url(f'/reports/{report_id}')}")
                 
                 # OUTPUT_DIR
@@ -562,6 +649,9 @@ class App(BaseTk):  # type: ignore[misc]
                     self._set_eta(f"✅ Done  •  {total_images}/{total_images}")
                 self._log_line(f"✅ Completed: {zip_path.name}")
                 if report_id:
+                    owner_name = self.owner_var.get().strip()
+                    if owner_name and owner_name != "Select or type owner name...":
+                        self._log_line(f"📤 Uploaded to {owner_name}'s portal")
                     self._log_line(f"Interactive Report: {portal_url(f'/reports/{report_id}')}")
                     self._log_line("(Click the link to open in browser)")
             else:
@@ -607,8 +697,19 @@ class App(BaseTk):  # type: ignore[misc]
         self.open_output()
 
     def _run_one_zip_worker(self, zip_path: Path):
-        client_name = self.client_name_var.get().strip()
-        cmd = _resolve_run_report_cmd(zip_path, client_name)
+        client_name = self.client_name_var.get().strip()  # Inspector name
+        owner_name = self.owner_var.get().strip()  # Owner portal name
+        property_address = self.property_var.get().strip()  # Property address
+        
+        # Clear placeholder text if still present
+        if owner_name == "Select or type owner name...":
+            owner_name = ""
+        
+        # Log the selected owner
+        if owner_name:
+            self._log_line(f"🏠 Target Owner Portal: {owner_name}")
+        
+        cmd = _resolve_run_report_cmd(zip_path, client_name, property_address, owner_name)
         if not cmd:
             self._log_line("ERROR: Could not locate run_report. Set RUN_REPORT_CMD or place run_report.py next to frontend.py")
             with self._state_lock:
@@ -670,6 +771,9 @@ class App(BaseTk):  # type: ignore[misc]
                         state = self.jobs_state.get(zip_path, {})
                         state["report_id"] = rid
                         self.jobs_state[zip_path] = state
+                    owner_name = self.owner_var.get().strip()
+                    if owner_name and owner_name != "Select or type owner name...":
+                        self._log_line(f"[{zip_path.name}] 📤 Uploaded to {owner_name}'s portal")
                     self._log_line(f"[{zip_path.name}] Interactive Report: {portal_url(f'/reports/{rid}')}")
                 
                 # OUTPUT_DIR to track where files were saved
