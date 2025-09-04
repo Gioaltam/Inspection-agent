@@ -1,5 +1,0 @@
-- Outdoor condenser (metal cabinet) mounted outside near the building wall; likely on grade/pad.
-- Data plate shows MFD 12/2018; model RP1430AJINA; refrigerant R-410A; 208/230V single-phase.
-- Safety/labels present: Hazardous voltage warning and Miami-Dade product control labels.
-- Condition: Cabinet appears intact with no visible rust, leaks, or damaged fins in photo.
-- Line-set entry: Refrigerant lines enter left side; insulation not clearly visible—verify insulation and sealing for efficiency.

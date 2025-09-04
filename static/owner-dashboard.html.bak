@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owner Portal - CheckMyRental</title>
+  <style>
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #0f1419; color: #cbd5e1; }
+    body.light-mode { background: #f8f8f8; color: #1a1a1a; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+    .header { position: sticky; top: 0; background: rgba(22,27,34,0.95); border-bottom: 1px solid rgba(56,68,89,0.3); padding: 16px 0; }
+    .header-content { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo-text { font-size: 1.4rem; font-weight: 600; }
+    .user-menu { display: flex; align-items: center; gap: 16px; }
+    .main-tabs { background: rgba(22,27,34,0.95); border-bottom: 1px solid rgba(56,68,89,0.3); position: sticky; top: 70px; z-index: 10; }
+    .tabs-wrapper { display: flex; }
+    .main-tab { flex: 1; padding: 12px; background: transparent; color: #94a3b8; border: 0; border-bottom: 3px solid transparent; cursor: pointer; display: flex; gap: 8px; align-items: center; justify-content: center; }
+    .main-tab.active { border-bottom-color: #e74c3c; color: #fff; }
+    .dashboard-section, .properties-section, .gallery-section { padding: 24px 0; }
+    .properties-section, .gallery-section { display: none; }
+    .properties-section.active, .gallery-section.active { display: block; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo-text">CheckMyRental</div>
+        <div class="user-menu">
+          <div id="owner-name">Loading...</div>
+          <button type="button" id="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()"><span id="theme-icon" aria-hidden="true">🌙</span></button>
+          <button type="button" onclick="handleLogout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-tabs">
+    <div class="container">
+      <div class="tabs-wrapper">
+        <button type="button" class="main-tab active" data-tab="dashboard"><span aria-hidden="true">📊</span><span>Dashboard</span></button>
+        <button type="button" class="main-tab" data-tab="properties"><span aria-hidden="true">🏘️</span><span>All Properties</span><span id="properties-count" style="margin-left:6px; background: rgba(231,76,60,0.2); color:#e74c3c; padding: 0 6px; border-radius: 10px; font-size: 12px;">0</span></button>
+        <button type="button" class="main-tab" data-tab="gallery" style="display:none"><span aria-hidden="true">🖼️</span><span id="galleryTabText">Property Gallery</span></button>
+      </div>
+    </div>
+  </div>
+
+  <section id="dashboardSection" class="dashboard-section">
+    <div class="container">
+      <h1 style="font-weight:300;">Welcome back, <strong id="welcome-name">Owner</strong></h1>
+      <div id="recentPropertiesGrid" style="margin-top:16px;"></div>
+    </div>
+  </section>
+
+  <section id="propertiesSection" class="properties-section">
+    <div class="container">
+      <div class="properties-filters" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <label for="propertySearch">Search:</label>
+        <input type="text" id="propertySearch" placeholder="Address or property name..." />
+        <label for="propertyType">Type:</label>
+        <select id="propertyType">
+          <option value="all">All Types</option>
+          <option value="single">Single Family</option>
+          <option value="condo">Condo</option>
+          <option value="duplex">Duplex</option>
+          <option value="commercial">Commercial</option>
+        </select>
+      </div>
+      <div id="propertiesGrid"></div>
+    </div>
+  </section>
+
+  <section id="gallerySection" class="gallery-section">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div>
+          <div id="currentPropertyTitle" style="font-size:20px; font-weight:700;">Select a Property</div>
+          <div id="currentPropertyAddress" style="color:#94a3b8;"></div>
+        </div>
+        <button type="button" onclick="showProperties()">← Back to All Properties</button>
+      </div>
+      <div id="inspectionSelector" style="display:flex; gap:8px; overflow-x:auto; padding:8px 0; margin:12px 0;"></div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label for="severityFilter">Severity:</label>
+        <select id="severityFilter">
+          <option value="all">All Issues</option>
+          <option value="critical">Critical Only</option>
+          <option value="important">Important Only</option>
+          <option value="minor">Minor Only</option>
+        </select>
+        <label for="locationFilter">Location:</label>
+        <select id="locationFilter"><option value="all">All Locations</option></select>
+        <div style="margin-left:auto; display:flex; gap:6px;">
+          <button type="button" class="view-btn active" data-view="grid" onclick="switchView('grid')">🔳 Grid</button>
+          <button type="button" class="view-btn" data-view="list" onclick="switchView('list')">☰ List</button>
+        </div>
+      </div>
+      <div id="statsGrid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:16px 0;"></div>
+      <div id="galleryContainer" class="gallery-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px;"></div>
+      <div id="emptyState" style="display:none; text-align:center; padding:24px;"><div aria-hidden="true" style="font-size:40px; opacity:.6;">🖼️</div><div>Select a property and inspection to view photos</div></div>
+    </div>
+  </section>
+
+  <div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalImage" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); align-items:center; justify-content:center; padding:16px;">
+    <div class="modal-content" style="background:#1e2530; border:1px solid rgba(56,68,89,.3); border-radius:8px; max-width:1000px; width:100%; max-height:90vh; overflow:auto; position:relative;">
+      <button type="button" aria-label="Close" onclick="closeModal()" style="position:absolute; top:8px; right:8px; width:36px; height:36px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.1); color:#fff; border-radius:50%; font-size:22px;">×</button>
+      <img id="modalImage" alt="Selected photo" style="width:100%; max-height:500px; object-fit:contain; background:#f8f9fa;" />
+      <div id="modalInfo" style="padding:16px;"></div>
+    </div>
+  </div>
+
+  <script>
+    let propertiesData = [];
+    let currentProperty = null;
+    let currentInspection = null;
+    let currentView = 'grid';
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const API_BASE = window.location.origin;
+    let dashboardData = null;
+    let allProperties = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!token) { alert('Error: No access token provided.'); return; }
+      loadDashboardData();
+      setupEventListeners();
+      initTheme();
+    });
+
+    function initTheme(){ const saved=localStorage.getItem('theme'); const prefersLight=matchMedia('(prefers-color-scheme: light)').matches; if(saved==='light'||(!saved&&prefersLight)){ document.body.classList.add('light-mode'); const el=document.getElementById('theme-icon'); if(el) el.textContent='☀️'; } }
+    function toggleTheme(){ document.body.classList.toggle('light-mode'); const isLight=document.body.classList.contains('light-mode'); const el=document.getElementById('theme-icon'); if(el) el.textContent=isLight?'☀️':'🌙'; localStorage.setItem('theme',isLight?'light':'dark'); }
+    function handleLogout(){ if(confirm('Are you sure you want to sign out?')) location.href='/'; }
+
+    async function loadDashboardData(){
+      try{
+        const res = await fetch(`${API_BASE}/api/portal?token=${encodeURIComponent(token)}`);
+        if(!res.ok){ if(res.status===401) throw new Error('Invalid or expired access token'); throw new Error('Failed to load dashboard'); }
+        dashboardData = await res.json();
+        renderDashboard();
+      }catch(e){ alert(`Error: ${e.message}`); }
+    }
+
+    function renderDashboard(){
+      const ownerName = dashboardData.owner?.name || 'Owner';
+      document.getElementById('owner-name').textContent = ownerName;
+      document.getElementById('welcome-name').textContent = ownerName;
+      allProperties = dashboardData.properties || [];
+      propertiesData = allProperties.map(p => ({ id: p.id, name: p.label || (p.address||'').split(',')[0] || 'Property', address: p.address||'', type: p.type || 'single', inspections: (p.reports||[]).map(r => ({ date: r.created_at, quarter: getQuarter(r.created_at), photos: r.photos||0, critical: r.critical||0, important: r.important||0, minor: r.minor||0, report_id: r.report_id })) }));
+      document.getElementById('properties-count').textContent = dashboardData.totals?.properties || 0;
+      loadProperties();
+      loadRecentProperties();
+    }
+
+    function loadRecentProperties(){
+      const grid = document.getElementById('recentPropertiesGrid'); grid.innerHTML='';
+      propertiesData.slice(0,3).forEach(p => grid.appendChild(createPropertyCard(p)));
+    }
+
+    function createPropertyCard(property){
+      const div = document.createElement('div');
+      div.className = 'property-card';
+      div.style.cssText = 'background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;padding:12px;';
+      div.dataset.type = property.type || 'single';
+      div.dataset.address = (property.address||'').toLowerCase();
+      const has = property.inspections && property.inspections.length>0;
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+          <div>
+            <div style="font-weight:700;color:#fff;">${property.name}</div>
+            <div style="font-size:12px;color:#94a3b8;">${property.address}</div>
+          </div>
+          <div style="background:rgba(231,76,60,.1);color:#e74c3c;padding:2px 8px;border-radius:6px;font-size:12px;">${(property.type||'single').replace(/\b\w/g,c=>c.toUpperCase())}</div>
+        </div>
+        ${has ? `<div>
+          <div style=\"font-size:12px;color:#94a3b8;margin-bottom:6px;\">${property.inspections.length} Inspection${property.inspections.length!==1?'s':''}</div>
+          <div style=\"display:flex;flex-direction:column;gap:8px;\">
+            ${property.inspections.slice(0,3).map(i=>`
+              <div role=\"button\" tabindex=\"0\" style=\"display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(0,0,0,.2);border-radius:6px;cursor:pointer;\" onclick=\"openPropertyGallery('${property.id}','${i.date}')\" onkeydown=\"if(event.key==='Enter'||event.key===' ') openPropertyGallery('${property.id}','${i.date}')\">
+                <div><div style=\"color:#fff;font-size:14px;font-weight:600;\">${new Date(i.date).toLocaleDateString()}</div><div style=\"font-size:12px;color:#94a3b8;\">${i.quarter||''}</div></div>
+                <div style=\"display:flex;gap:8px;\">${i.critical>0?`<span style=\"padding:2px 6px;border-radius:10px;background:rgba(231,76,60,.2);color:#e74c3c;\">${i.critical} Critical</span>`:''}${i.important>0?`<span style=\"padding:2px 6px;border-radius:10px;background:rgba(243,156,18,.2);color:#f39c12;\">${i.important} Important</span>`:''}${i.photos>0?`<span style=\"padding:2px 6px;border-radius:10px;background:rgba(56,68,89,.2);\">${i.photos} Photos</span>`:''}</div>
+              </div>`).join('')}
+          </div>
+        </div>` : `<div style="font-size:12px;color:#94a3b8;">No inspections available</div>`}
+      `;
+      return div;
+    }
+
+    function loadProperties(){ const grid=document.getElementById('propertiesGrid'); grid.innerHTML=''; propertiesData.forEach(p=>grid.appendChild(createPropertyCard(p))); }
+    function filterProperties(){ const s=(document.getElementById('propertySearch').value||'').toLowerCase(); const t=document.getElementById('propertyType').value; document.querySelectorAll('.property-card').forEach(c=>{ let show=true; if(s && !c.dataset.address.includes(s)) show=false; if(t!=='all' && c.dataset.type!==t) show=false; c.style.display=show?'block':'none'; }); }
+
+    async function openPropertyGallery(propertyId, inspectionDate){
+      try{
+        const res = await fetch(`${API_BASE}/api/portal/properties/${propertyId}?token=${encodeURIComponent(token)}`);
+        if(!res.ok) throw new Error('Failed to load property details');
+        const data = await res.json();
+        currentProperty = data.property;
+        if(data.reports && data.reports.length>0){
+          currentProperty.inspections = data.reports.map(r=>({ date:r.created_at, quarter:`Report ${new Date(r.created_at).toLocaleDateString()}`, photos:r.photos||0, critical:r.critical||0, important:r.important||0, minor:r.minor||0, items:r.items||[], report_id:r.report_id, report_dir_name:r.report_dir_name, pdf_url:r.pdf_url }));
+          currentInspection = inspectionDate ? (currentProperty.inspections.find(i=>i.date===inspectionDate)||currentProperty.inspections[0]) : currentProperty.inspections[0];
+        }else{ currentProperty.inspections=[]; currentInspection=null; }
+        document.getElementById('currentPropertyTitle').textContent = currentProperty.label || currentProperty.address;
+        document.getElementById('currentPropertyAddress').textContent = currentProperty.address;
+        document.getElementById('galleryTabText').textContent = `🖼️ ${currentProperty.label || currentProperty.address}`;
+        const selector=document.getElementById('inspectionSelector');
+        if(currentProperty.inspections.length>0){ selector.innerHTML=currentProperty.inspections.map(i=>`<button type=\"button\" class=\"inspection-btn ${i===currentInspection?'active':''}\" onclick=\"selectInspection('${i.date}')\">${new Date(i.date).toLocaleDateString()}<br><small>${i.photos} photos</small></button>`).join(''); } else { selector.innerHTML='<div style="color:#94a3b8;">No inspections available</div>'; }
+        loadGallery();
+        showTab('gallery');
+        document.title = `${currentProperty.label || currentProperty.address} - Inspection Gallery`;
+      }catch(e){ console.error(e); alert('Error: Failed to load property details'); }
+    }
+    function selectInspection(date){ currentInspection=currentProperty.inspections.find(i=>i.date===date); document.querySelectorAll('.inspection-btn').forEach(b=>b.classList.toggle('active', b.textContent.includes(new Date(date).toLocaleDateString()))); loadGallery(); }
+
+    async function loadGallery(){
+      const empty=document.getElementById('emptyState'); const container=document.getElementById('galleryContainer'); const stats=document.getElementById('statsGrid');
+      if(!currentInspection){ empty.style.display='block'; container.innerHTML=''; return; }
+      empty.style.display='none';
+      stats.innerHTML = `
+        <div style=\"padding:12px;background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;text-align:center;\"><div style=\"font-size:28px;font-weight:800;\">${currentInspection.photos}</div><div style=\"font-size:12px;color:#7f8c8d;\">Total Photos</div></div>
+        <div style=\"padding:12px;background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;text-align:center;\"><div style=\"font-size:28px;font-weight:800;color:#e74c3c;\">${currentInspection.critical||0}</div><div style=\"font-size:12px;color:#7f8c8d;\">Critical Issues</div></div>
+        <div style=\"padding:12px;background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;text-align:center;\"><div style=\"font-size:28px;font-weight:800;color:#f39c12;\">${currentInspection.important||0}</div><div style=\"font-size:12px;color:#7f8c8d;\">Important Issues</div></div>
+        <div style=\"padding:12px;background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;text-align:center;\"><div style=\"font-size:28px;font-weight:800;color:#27ae60;\">${currentInspection.minor||0}</div><div style=\"font-size:12px;color:#7f8c8d;\">Minor Issues</div></div>`;
+      container.innerHTML='';
+      if(currentInspection.items && currentInspection.items.length>0){
+        currentInspection.items.forEach((item,idx)=>{
+          const severity = getSeverityLevel(item.severity);
+          const photoUrl = item.photo_url || `/api/reports/${currentInspection.report_dir_name}/photos/photo_${String(idx+1).padStart(3,'0')}.jpg`;
+          const el = document.createElement('div');
+          el.className='gallery-item';
+          el.style.cssText='background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;overflow:hidden;cursor:pointer;';
+          el.onclick = () => showPhotoModal(item, idx);
+          el.innerHTML = `<img class=\"gallery-image\" src=\"${photoUrl}\" alt=\"${item.location||('Photo '+(idx+1))}\" onerror=\"this.src='/static/placeholder.jpg';this.onerror=null;\"/><div class=\"gallery-info\"><div class=\"gallery-title\"><span>${item.location||('Photo '+(idx+1))}</span><span class=\"severity-badge severity-${severity}\" style=\"padding:2px 6px;border-radius:10px;\">${severity.toUpperCase()}</span></div><div>${item.observations||'Click to view details'}</div></div>`;
+          container.appendChild(el);
+        });
+      }else{
+        for(let i=1;i<=currentInspection.photos;i++){
+          const el=document.createElement('div');
+          el.className='gallery-item';
+          el.style.cssText='background:rgba(30,37,48,.6);border:1px solid rgba(56,68,89,.2);border-radius:8px;overflow:hidden;';
+          el.innerHTML=`<img class=\"gallery-image\" src=\"/api/reports/${currentInspection.report_id}/photos/photo_${String(i).padStart(3,'0')}.jpg\" alt=\"Photo ${i}\"/><div class=\"gallery-info\"><div class=\"gallery-title\"><span>Photo ${i}</span></div><div>Click to view details</div></div>`;
+          container.appendChild(el);
+        }
+      }
+    }
+
+    function getSeverityLevel(s){ if(!s) return 'none'; s=String(s).toLowerCase(); if(s.includes('critical')||s.includes('high'))return'critical'; if(s.includes('important')||s.includes('medium'))return'important'; if(s.includes('minor')||s.includes('low'))return'minor'; return'none'; }
+    function showPhotoModal(item, index){ const html=`<h3 style=\"color:#667eea;margin-bottom:8px;\">Observations</h3><p>${item.observations||'No observations recorded'}</p><h3 style=\"color:#667eea;margin:16px 0 8px;\">Potential Issues</h3><ul>${item.potential_issues?item.potential_issues.map(i=>`<li>${i}</li>`).join(''):'<li>No issues identified</li>'}</ul><h3 style=\"color:#667eea;margin:16px 0 8px;\">Recommendations</h3><ul>${item.recommendations?item.recommendations.map(r=>`<li>${r}</li>`).join(''):'<li>No recommendations</li>'}</ul>`; openModal(item.photo_url||'/static/placeholder.jpg', item.location||('Photo '+(index+1)), html); }
+    function openModal(src, alt, html){ const m=document.getElementById('photoModal'); const i=document.getElementById('modalImage'); const info=document.getElementById('modalInfo'); i.src=src; i.alt=alt||'Selected photo'; info.innerHTML=html||''; m.style.display='flex'; }
+    function closeModal(){ document.getElementById('photoModal').style.display='none'; }
+    function getQuarter(d){ const dt=new Date(d); return `Q${Math.floor(dt.getMonth()/3)+1} ${dt.getFullYear()}`; }
+    function switchView(v){ currentView=v; document.querySelectorAll('.view-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===v)); const c=document.getElementById('galleryContainer'); c.style.display='grid'; c.style.gridTemplateColumns = v==='grid' ? 'repeat(auto-fill,minmax(300px,1fr))' : '1fr'; }
+    function showTab(t){ document.getElementById('dashboardSection').style.display='none'; document.getElementById('propertiesSection').style.display='none'; document.getElementById('gallerySection').classList.remove('active'); document.querySelectorAll('.main-tab').forEach(x=>x.classList.remove('active')); if(t==='dashboard'){ document.getElementById('dashboardSection').style.display='block'; document.querySelector('[data-tab="dashboard"]').classList.add('active'); } else if(t==='properties'){ document.getElementById('propertiesSection').style.display='block'; document.getElementById('propertiesSection').classList.add('active'); document.querySelector('[data-tab="properties"]').classList.add('active'); } else if(t==='gallery'){ document.getElementById('gallerySection').classList.add('active'); document.querySelector('[data-tab="gallery"]').style.display='flex'; document.querySelector('[data-tab="gallery"]').classList.add('active'); } }
+    function showProperties(){ showTab('properties'); }
+    function setupEventListeners(){ document.querySelectorAll('.main-tab').forEach(tab=>tab.addEventListener('click',()=>{ const n=tab.dataset.tab; if(n==='gallery' && !currentProperty) return; showTab(n); })); document.getElementById('propertySearch')?.addEventListener('input', filterProperties); document.getElementById('propertyType')?.addEventListener('change', filterProperties); }
+  </script>
+</body>
+</html>
+
+

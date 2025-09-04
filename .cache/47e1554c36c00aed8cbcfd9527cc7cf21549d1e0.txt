@@ -1,0 +1,22 @@
+Location:
+- Interior ceiling return-air (filter) grille
+
+Observations:
+- Metal louvered return grille with hinged/latch door
+- Pleated filter visible (approx. 16x16x1)
+- Noticeable dust/debris on louvers and filter media
+- Small round hole in drywall above grille
+- Minor gap visible between grille frame and drywall
+
+Potential Issues:
+- Dirty/clogged filter restricting airflow; reduced efficiency/comfort; added blower strain
+- Dust buildup on grille indicates overdue cleaning and possible air bypass; indoor air quality concern
+- Gaps at grille perimeter may draw air from wall/ceiling cavity (bypass leakage)
+- Unsealed drywall hole: air leakage and potential pest entry point
+
+Recommendations:
+- Replace filter with correct size/MERV; set regular change schedule
+- Clean grille and surrounding area
+- Seal perimeter between grille frame and drywall (caulk or gasket) and ensure grille is secure/flush
+- Patch/seal the drywall hole; repaint as needed
+- If airflow issues persist, have HVAC technician evaluate return duct and plenum for additional leaks or restrictions

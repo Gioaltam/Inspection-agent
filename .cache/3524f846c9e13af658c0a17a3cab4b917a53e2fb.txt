@@ -1,25 +1,21 @@
 Location:
-- Interior window and sill with horizontal mini blinds
+- Interior window and blinds (room unspecified)
 
 Observations:
-- Vinyl/PVC mini blinds; several slats broken/creased; cords looped/tangled
-- Painted wood sill/jambs; white; mesh screen behind
-- Debris/dust in lower track
-- Chipped/rough paint on sill edges
-- Caulk at corners/joints appears cracked/missing (noted bottom right)
+- Horizontal vinyl/PVC mini blinds; several slats damaged near right side
+- Blinds appear misaligned; cords bunched at bottom rail
+- Window sill/trim painted wood; paint scuffs and chips
+- Caulk/sealant cracking at right sill/jamb joint
+- Dust/debris on sill and in track
 
 Potential Issues:
-- Broken/missing sections of blind slats; bent/warped slats
-- Cracks/gaps at sill/jamb joints; failed/missing caulk; potential air/water intrusion and pest entry
-- Paint chipping/flaking; small areas of substrate exposure
-- Debris buildup in track may hinder operation and trap moisture
-- Dark staining on sill/frame; possible mildew
-- Looped blind cords present; child strangulation hazard
+- Broken/slit blind slats; gaps/voids reduce function and privacy
+- Misalignment and tangled cords; may impede operation and present child-strangulation hazard
+- Failed/missing caulk at frame joints; small gaps may allow drafts, moisture intrusion into trim, and pest entry
+- Chipped/peeling paint on sill/trim; potential substrate exposure and deterioration (lead hazard possible in pre-1978 homes)
 
 Recommendations:
-- Replace damaged blinds; use cordless or add cleat/breakaway device for cords
-- Clean/vacuum window tracks and wipe sill
-- Scrape/sand loose paint; prime and repaint wood surfaces
-- Re-caulk perimeter joints/corners with paintable interior-grade sealant
-- Monitor after rain for leaks; if found, evaluate exterior sealing/flashings and repair
-- Inspect screen and weatherstripping; repair as needed
+- Replace damaged blind slats or install new cordless blinds; ensure smooth operation
+- Re-caulk/reseal interior window frame joints
+- Prep, prime, and repaint sill/trim; test for lead-based paint if home built before 1978 and use lead-safe methods
+- Clean blinds, sill, and window track; monitor after cleaning for any signs of active moisture intrusion

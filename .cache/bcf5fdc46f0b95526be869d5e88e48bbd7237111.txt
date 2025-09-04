@@ -1,5 +1,0 @@
-- Location: Outdoor condenser unit; power feed enters the top area near the fan housing.  
-- Condition: Damaged wiring with torn outer jacket; exposed conductors; frayed insulation and shielding.  
-- Materials: Yellow power cable with white inner insulation; visible copper/ conductors; damaged mesh wrap around the wire.  
-- Hazards: Electrical shock/arcing risk; potential moisture ingress and short/failure of the unit.  
-- Recommendation: Immediate shutoff and repair by licensed HVAC/electrician; replace damaged cable with proper conduit/strain relief and weatherproofing.

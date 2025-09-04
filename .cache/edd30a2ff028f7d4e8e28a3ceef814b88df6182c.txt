@@ -1,0 +1,17 @@
+Location:
+- Exterior; ground-mounted HVAC condensing unit
+
+Observations:
+- Outdoor AC/heat-pump condenser; model RP1430AJ1NA, MFD 12/2018, R‑410A
+- Metal cabinet with intact data/warning labels
+- Refrigerant lines enter right side; suction line foam present but looks weathered/short at cabinet
+- Vegetation/grass in contact with unit base
+
+Potential Issues:
+- Vegetation contacting cabinet may obstruct airflow and invite pests
+- Deteriorated/insufficient suction-line insulation with small area of exposed copper near cabinet
+
+Recommendations:
+- Clear/trim vegetation to maintain 12–24 in. clearance around unit
+- Re-insulate suction line with UV-resistant foam up to cabinet penetration
+- Continue routine HVAC service/cleaning per manufacturer schedule

@@ -1,0 +1,21 @@
+Location:
+- HVAC return/air handler filter rack
+
+Observations:
+- Pleated 14x18x1 furnace/AC filter installed
+- Filter media heavily loaded with dust/debris
+- Interior duct/return plenum surfaces dusty
+- Duct liner/insulation at bottom appears torn with fiberglass exposed
+
+Potential Issues:
+- Severely clogged filter restricting airflow; can overwork blower and reduce efficiency
+- Substrate exposure: torn duct liner with fiberglass exposed to airstream
+- Loose debris in return plenum can be drawn into equipment and distributed in home
+- Indoor air quality concern from accumulated dust and exposed insulation
+
+Recommendations:
+- Replace filter now with correct size/MERV; verify airflow arrow orientation
+- Establish regular change interval (about 1–3 months or per manufacturer)
+- Vacuum/clean return plenum; remove loose debris
+- Repair or replace damaged duct liner/insulation; seal edges to prevent fiber shedding
+- Have HVAC technician evaluate overall airflow and condition of return plenum and liner

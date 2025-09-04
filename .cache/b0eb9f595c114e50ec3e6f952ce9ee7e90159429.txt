@@ -1,0 +1,22 @@
+Location:
+- Exterior, mini‑split outdoor condenser (service/lineset side)
+
+Observations:
+- R410A, 208/230V unit; label intact
+- Copper refrigerant lines wrapped with white foam insulation
+- Insulation shows torn/frayed areas and open seams; no rigid lineset cover
+- Green mildew/algae on cabinet and insulation
+- Black cable/line loosely draped across housing
+- Light tarnish on copper fittings
+
+Potential Issues:
+- Insulation gaps/voids and UV deterioration; reduced efficiency and sweating/condensate drip potential
+- Mold/mildew growth on insulation/cabinet
+- Unsecured cable/line contacting housing; chafe/abrasion risk
+- Minor oxidation on copper at connections
+
+Recommendations:
+- Rewrap/replace refrigerant-line insulation with UV-rated closed-cell foam; seal seams; consider installing a protective lineset cover
+- Clean and disinfect cabinet and insulation; remove biological growth
+- Secure cable/lines with proper clamps/straps; ensure no rubbing; use code-compliant outdoor wiring/conduit where required
+- Have HVAC technician evaluate connections and insulation, check for leaks, and service as needed

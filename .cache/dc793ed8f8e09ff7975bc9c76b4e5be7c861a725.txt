@@ -1,5 +1,0 @@
-- Outdoor condensing unit for central AC; model M4AC4030D1000AA, manufacturer Ingersoll Rand. 
-- Power/refrigerant: 208/230V, 1-phase, 60 Hz; refrigerant R410A; compressor 10.9 A run (RLA), 63.0 A LRA; approximate charge per label ~ 5 lb 12 oz. 
-- Location: outdoor unit on concrete pad; vegetation and debris at base (grass/plant growth nearby). 
-- Condition: exterior cabinet shows dirt/dust and minor paint wear; no obvious oil leaks or damaged fins visible from this angle. 
-- Recommendations: maintain clear airflow (min ~24" around unit); trim vegetation; ensure service disconnect and access panels are unobstructed; have refrigerant charge checked during service.

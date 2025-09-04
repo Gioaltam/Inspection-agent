@@ -1,20 +1,21 @@
 Location:
-- Ceiling HVAC register/grille
+- Interior ceiling HVAC register/grille (exact room not specified)
 
 Observations:
-- White painted metal louvered grille; two mounting screws
-- Textured drywall ceiling; no discoloration around register
-- Visible adjustable damper behind louvers
-- Light to moderate dust buildup on louvers and damper
-- Slight bend noted on lower louver
+- Rectangular metal grille with horizontal louvers; ceiling-mounted
+- Secured with side screws; paint generally intact
+- Noticeable dust on louvers and inside duct throat
+- Slight visible gap/shadow at register-to-ceiling perimeter; no caulk/gasket seen
 
 Potential Issues:
-- Dust accumulation may restrict airflow and distribute particulates
-- Minor bend on lower louver
-- No visible gaps/separations at perimeter, failed sealant, corrosion/rust, water stains/leaks, mold/mildew, loose/missing fasteners, or other hazards
+- Dust/debris buildup on grille/duct throat reducing airflow and indoor air quality
+- Minor perimeter gap may allow air leakage and dust streaking
+- Possible slight bend/deflection at lower louver (cosmetic)
+- No visible water stains, corrosion, cracks, missing fasteners, or mold
 
 Recommendations:
-- Clean grille and damper (vacuum/brush; wipe with mild cleaner)
-- Check/replace HVAC air filter; consider duct cleaning if dust returns quickly
-- Gently straighten or replace grille if airflow or noise is affected
-- Verify screws are snug and register sits flush; seal any detected perimeter air leaks with appropriate caulk if present
+- Clean grille and accessible duct throat (vacuum/brush)
+- Replace/upgrade HVAC filter; verify correct fit and service interval
+- Seal register-to-ceiling perimeter with paintable caulk or gasket; verify boot/duct joints are sealed with mastic/foil tape
+- If similar dust seen at multiple registers, schedule HVAC/duct inspection and cleaning
+- Straighten or replace bent louver if airflow is affected

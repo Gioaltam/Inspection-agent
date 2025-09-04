@@ -1,20 +1,19 @@
 Location:
-- Bathtub/shower base floor, bathroom
+- Shower/tub basin floor near drain
 
 Observations:
-- Fiberglass/acrylic pan with round metal drain
-- Widespread surface wear/etching and discoloration; mottled/peeling finish
-- Light scuffs/scratches; minor surface staining
-- No standing water observed; drain cover in place
+- Fiberglass/acrylic surface with drain strainer
+- Extensive surface discoloration and etching; mottled gray/white areas
+- Light surface scuffs/scratches; water spots/mineral film visible
 
 Potential Issues:
-- Finish/gelcoat deterioration with areas of coating loss; possible substrate exposure
-- Staining and possible mildew spotting on pan surface
-- Smooth/worn areas may become slippery when wet (fall hazard)
+- Finish/gelcoat deterioration; possible substrate exposure in worn patches
+- Staining/mineral buildup indicates hard-water deposits
+- Smooth/worn areas may increase slip hazard
+- No visible cracks, gaps, loose parts, or rust at drain in this view
 
 Recommendations:
-- Deep-clean with non‑abrasive cleaner; treat any mildew
-- Refinish/reglaze pan or replace if finish is worn through to substrate
-- Add temporary slip‑resistant decals/mat until repaired
-- Monitor around drain for seepage; reseal/replace drain gasket if leaks are noted
-- Improve bathroom ventilation to reduce moisture buildup
+- Deep clean with non-abrasive cleaner/descaler; remove mineral deposits
+- Refinish/reglaze or resurface shower base if finish failure confirmed; consider liner or replacement if wear is through to substrate
+- Inspect and reseal around drain if any gap/leak is found during closer evaluation
+- Improve ventilation and consider water softening to reduce future deposits; maintain regular cleaning

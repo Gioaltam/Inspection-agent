@@ -1,0 +1,18 @@
+Location:
+- Interior HVAC air handler/fan-coil cabinet (nameplate view; exact room not shown)
+
+Observations:
+- Goodman fan-coil/room-fan heater; Model AWUF240816BA; Serial 1310143835
+- 208/230V, 1PH, 60Hz; electric heat strip amps 26/30.4
+- Min circuit ampacity 34.6/39.6A; Max overcurrent protection 35/40A
+- Motor 1/5 HP, 1.30A
+- Suitable for R22 or R410A; design/test pressure 450 psig
+- Metal cabinet with factory labels; normal cosmetic wear visible
+
+Potential Issues:
+- No visible issues
+
+Recommendations:
+- Verify breaker size and conductor gauge match MOCP/MCA listed on the nameplate
+- Maintain clear access and keep panel closed; disconnect power before servicing
+- Schedule routine HVAC service and keep labels legible/secure

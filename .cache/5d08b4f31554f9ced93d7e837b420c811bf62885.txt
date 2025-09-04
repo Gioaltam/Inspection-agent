@@ -1,0 +1,19 @@
+Location:
+- Kitchen sink base cabinet – underside of sink at drain and adjacent receptacle
+
+Observations:
+- Metal sink strainer with metal tailpiece connected to white plastic tubular P-trap via slip-joint nut
+- Significant mineral deposits and discoloration on tailpiece; rust/corrosion around strainer locknut
+- Duplex receptacle in metal box on cabinet back; flexible metallic conduit present; appliance cord plugged in
+
+Potential Issues:
+- Corrosion/rust at sink strainer/locknut with substrate exposure
+- Water intrusion evidence: mineral deposits and streaking down tailpiece; likely weeping/leak at strainer and/or slip-joint
+- Sealant/gasket at drain appears deteriorated/failed
+- Slip-joint connection shows staining; potential loose/misaligned joint
+- Electrical safety: receptacle located directly below a suspected leak source; no visible GFCI buttons—shock hazard if water contacts outlet
+
+Recommendations:
+- Licensed plumber to replace corroded strainer/tailpiece, renew seal (gasket/plumber’s putty), align and tighten slip joints, and leak-test
+- Clean and dry cabinet; remove mineral buildup; monitor for moisture and treat any microbial growth if discovered
+- Electrician to verify GFCI protection; upgrade to GFCI device or GFCI breaker and consider a drip shield/relocation away from potential leaks

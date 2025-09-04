@@ -1,5 +1,0 @@
-- Location: Ceiling-mounted exhaust vent inside interior space; metal grille with white painted frame; ceiling with knockdown texture.  
-- Material: Metal vent cover (likely aluminum) over duct.  
-- Condition: Grille shows visible dirt/grime, with dark staining near the top edge; blades appear dusty.  
-- Observations: No active leaks or rust evident; screws secure.  
-- Recommendations: Clean/vacuum grille and surrounding area; inspect duct for buildup and potential moisture/mold behind vent; if staining recurs, evaluate for moisture intrusion.

@@ -1,5 +1,0 @@
-- Location: Ceiling HVAC vent/register in interior ceiling.
-- Materials: Metal frame with plastic/metal louvers; textured drywall ceiling.
-- Condition: Dust/dirt buildup on blades and interior; clean recommended.
-- Structural note: Small vertical ceiling crack visible beneath vent; monitor for widening.
-- Operation: Top damper/control area appears slightly loose/misaligned; verify secure mounting and airflow.

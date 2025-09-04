@@ -1,0 +1,18 @@
+Location:
+- Exterior mini‑split outdoor condenser, side service/line‑set area
+
+Observations:
+- Label visible: R410A refrigerant; 208/230V, 60Hz, 1Ph; MCA 19A; MOP 30A (model CH9MSHP‑230V0)
+- Refrigerant line‑set wrapped with white UV tape/foam insulation
+- Green staining/biological growth on cabinet and insulation surfaces
+
+Potential Issues:
+- Line‑set insulation shows cracking/tears and separations; sections appear UV‑degraded
+- Mildew/algae present on cabinet/insulation (moisture exposure)
+- No visible dents, bends, warping, misalignment, loose/missing fasteners, corrosion/rust, exposed wiring/conduit issues, or trip hazards from this view
+
+Recommendations:
+- Replace/repair damaged suction‑line insulation with UV‑rated material; re‑wrap and seal seams
+- Clean cabinet and line‑set; treat for mildew/algae; improve drainage/clearance as needed
+- Seal any gaps at line‑set entries with UV‑stable grommets/caulk to deter water/pests
+- Have a licensed HVAC technician evaluate lines, service valves, and electrical connections and verify proper operation and refrigerant charge

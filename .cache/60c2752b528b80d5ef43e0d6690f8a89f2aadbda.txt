@@ -1,23 +1,24 @@
 Location:
-- Ceiling vent/register in interior room (exact room not confirmed)
+- Ceiling vent/register (exact room not confirmed)
 
 Observations:
-- Metal grille with two visible side screws
-- Noticeable dust/soot on louvers and along perimeter
-- Grille appears slightly skewed in opening
-- Textured drywall ceiling with visible joint line and minor hairline cracks
-- No obvious water stains or mold seen
+- Surface-mounted metal grille; painted white; textured drywall/plaster ceiling
+- Two corner screws present; cover not fully flush to ceiling
+- Noticeable dust buildup on louvers and perimeter
+- Minor bend/misalignment of several louvers
+- Light rust/corrosion spotting on grille
+- Hairline cracking/irregular paint lines at nearby ceiling joint
 
 Potential Issues:
-- Gaps/voids at grille perimeter allowing air leakage and dust streaking
-- Possible loose/misaligned mounting of register
-- Dust buildup may reduce airflow and circulate particulates
-- Minor ceiling cracking at joint line
+- Gaps/voids between grille and ceiling; missing/failed sealant; air leakage
+- Dust/debris accumulation may reduce airflow and distribute contaminants
+- Bent louvers; minor physical damage/misalignment
+- Light corrosion; potential ongoing humidity exposure
+- Hairline cracks/separation in ceiling finish adjacent to vent
 
 Recommendations:
-- Remove and thoroughly clean grille; vacuum/wipe nearby duct/fan housing
-- Reseat, align, and tighten fasteners
-- Seal perimeter to ceiling with paintable caulk or a foam gasket to limit leakage
-- Touch up/paint and monitor ceiling joint for further cracking
-- If a return grille: check/replace HVAC filter; consider duct cleaning if heavy debris
-- If a bath exhaust: clean fan and verify airflow; clear/repair ducting if weak
+- Remove and clean grille and nearby duct/boot; straighten or replace damaged grille if needed
+- Tighten mounting screws; install foam gasket or caulk to seal perimeter and set cover flush
+- If bathroom exhaust: verify fan operates properly and vents to exterior
+- If HVAC register/return: check/replace system filter and seal duct/boot connections with mastic/foil tape
+- Repair ceiling finish (fill cracks, prime, repaint) after sealing and cleaning are completed

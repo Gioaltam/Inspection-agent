@@ -1,0 +1,23 @@
+Location:
+- Exterior wall, at mini‑split condenser area on gravel
+
+Observations:
+- Surface‑mounted weatherproof disconnect on stucco; liquid‑tight whip to unit
+- Refrigerant line sets with white foam insulation; bundled with straps
+- Exposed black control/communication cable strapped to line set
+- Lines looped low and contacting rocks/ground; weeds present
+
+Potential Issues:
+- Line‑set insulation UV‑deteriorated with tears/gaps in several areas; potential condensation/efficiency loss
+- Gaps/failed sealant around disconnect box where it meets stucco; potential water intrusion into wall/enclosure
+- Exposed low‑voltage/control cable not in conduit and susceptible to physical damage
+- Line sets resting on rocks/ground—abrasion/damage risk and pest entry path along wall opening if not sealed
+- Vegetation and debris near unit can restrict access and airflow
+
+Recommendations:
+- Replace/rehabilitate damaged line‑set insulation; consider UV‑resistant line cover
+- Seal perimeter of disconnect and any wall penetrations with exterior‑rated sealant
+- Protect control wiring in conduit or confirm cable is UV/Outdoor‑rated and secure away from damage
+- Support/secure line sets off ground and away from sharp/abrasive surfaces
+- Clear vegetation/debris and maintain service clearance
+- Have licensed HVAC/electrical contractor evaluate and correct noted items

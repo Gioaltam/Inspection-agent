@@ -1,5 +1,0 @@
-- Exterior wall: CMU block wall with painted finish; visible patch repairs and minor cracking along joints. 
-- Electrical: White outdoor plug/cord with no weatherproof enclosure; appears not GFCI-protected; upgrade to outdoor-rated outlet with proper strain relief.
-- Cables on ground: Black cords/hoses coiled and resting on paver surface; trip hazard and potential moisture exposure.
-- Mechanical equipment: Frame/stand and associated gear adjacent to wall; maintain clearances and ensure secure mounting; confirm service disconnect location.
-- Debris: Leaves and debris around base; keep area clear to reduce moisture and pest issues.

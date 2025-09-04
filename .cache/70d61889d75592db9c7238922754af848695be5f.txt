@@ -1,19 +1,19 @@
 Location:
-- Interior window, drywall return with curtain; view of head/jamb area
+- Interior window opening, viewed upward inside a room
 
 Observations:
-- Vinyl window with interior grids; painted drywall return
-- Metal blind/rod bracket mounted at head; no blind/rail present
-- Caulk/paint at trim-to-frame seams rough/uneven, small visible gaps at head/jamb
-- Window glass appears dirty; curtain partially covering opening
+- Vinyl slider-style window with internal grids
+- Painted drywall/wood surround; rough paint/patching at head/jambs
+- Metal curtain/blind mounting bracket fastened to head of recess
+- No insect screen visible; light soil on glass
 
 Potential Issues:
-- Gaps/separation at interior trim-to-frame joint may allow air/insects and moisture
-- Exposed/unused metal bracket presents minor cut/impact hazard if left uncovered
-- Localized paint/caulk cracking/chips at return edges
+- Small gaps/voids and rough/failed caulk at trim-to-wall joints (air/insect entry, heat loss)
+- Exposed metal bracket present; appears unused and secured with a single screw (possible loose/missing fasteners; snag/cut hazard)
+- Possible missing counterpart bracket for window covering (incomplete installation)
 
 Recommendations:
-- Re-caulk/seal perimeter joints around window frame; smooth and finish
-- Remove unused bracket or complete installation; ensure bracket is securely fastened
-- Prep, patch, and repaint interior returns to protect substrate
-- Clean window/glass and check screen/operation during full inspection
+- Re-caulk/seal trim-to-wall and trim-to-frame joints; smooth and repaint as needed
+- Secure or remove unused bracket; install matching hardware with proper anchors/into framing if window coverings are intended
+- Clean glass and window tracks; add/repair insect screen if missing
+- Monitor area during rain for any signs of moisture intrusion (none visible now)

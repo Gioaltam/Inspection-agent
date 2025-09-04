@@ -37,9 +37,9 @@ class ReportSection(ORMModel):
     original_url: Optional[str] = None
     location: Optional[str] = ""
     materials_description: Optional[str] = ""
-    observations: List[str] = []
-    potential_issues: List[str] = []
-    recommendations: List[str] = []
+    observations: List[str] = Field(default_factory=list)
+    potential_issues: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
     is_critical: bool = False
     is_important: bool = False
 
@@ -62,7 +62,7 @@ class ReportOut(ORMModel):
     critical_count: int = 0
     important_count: int = 0
     created_at: datetime
-    assets: List[AssetOut] = []
+    assets: List[AssetOut] = Field(default_factory=list)
 
 
 # ---------- Properties ----------

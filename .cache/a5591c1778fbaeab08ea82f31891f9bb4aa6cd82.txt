@@ -1,5 +1,0 @@
-- Outdoor condensing unit, model CAC030AKA5, serial E031954283; manufactured by International Comfort Products (USA).  
-- Electrical data on nameplate: 208/230 V, 60 Hz, 1-phase; max fuse/breaker 30 A; MCA 18.9 A (RLA/LRA values also on plate, not all clearly legible).  
-- Outdoor unit shipping charge noted as R-22 (refrigerant type referenced on label).  
-- Exterior cabinet shows light corrosion at lower edge; vegetation growing against/around the unit (trimming recommended).  
-- Safety/warning labels present (UL listing, electrical shock hazard). Ensure adequate clearance for service and airflow (min 2–3 ft around unit).

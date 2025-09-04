@@ -1,23 +1,22 @@
 Location:
-- Exterior eave/soffit at corner above window/door; near roll-down shutter housing.
+- Exterior eave/soffit above window; corner area with awning/shutter box and nearby vegetation
 
 Observations:
-- Perforated vinyl/aluminum soffit panels with metal fascia.
-- Roll-down shutter box mounted at header.
-- Exterior cable run feeding shutter; loosely routed along wall.
-- Dense vegetation contacting soffit/wall.
-- Small unused anchor/screw holes in wall finish near shutter track.
+- Vented vinyl soffit panels with aluminum fascia/drip edge
+- Metal awning/roll‑shutter housing mounted tight to soffit corner
+- Exposed cable run along wall/soffit; loosely secured at corner
+- Stucco wall around window; two open fastener holes visible
+- Dense plants contacting wall/soffit
 
 Potential Issues:
-- Gap/void at soffit corner above shutter box; panel appears displaced/loose → open access to eave.
-- Unprotected/loosely supported exterior wiring; not in conduit and vulnerable to damage.
-- Vegetation in contact with structure and wiring; potential abrasion and pest bridge.
-- Unsealed wall fastener holes/penetrations → possible water intrusion and insect entry.
+- Gaps/voids at soffit termination around housing/corner—possible pest entry points
+- Unsecured exterior cable; exposed to weather and not in conduit; possible improper wiring protection
+- Open fastener holes in stucco—potential water intrusion
+- Vegetation contacting structure—can abrade finishes and obstruct soffit ventilation
 
 Recommendations:
-- Refit/secure or replace soffit panel(s); close gaps with proper J-channel/fascia; add screen if needed.
-- Inspect eave/attic for pests/moisture; seal any entry points.
-- Have a licensed electrician correct wiring: route in listed exterior conduit or use rated cable; secure with proper supports; terminate in weatherproof box.
-- Trim vegetation back 1–2 ft from structure and maintain clearance.
-- Seal/patch unused wall holes with exterior-grade sealant/repair compound.
-- Clean soffit vents to keep attic ventilation free-flowing.
+- Repair/secure soffit edges and any loose J‑channel; close openings with proper trim/bug screen
+- Have a licensed electrician secure wiring in approved exterior raceway/conduit and verify cable type/rating
+- Seal and patch stucco fastener holes with exterior-grade sealant/repair mortar; paint to match
+- Service/realign awning/shutter housing as needed to ensure tight fit at soffit
+- Trim vegetation back 12–24 in. from structure and maintain clearance

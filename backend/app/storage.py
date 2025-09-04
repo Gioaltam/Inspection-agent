@@ -1,14 +1,16 @@
 # S3 storage service
 from __future__ import annotations
 import json
-from typing import Optional
+from typing import Optional, Dict
 import boto3
 from botocore.exceptions import ClientError
 
+
 class StorageService:
     """
-    Thin wrapper around an S3‑compatible client (AWS S3, Cloudflare R2, Backblaze B2, MinIO).
+    Thin wrapper around an S3-compatible client (AWS S3, Cloudflare R2, Backblaze B2, MinIO).
     """
+
     def __init__(self, access_key: str, secret_key: str, bucket_name: str, endpoint_url: Optional[str] = None):
         self.bucket = bucket_name
         self.s3 = boto3.client(
@@ -20,8 +22,14 @@ class StorageService:
 
     # ---------- Upload helpers ----------
 
-    def upload_file(self, file_path: str, key: str, content_type: Optional[str] = None, tags: Optional[dict] = None) -> str:
-        extra = {}
+    def upload_file(
+        self,
+        file_path: str,
+        key: str,
+        content_type: Optional[str] = None,
+        tags: Optional[Dict[str, str]] = None,
+    ) -> str:
+        extra: Dict[str, str] = {}
         if content_type:
             extra["ContentType"] = content_type
         if tags:
@@ -51,7 +59,7 @@ class StorageService:
 
     def get_public_url(self, key: str) -> str:
         """
-        Returns a URL that works for public buckets or S3‑compatible endpoints.
+        Returns a URL that works for public buckets or S3-compatible endpoints.
         For private buckets, prefer get_signed_url().
         """
         endpoint = self.s3._endpoint.host.rstrip("/")
@@ -80,5 +88,6 @@ class StorageService:
                 LifecycleConfiguration=rules,
             )
         except ClientError as e:
-            # Don’t crash the app if lifecycle cannot be set (insufficient perms etc.)
+            # Don't crash the app if lifecycle cannot be set (insufficient perms etc.)
             print(f"[storage] lifecycle setup warning: {e}")
+

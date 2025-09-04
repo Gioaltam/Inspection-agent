@@ -1,5 +1,0 @@
-- Outdoor central AC condenser unit; exterior steel cabinet on ground near the building.
-- Manufacturer: Ingersoll Rand; AHRI/ETL listed.
-- Electrical: Minimum Circuit Ampacity 10.4 A; max fuse/breaker 15 A.
-- Safety labels: Hazardous voltage warning; service disconnect should be available before servicing.
-- Condition: Cabinet shows typical wear; one mounting screw area shows light corrosion. No visible structural damage.

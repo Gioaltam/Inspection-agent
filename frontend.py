@@ -1,9 +1,4 @@
-# Write a hardened drop‑in replacement `frontend.py` that addresses the 5 issues
-# the other model flagged: (1) os.startfile safety, (2) __file__ use when frozen,
-# (3) same for worker path, (4) cleaner f-string escapes, (5) robust tkinterdnd2 import.
-from pathlib import Path
-
-frontend_py_fixed = r'''# frontend.py — Inspection Agent GUI (parallel ZIPs, hardened)
+# frontend.py — Inspection Agent GUI (parallel ZIPs, hardened)
 # Drop-in replacement; fixes:
 # 1) Windows opener doesn't rely on os.startfile type-ignored call; adds graceful fallbacks.
 # 2) Avoids brittle __file__ lookups; robust base-dir detection for frozen/packaged apps.
@@ -49,14 +44,34 @@ try:
 except Exception:
     pass
 
-APP_TITLE = "Inspection Agent — Parallel Jobs"
-OUTPUT_DIR = Path("output")
+# ============ BRANDING CONFIGURATION ============
+COMPANY_NAME = "InspectPro Solutions"
+APP_TITLE = "InspectPro Agent"
+APP_VERSION = "v2.0 Professional"
+APP_TAGLINE = "Professional Property Inspection Reports"
+
+# Dark Mode Brand Colors
+BRAND_PRIMARY = "#2196F3"  # Bright Blue
+BRAND_SECONDARY = "#FF9800"  # Accent Orange  
+BRAND_SUCCESS = "#4CAF50"  # Success Green
+BRAND_ERROR = "#F44336"  # Error Red
+BRAND_WARNING = "#FFC107"  # Warning Amber
+BRAND_BG = "#121212"  # Dark Background
+BRAND_SURFACE = "#1E1E1E"  # Surface Dark
+BRAND_SURFACE_LIGHT = "#2D2D2D"  # Lighter Surface
+BRAND_TEXT = "#E0E0E0"  # Light Text
+BRAND_TEXT_SECONDARY = "#B0B0B0"  # Secondary Text
+BRAND_TEXT_DIM = "#9E9E9E"  # Dimmed Text
+BRAND_BORDER = "#333333"  # Border Color
+
+OUTPUT_DIR = Path("workspace/outputs")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Parse lines like: [3/12] IMG_0042.jpg | elapsed 38s  ETA ~72s
 PROGRESS_RE = re.compile(r"\\[(\\d+)\\s*/\\s*(\\d+)\\]")
 START_RE = re.compile(r"Starting analysis of\\s+(\\d+)\\s+images\\b")
 REPORT_ID_RE = re.compile(r"^REPORT_ID=(.+)$")
+OUTPUT_DIR_RE = re.compile(r"^OUTPUT_DIR=(.+)$")
 
 # Env knobs
 def _int_env(name: str, default: int) -> int:
@@ -66,6 +81,7 @@ def _int_env(name: str, default: int) -> int:
         return default
 
 JOB_CONCURRENCY = max(1, _int_env("JOB_CONCURRENCY", 1))
+ANALYSIS_CONCURRENCY = max(1, _int_env("ANALYSIS_CONCURRENCY", 3))
 PORTAL_EXTERNAL_BASE_URL = os.getenv("PORTAL_EXTERNAL_BASE_URL", "http://localhost:8000").strip().rstrip("/")
 
 def portal_url(path: str) -> str:
@@ -103,21 +119,33 @@ def _get_base_dir() -> Path:
         # Some packed environments may not set __file__
         return Path.cwd()
 
-def _resolve_run_report_cmd(zip_path: Path) -> list[str] | None:
+def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_address: str = "") -> list[str] | None:
     """
     Best-effort resolution to a command that launches run_report for a given ZIP.
     Order:
     1) RUN_REPORT_CMD env override (e.g., "my-run-report --flag")
     2) Local 'run_report.py' next to this frontend (or CWD)
     3) Python module entry: 'python -m run_report'
-    Returns a full argv including '--zip <path>' or None if not found.
+    Returns a full argv including '--zip <path>', '--client', '--property' or None if not found.
     """
+    # Extract property address from ZIP filename if not provided
+    if not property_address:
+        # Use ZIP filename without extension as property address
+        property_address = zip_path.stem.replace('_', ' ')
+    
+    # Build the command arguments
+    args = ["--zip", str(zip_path)]
+    if client_name:
+        args.extend(["--client", client_name])
+    if property_address:
+        args.extend(["--property", property_address])
+    
     # 1) Explicit override
     env_cmd = os.getenv("RUN_REPORT_CMD", "").strip()
     if env_cmd:
         try:
             parts = shlex.split(env_cmd)
-            return parts + ["--zip", str(zip_path)]
+            return parts + args
         except Exception:
             pass
 
@@ -129,13 +157,13 @@ def _resolve_run_report_cmd(zip_path: Path) -> list[str] | None:
     ]
     for cand in candidates:
         if cand.exists():
-            return [sys.executable, str(cand), "--zip", str(zip_path)]
+            return [sys.executable, str(cand)] + args
 
     # 3) Module form
     try:
         spec = importlib.util.find_spec("run_report")
         if spec is not None:
-            return [sys.executable, "-m", "run_report", "--zip", str(zip_path)]
+            return [sys.executable, "-m", "run_report"] + args
     except Exception:
         pass
 
@@ -146,9 +174,23 @@ def _resolve_run_report_cmd(zip_path: Path) -> list[str] | None:
 class App(BaseTk):  # type: ignore[misc]
     def __init__(self):
         super().__init__()
-        self.title(APP_TITLE)
-        self.geometry("1040x700")
-        self.minsize(900, 560)
+        self.title(f"{COMPANY_NAME} - {APP_TITLE} {APP_VERSION}")
+        self.geometry("1200x750")
+        self.minsize(1100, 700)
+        
+        # Center window on screen
+        self.update_idletasks()
+        width = 1200
+        height = 750
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
+        
+        # Configure window background
+        self.configure(bg=BRAND_BG)
+        
+        # Setup custom styles
+        self.setup_styles()
 
         # State
         self.zip_list: list[Path] = []
@@ -161,37 +203,129 @@ class App(BaseTk):  # type: ignore[misc]
         self._build_ui()
         self.after(120, self._pump_logs)  # log flusher
         self.after(250, self._poll_parallel_progress)  # progress aggregator
+    
+    def setup_styles(self):
+        """Configure ttk styles for dark mode appearance"""
+        self.style = ttk.Style()
+        self.style.theme_use('clam')
+        
+        # Configure dark mode button styles
+        self.style.configure(
+            'Primary.TButton',
+            background=BRAND_PRIMARY,
+            foreground='black',
+            borderwidth=1,
+            bordercolor=BRAND_PRIMARY,
+            focuscolor='none',
+            font=('Segoe UI', 10, 'bold'),
+            relief='flat'
+        )
+        self.style.map('Primary.TButton',
+            background=[('active', '#42A5F5')]
+        )
+        
+        self.style.configure(
+            'Secondary.TButton',
+            background=BRAND_SURFACE_LIGHT,
+            foreground=BRAND_TEXT,
+            borderwidth=1,
+            bordercolor=BRAND_BORDER,
+            focuscolor='none',
+            font=('Segoe UI', 10),
+            relief='flat'
+        )
+        self.style.map('Secondary.TButton',
+            background=[('active', '#404040')]
+        )
+        
+        self.style.configure(
+            'Success.TButton',
+            background=BRAND_SUCCESS,
+            foreground='black',
+            borderwidth=1,
+            bordercolor=BRAND_SUCCESS,
+            focuscolor='none',
+            font=('Segoe UI', 11, 'bold'),
+            relief='flat'
+        )
+        self.style.map('Success.TButton',
+            background=[('active', '#66BB6A')]
+        )
+        
+        # Configure dark frame styles
+        self.style.configure('Brand.TFrame', background=BRAND_BG)
+        self.style.configure('Brand.TLabelframe', 
+                           background=BRAND_SURFACE,
+                           foreground=BRAND_TEXT,
+                           bordercolor=BRAND_BORDER,
+                           relief='flat')
+        self.style.configure('Brand.TLabelframe.Label', 
+                           background=BRAND_SURFACE,
+                           foreground=BRAND_PRIMARY,
+                           font=('Segoe UI', 10, 'bold'))
+        
+        # Configure dark label styles
+        self.style.configure('Brand.TLabel',
+                           background=BRAND_BG,
+                           foreground=BRAND_TEXT)
 
     # ----- UI construction -----
     def _build_ui(self):
-        main = ttk.Frame(self)
-        main.pack(fill="both", expand=True)
+        # Create branded header
+        self._create_header()
+        
+        # Main container with padding
+        main = ttk.Frame(self, style='Brand.TFrame')
+        main.pack(fill="both", expand=True, padx=10, pady=10)
 
-        left = ttk.Frame(main, padding=8)
-        left.pack(side="left", fill="y")
+        # Left panel with styling
+        left_container = ttk.LabelFrame(main, text="📁 CONTROL PANEL", padding=15, style='Brand.TLabelframe')
+        left_container.pack(side="left", fill="y", padx=(0, 10))
+        left = ttk.Frame(left_container, style='Brand.TFrame')
+        left.pack(fill="both", expand=True)
 
-        right = ttk.Frame(main, padding=8)
-        right.pack(side="right", fill="both", expand=True)
+        # Right panel with styling
+        right_container = ttk.LabelFrame(main, text="📊 ACTIVITY MONITOR", padding=15, style='Brand.TLabelframe')
+        right_container.pack(side="right", fill="both", expand=True)
+        right = ttk.Frame(right_container, style='Brand.TFrame')
+        right.pack(fill="both", expand=True)
 
-        # Left: controls + list
-        btns = ttk.Frame(left)
+        # Left: controls + list with branded buttons
+        btns = ttk.Frame(left, style='Brand.TFrame')
         btns.pack(fill="x")
-        ttk.Button(btns, text="Add ZIPs…", command=self.add_files).pack(side="left")
-        ttk.Button(btns, text="Clear", command=self.clear_list).pack(side="left", padx=(6, 0))
-        ttk.Button(btns, text="Open Output", command=self.open_output).pack(side="left", padx=(6, 0))
+        ttk.Button(btns, text="➕ Add Files", command=self.add_files, style='Primary.TButton').pack(side="left")
+        ttk.Button(btns, text="🗑️ Clear", command=self.clear_list, style='Secondary.TButton').pack(side="left", padx=(6, 0))
+        ttk.Button(btns, text="📂 Reports", command=self.open_output, style='Secondary.TButton').pack(side="left", padx=(6, 0))
 
-        run_frame = ttk.Frame(left)
+        run_frame = ttk.Frame(left, style='Brand.TFrame')
         run_frame.pack(fill="x", pady=(12, 0))
-        ttk.Button(run_frame, text=f"Run ({'Parallel' if JOB_CONCURRENCY>1 else 'Sequential'})", command=self.start).pack(side="left")
-        ttk.Label(run_frame, text=f"JOB_CONCURRENCY={JOB_CONCURRENCY}").pack(side="left", padx=(10, 0))
+        ttk.Button(run_frame, text="🚀 GENERATE REPORTS", command=self.start, style='Success.TButton').pack(side="left")
+        ttk.Label(run_frame, text=f"⚡ {JOB_CONCURRENCY}×{ANALYSIS_CONCURRENCY} parallel", 
+                 font=('Segoe UI', 9), style='Brand.TLabel').pack(side="left", padx=(10, 0))
 
-        portal_frame = ttk.Frame(left)
+        # Client name input with better styling
+        client_frame = ttk.LabelFrame(left, text="👤 CLIENT INFORMATION", padding=10, style='Brand.TLabelframe')
+        client_frame.pack(fill="x", pady=(12, 0))
+        ttk.Label(client_frame, text="Client Name:", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w")
+        self.client_name_var = tk.StringVar()
+        self.client_name_entry = ttk.Entry(client_frame, textvariable=self.client_name_var, width=30, font=('Segoe UI', 10))
+        self.client_name_entry.pack(fill="x", pady=(5, 0))
+        
+        portal_frame = ttk.Frame(left, style='Brand.TFrame')
         portal_frame.pack(fill="x", pady=(12, 8))
-        ttk.Button(portal_frame, text="View Portal", command=self.view_portal).pack(side="left")
-        ttk.Label(portal_frame, text=PORTAL_EXTERNAL_BASE_URL).pack(side="left", padx=(8, 0))
+        ttk.Button(portal_frame, text="🌐 Gallery Dashboard", command=self.view_portal, style='Primary.TButton').pack(side="left")
+        ttk.Label(portal_frame, text="View reports online", font=('Segoe UI', 9), style='Brand.TLabel').pack(side="left", padx=(8, 0))
 
-        self.listbox = tk.Listbox(left, width=42, height=26, selectmode="extended")
-        self.listbox.pack(fill="y", pady=(8, 0))
+        # Styled listbox
+        list_label = ttk.Label(left, text="📁 Property Files:", font=('Segoe UI', 10, 'bold'), style='Brand.TLabel')
+        list_label.pack(anchor="w", pady=(8, 2))
+        
+        self.listbox = tk.Listbox(left, width=42, height=20, selectmode="extended",
+                                 font=('Segoe UI', 10), bg=BRAND_SURFACE_LIGHT,
+                                 fg=BRAND_TEXT,
+                                 selectbackground=BRAND_PRIMARY, selectforeground='white',
+                                 relief='flat', bd=1)
+        self.listbox.pack(fill="both", expand=True, pady=(4, 0))
 
         if DND_AVAILABLE:
             # Only register DND when the extension is present
@@ -203,17 +337,21 @@ class App(BaseTk):  # type: ignore[misc]
                 pass
         else:
             # Provide a gentle hint that DND is disabled
-            hint = tk.Label(left, text="Drag & drop disabled — install 'tkinterdnd2' to enable.", fg="orange")
+            hint = tk.Label(left, text="Drag & drop disabled — install 'tkinterdnd2' to enable.", 
+                          fg=BRAND_WARNING, bg=BRAND_BG)
             hint.pack(anchor="w", pady=(6, 0))
 
         # Right: log
-        log_label = ttk.Label(right, text="Activity Log (double-click URLs to open)")
+        log_label = ttk.Label(right, text="Activity Log (double-click URLs to open)", style='Brand.TLabel')
         log_label.pack(anchor="w")
 
-        self.log = tk.Text(right, state="disabled", wrap="word")
+        self.log = tk.Text(right, state="disabled", wrap="word",
+                          bg=BRAND_BG, fg=BRAND_TEXT_SECONDARY,
+                          insertbackground=BRAND_TEXT,
+                          relief="flat", bd=1)
         self.log.pack(fill="both", expand=True)
 
-        self.log.tag_configure("link", foreground="blue", underline=1)
+        self.log.tag_configure("link", foreground="#64B5F6", underline=1)
         self.log.tag_bind("link", "<Double-Button-1>", self._on_link_click)
         self.log.tag_bind("link", "<Enter>", lambda e: self.log.config(cursor="hand2"))
         self.log.tag_bind("link", "<Leave>", lambda e: self.log.config(cursor=""))
@@ -223,11 +361,12 @@ class App(BaseTk):  # type: ignore[misc]
         bar_frame.pack(fill="x", pady=(6, 0))
         self.progress = ttk.Progressbar(bar_frame, orient="horizontal", mode="indeterminate")
         self.progress.pack(fill="x", expand=True)
-        self.eta_var = tk.StringVar(value="ETA: —")
-        ttk.Label(right, textvariable=self.eta_var).pack(anchor="w", pady=(2, 0))
+        self.eta_var = tk.StringVar(value="Ready to process")
+        ttk.Label(right, textvariable=self.eta_var, style='Brand.TLabel').pack(anchor="w", pady=(2, 0))
 
         self.status = tk.StringVar(value="Ready")
-        status_bar = ttk.Label(self, textvariable=self.status, relief="sunken", anchor="w")
+        status_bar = ttk.Label(self, textvariable=self.status, relief="flat", anchor="w",
+                              background=BRAND_SURFACE, foreground=BRAND_TEXT_SECONDARY)
         status_bar.pack(fill="x", side="bottom")
 
     # ----- File list management -----
@@ -272,6 +411,12 @@ class App(BaseTk):  # type: ignore[misc]
         if not self.zip_list:
             messagebox.showwarning("No files", "Add or drop at least one ZIP.")
             return
+        
+        # Check if client name is provided
+        if not self.client_name_var.get().strip():
+            messagebox.showwarning("Client Name Required", "Please enter the client's name before processing.")
+            self.client_name_entry.focus()
+            return
 
         key = os.getenv("OPENAI_API_KEY", "").strip()
         if not key:
@@ -280,8 +425,7 @@ class App(BaseTk):  # type: ignore[misc]
 
         # Reset progress
         self._clear_progress()
-        mode = "parallel" if JOB_CONCURRENCY > 1 else "sequential"
-        self._log_line(f"Starting {len(self.zip_list)} job(s) in {mode} mode…")
+        self._log_line(f"Starting {len(self.zip_list)} job(s) in parallel mode (concurrency={JOB_CONCURRENCY})…")
         self._set_status("Running…")
 
         # Orchestrator thread
@@ -290,13 +434,40 @@ class App(BaseTk):  # type: ignore[misc]
             return
 
         self._orchestrator = threading.Thread(
-            target=(self._run_all_parallel if JOB_CONCURRENCY > 1 else self._run_all_sequential),
+            target=self._run_all_parallel,
             daemon=True,
         )
         self._orchestrator.start()
 
     def open_output(self):
-        p = OUTPUT_DIR.resolve()
+        # Try to open the most recent output directory
+        most_recent_dir = None
+        with self._state_lock:
+            # Check parallel job states first
+            for state in self.jobs_state.values():
+                if state.get("output_dir"):
+                    most_recent_dir = state["output_dir"]
+            
+            # If no parallel output, check sequential
+            if not most_recent_dir and hasattr(self, 'last_output_dir'):
+                most_recent_dir = self.last_output_dir
+        
+        if most_recent_dir:
+            # Ensure we're not double-nesting the path
+            if Path(most_recent_dir).is_absolute():
+                # If it's already an absolute path, use it directly
+                p = Path(most_recent_dir)
+            else:
+                # Otherwise, append to OUTPUT_DIR
+                p = OUTPUT_DIR / most_recent_dir
+            self._log_line(f"Opening specific output directory: {p}")
+        else:
+            p = OUTPUT_DIR
+            self._log_line(f"Opening general output directory: {p}")
+        
+        p = p.resolve()
+        self._log_line(f"Resolved path: {p}")
+        
         try:
             if sys.platform == "win32":
                 # Prefer os.startfile when available, otherwise fall back to explorer
@@ -331,7 +502,8 @@ class App(BaseTk):  # type: ignore[misc]
         self.open_output()
 
     def _run_one_zip_sequential(self, zip_path: Path, job_index: int, job_total: int):
-        cmd = _resolve_run_report_cmd(zip_path)
+        client_name = self.client_name_var.get().strip()
+        cmd = _resolve_run_report_cmd(zip_path, client_name)
         if not cmd:
             self._log_line("ERROR: Could not locate run_report. Set RUN_REPORT_CMD or place run_report.py next to frontend.py")
             return
@@ -362,6 +534,14 @@ class App(BaseTk):  # type: ignore[misc]
                 if m_id:
                     report_id = m_id.group(1)
                     self._log_line(f"Interactive Report: {portal_url(f'/reports/{report_id}')}")
+                
+                # OUTPUT_DIR
+                m_dir = OUTPUT_DIR_RE.match(line)
+                if m_dir:
+                    output_dir = m_dir.group(1)
+                    # Store it for open_output to use
+                    with self._state_lock:
+                        self.last_output_dir = output_dir
 
                 # Progress
                 m = PROGRESS_RE.search(line)
@@ -379,15 +559,15 @@ class App(BaseTk):  # type: ignore[misc]
                     self._finish_progress()
                     self._set_eta("Done")
                 else:
-                    self._set_eta(f"Done  •  {total_images}/{total_images}")
-                self._log_line(f"✓ Done: {zip_path.name}")
+                    self._set_eta(f"✅ Done  •  {total_images}/{total_images}")
+                self._log_line(f"✅ Completed: {zip_path.name}")
                 if report_id:
                     self._log_line(f"Interactive Report: {portal_url(f'/reports/{report_id}')}")
                     self._log_line("(Click the link to open in browser)")
             else:
                 self._finish_progress()
                 self._set_eta("Failed")
-                self._log_line(f"✗ Failed ({rc}): {zip_path.name}")
+                self._log_line(f"❌ Failed ({rc}): {zip_path.name}")
 
         except Exception as e:
             self._finish_progress()
@@ -398,7 +578,7 @@ class App(BaseTk):  # type: ignore[misc]
     def _run_all_parallel(self):
         # Reset shared job state
         with self._state_lock:
-            self.jobs_state = {p: {"total": None, "done": 0, "start": None, "finished": False, "report_id": None}
+            self.jobs_state = {p: {"total": None, "done": 0, "start": None, "finished": False, "report_id": None, "output_dir": None}
                                for p in self.zip_list}
         self._start_indeterminate("Analyzing (parallel)…")
 
@@ -427,7 +607,8 @@ class App(BaseTk):  # type: ignore[misc]
         self.open_output()
 
     def _run_one_zip_worker(self, zip_path: Path):
-        cmd = _resolve_run_report_cmd(zip_path)
+        client_name = self.client_name_var.get().strip()
+        cmd = _resolve_run_report_cmd(zip_path, client_name)
         if not cmd:
             self._log_line("ERROR: Could not locate run_report. Set RUN_REPORT_CMD or place run_report.py next to frontend.py")
             with self._state_lock:
@@ -490,6 +671,15 @@ class App(BaseTk):  # type: ignore[misc]
                         state["report_id"] = rid
                         self.jobs_state[zip_path] = state
                     self._log_line(f"[{zip_path.name}] Interactive Report: {portal_url(f'/reports/{rid}')}")
+                
+                # OUTPUT_DIR to track where files were saved
+                m_dir = OUTPUT_DIR_RE.match(line)
+                if m_dir:
+                    output_dir = m_dir.group(1)
+                    with self._state_lock:
+                        state = self.jobs_state.get(zip_path, {})
+                        state["output_dir"] = output_dir
+                        self.jobs_state[zip_path] = state
 
             rc = proc.wait()
             with self._state_lock:
@@ -498,9 +688,9 @@ class App(BaseTk):  # type: ignore[misc]
                 self.jobs_state[zip_path] = st
 
             if rc == 0:
-                self._log_line(f"✓ Done: {zip_path.name}")
+                self._log_line(f"✅ Completed: {zip_path.name}")
             else:
-                self._log_line(f"✗ Failed ({rc}): {zip_path.name}")
+                self._log_line(f"❌ Failed ({rc}): {zip_path.name}")
 
         except Exception as e:
             self._log_line(f"ERROR running {zip_path.name}: {e}")
@@ -514,7 +704,7 @@ class App(BaseTk):  # type: ignore[misc]
         def _do():
             self.progress.stop()
             self.progress.configure(mode="indeterminate", maximum=100, value=0)
-            self.eta_var.set("ETA: —")
+            self.eta_var.set("Ready")
         self.after(0, _do)
 
     def _start_indeterminate(self, status_text="Working…"):
@@ -522,7 +712,7 @@ class App(BaseTk):  # type: ignore[misc]
             self.progress.configure(mode="indeterminate")
             self.progress.start(12)
             self.status.set(status_text)
-            self.eta_var.set("ETA: —")
+            self.eta_var.set("Ready")
         self.after(0, _do)
 
     def _start_determinate(self, total_images: int):
@@ -539,7 +729,7 @@ class App(BaseTk):  # type: ignore[misc]
             elapsed = time.time() - first_seen_time
             avg = elapsed / max(1, idx_img)
             remaining = int(avg * (total_images - idx_img))
-            self.eta_var.set(f"ETA: ~{remaining}s  •  {idx_img}/{total_images}")
+            self.eta_var.set(f"⏱️ ~{remaining}s  •  📸 {idx_img}/{total_images} photos")
         self.after(0, _do)
 
     def _set_eta(self, text: str):
@@ -579,14 +769,14 @@ class App(BaseTk):  # type: ignore[misc]
                         num = sum((now - s["start"]) for s in states if s.get("start"))
                         avg = num / max(1, den)
                         remaining = int(avg * max(0, global_total - global_done))
-                        self._set_eta(f"ETA: ~{remaining}s  •  {global_done}/{global_total}  •  {len(running)} active")
+                        self._set_eta(f"⏱️ ~{remaining}s  •  📸 {global_done}/{global_total}  •  {len(running)} active")
                     else:
                         self._set_eta(f"{global_done}/{global_total}")
                 # else: remain indeterminate until totals are known
 
                 # When all jobs finished, show Done
                 if states and all(s.get("finished") for s in states) and global_total > 0:
-                    self._set_eta(f"Done  •  {global_total}/{global_total}")
+                    self._set_eta(f"✅ Done  •  {global_total}/{global_total}")
         except Exception:
             # Best-effort; keep UI responsive even if something goes wrong
             pass
@@ -643,11 +833,37 @@ class App(BaseTk):  # type: ignore[misc]
                 except Exception:
                     pass
                 break
+    
+    def _create_header(self):
+        """Create branded header section for dark mode"""
+        header = tk.Frame(self, bg=BRAND_SURFACE, height=70)
+        header.pack(fill="x")
+        header.pack_propagate(False)
+        
+        # Company branding
+        brand_frame = tk.Frame(header, bg=BRAND_SURFACE)
+        brand_frame.pack(expand=True)
+        
+        # Company name
+        company_label = tk.Label(
+            brand_frame,
+            text=COMPANY_NAME,
+            font=('Segoe UI', 20, 'bold'),
+            bg=BRAND_SURFACE,
+            fg=BRAND_PRIMARY
+        )
+        company_label.pack(pady=(12, 0))
+        
+        # Tagline
+        tagline_label = tk.Label(
+            brand_frame,
+            text=APP_TAGLINE,
+            font=('Segoe UI', 10),
+            bg=BRAND_SURFACE,
+            fg=BRAND_TEXT_SECONDARY
+        )
+        tagline_label.pack()
 
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-'''
-
-# Execute the actual app code directly
-exec(frontend_py_fixed)

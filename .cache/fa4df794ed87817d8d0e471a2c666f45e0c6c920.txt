@@ -1,16 +1,17 @@
 Location:
-- Exterior HVAC condenser, side/service panel and labels
+- Exterior HVAC condensing unit (Ingersoll Rand), on pad
 
 Observations:
-- Gray painted metal cabinet; warning and certification labels legible (Ingersoll Rand)
-- Louvered service panel with screws/fasteners in place
-- Unit mounted on pad; base pan visible
-- Minor cosmetic scuffs/scratches on paint
+- Gray painted steel cabinet with louvered side panel
+- Labels/warnings intact and legible; ETL listed
+- Nameplate shows MCA 10.4A; Max fuse/HACR breaker 15A
+- Access panel screws present; light scuffs on finish
+- Refrigerant service area partially visible; disconnect/conduit not in view
 
 Potential Issues:
-- No visible issues.
+- No visible issues (limited view)
 
 Recommendations:
-- Maintain clearances and keep area free of debris for airflow
-- Touch up scratched paint to prevent future corrosion
-- Schedule routine HVAC service; verify disconnect, conduit, and refrigerant line conditions during full inspection
+- Verify dedicated disconnect present and overcurrent protection does not exceed 15A per nameplate
+- Keep coil/fan area clear and schedule routine HVAC cleaning/service
+- Provide full-view photos (wiring/conduit, line-set insulation, pad level, fan guard) for complete evaluation

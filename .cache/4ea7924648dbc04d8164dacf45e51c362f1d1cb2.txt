@@ -1,0 +1,25 @@
+Location:
+- Exterior side yard; condenser on concrete pad within metal protective cage; adjacent to stucco wall and disconnect box
+
+Observations:
+- Ameristar outdoor AC condenser (top-discharge) in a metal cage with overhead bars
+- Debris/leaves on unit; vegetation close on left and overhead
+- Cage and fasteners show light surface rust/soiling
+- Stucco wall behind unit has a visible horizontal crack
+- Disconnect present on wall; conduit/whip to unit not visible in photo
+
+Potential Issues:
+- Overhead airflow restriction: cage roof bars a few inches above fan discharge
+- Debris and nearby vegetation can block coil airflow
+- Coil fins appear partially bent/dirty in areas
+- Side clearance to wall appears tight (likely <12 in) restricting intake
+- Stucco wall crack may allow water intrusion
+- Early corrosion on cage hardware/anchors
+- Housekeeping/trip hazard from loose debris around pad
+
+Recommendations:
+- Provide proper overhead clearance per manufacturer (often 4–6 ft above discharge) or modify/remove cage top; verify side clearances and reposition if needed
+- Clean off debris; trim vegetation back 2–3 ft around unit; clean coils and straighten fins
+- Seal/repair stucco crack with exterior-grade materials; monitor for moisture
+- Treat/rust-proof and repaint corroded cage hardware; check anchors
+- HVAC technician: service unit after cleaning, verify airflow/pressures, inspect electrical whip/connections and ensure penetrations/disconnect are properly sealed

@@ -1,0 +1,29 @@
+Location:
+- HVAC return plenum/filter rack at air handler (mechanical area)
+
+Observations:
+- Metal return plenum with V-style filter rack; filters labeled 14x18x1
+- Front filter heavily loaded with dust; cardboard frame distorted
+- Filters appear misaligned in tracks; visible edge gaps
+- Interior metal surfaces dusty with light oxidation
+- Wood platform below shows discoloration/debris
+
+Potential Issues:
+- Severely clogged filter restricting airflow; efficiency/performance impact
+- Misalignment and edge gaps allow unfiltered air bypass
+- Bent/crushed filter frame; risk of collapse/blow-by
+- Possible two 1-in filters in series; may create excessive static pressure if not designed
+- Light corrosion on rack/metal surfaces
+- Debris accumulation in plenum
+- Staining on adjacent wood; possible prior moisture
+- Filter rails/retainers appear bent/warped
+
+Recommendations:
+- Replace filters now with correct size/MERV per equipment; ensure single or designed configuration
+- Seat filters fully; add/repair gasketing to eliminate bypass; secure retainers
+- Straighten/repair or replace filter rack/rails
+- Clean plenum and surrounding area; consider duct cleaning if contamination is widespread
+- Seal any air leaks at seams with HVAC mastic/foil tape
+- Treat light rust; clean and apply rust-inhibiting coating
+- Investigate source of staining/moisture; correct and monitor
+- Have HVAC technician evaluate airflow/static pressure and overall system operation

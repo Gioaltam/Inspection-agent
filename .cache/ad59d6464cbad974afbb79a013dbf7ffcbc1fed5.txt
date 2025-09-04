@@ -1,0 +1,22 @@
+Location:
+- Under-sink cabinet (sink plumbing)
+
+Observations:
+- PVC P-trap with white corrugated flex tailpiece/extension from sink drain
+- Black tailpiece under strainer; several slip-joint nuts/connectors
+- Braided stainless water supply hoses to shutoff valves
+- No visible active drips or staining on cabinet base at time of photo
+- Stored items and an appliance power cord under plumbing
+
+Potential Issues:
+- Corrugated/accordion drain connector used; nonstandard, rough interior traps debris and can clog/harbor odors; often not code-compliant
+- Visible misalignment between tailpiece and trap requiring flex connector; risk of poor slope/slow drainage
+- Multiple slip-joint connections at angles increase leak points/loose joints potential
+- Electrical cord routed below drain; potential water contact/unsafe
+- Stored items crowd plumbing, may damage lines and block shutoff access
+
+Recommendations:
+- Replace flex connector with properly aligned rigid PVC/ABS tailpiece and trap arm; set correct slope; tighten with new washers
+- Test all joints for leaks after rework; reseal as needed
+- Reroute/elevate electrical cord away from plumbing; confirm outlet is GFCI-protected
+- Declutter cabinet to maintain clear access to valves and reduce damage risk

@@ -1,26 +1,24 @@
 Location:
-- Interior wall/ceiling vent grille (appears to be exhaust/return) on painted drywall
+- Interior ceiling/wall-mounted exhaust fan grille (likely bathroom)
 
 Observations:
-- Metal louvered grille; fan blades visible behind
-- Heavy dust/lint accumulation on slats and inside housing
-- Multiple paint coats; drips/overspray; chipped paint at edges
-- Frame misaligned; perimeter gaps; old caulk/paint bead
-- One visible screw on right; other fasteners missing/painted over
-- Minor surface rust at screw holes/edges
-- Slight dents/bends at corners
+- Painted metal grille with vertical slats; fan blades visible behind
+- Heavy dust/lint accumulation on slats and inside fan
+- Frame shows chipped paint and surface corrosion spots
+- Grille/frame not flush; bent/dented corners
+- Gaps/separation visible at perimeter; rough/failed caulk
+- Only one fastener visible on right side
 
 Potential Issues:
-- Restricted airflow from heavy dust buildup
-- Gaps/voids and failed caulk at perimeter allowing air leakage and pest entry points
-- Loose/missing fasteners; grille not fully secured; misalignment
-- Dents/bends and exposed substrate at chips
-- Early corrosion/rust at edges/screw holes
-- No visible water stains or mold
+- Blocked airflow from heavy dust/lint; overheating/fire risk for fan motor
+- Corrosion/rust beginning at edges and around fastener
+- Misalignment/bent grille; possible loose/missing fasteners
+- Gaps/voids at perimeter may allow air leakage and pest entry
+- Paint deterioration; substrate exposure in spots
 
 Recommendations:
-- Remove grille; vacuum/clean grille, fan housing, and accessible duct
-- Re-secure with proper matching screws/anchors; ensure flush fit
-- Reseal perimeter with paintable caulk; touch up or repaint with rust-inhibiting paint
-- Replace grille if damaged/corroded or cannot be secured
-- If this is an exhaust fan, service and test operation/airflow; verify duct/backdraft damper condition
+- Remove grille; vacuum and clean slats, fan housing, and duct connection
+- Re-secure grille with proper fasteners; replace if bent or damaged
+- Seal perimeter to trim with paintable caulk after alignment
+- Treat rust; repaint with rust-inhibiting paint or replace grille
+- Test fan airflow; if weak/noisy, have unit and ducting evaluated and cleaned; verify duct terminates outdoors with working backdraft damper

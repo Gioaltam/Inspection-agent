@@ -1,22 +1,25 @@
 Location:
-- Exterior wooden privacy fence (close-up of picket section)
+- Exterior wooden privacy fence section (vertical pickets)
 
 Observations:
-- Vertical wood pickets; weathered/gray with knots
-- Galvanized/coated nails at mid-height; rails visible through gaps
-- Light green surface staining/algae; general UV wear
-- Some pickets show cupping/warping and surface checking
+- Weathered, untreated/gray wood; likely pressure-treated
+- Vertical pickets nailed to horizontal rails; nails visible
+- Uneven spacing; some boards cupped/warped
+- Surface discoloration with algae/mildew staining
+- Knotting and grain checks in several boards
 
 Potential Issues:
-- Warping/cupping of multiple boards
-- Surface cracks/checking near knots; one board shows longitudinal split
-- Gaps between pickets wider than typical privacy spacing
-- Rusting nail heads beginning to stain wood
-- Algae/mildew staining on surfaces
+- Cracks/checks in multiple pickets; larger split near knot (structural weakening)
+- Warping/cupping causing misalignment and widened gaps/voids
+- Corroding/rusting nail heads (fastener deterioration risk)
+- Organic growth (mildew/algae) present
+- Bare wood/failed finish increasing moisture absorption
+- Gaps may serve as pest entry points and reduce privacy
 
 Recommendations:
-- Clean fence (wood-safe cleaner) and treat for algae/mildew
-- Apply exterior wood sealer/stain after cleaning and drying
-- Replace any split/warped boards that are loose or structurally weakened
-- Replace corroded fasteners with exterior-rated galvanized or stainless steel
-- Inspect posts/rails for rot, especially at grade, and repair as needed
+- Clean with low-pressure wash and mildew/algae treatment
+- Apply exterior-grade stain/sealant; seal all sides and end grains
+- Replace severely split or warped pickets
+- Replace corroded nails with coated or stainless fasteners; resecure loose boards
+- Inspect base of pickets for rot/softness and repair as needed
+- Re-space/adjust pickets if improved privacy is desired

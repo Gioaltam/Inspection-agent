@@ -1,17 +1,22 @@
 Location:
-- Ceiling-mounted HVAC return/supply grille
+- Ceiling return-air grille/vent
 
 Observations:
-- White metal louvered grille
-- Heavy dust accumulation on louvers and center divider
-- Visible dust/debris inside duct just behind grille
-- Paint/finish intact; no visible dents or rust
+- Metal louvered grille; ceiling-mounted
+- Heavy lint/dust accumulation on louvers and center divider
+- Light dirt streaking around grille perimeter
+- No filter visible at grille (filter may be at air handler)
+- Louvers appear straight; surrounding drywall/paint intact
 
 Potential Issues:
-- Airflow restricted by significant dust buildup (blocked condition; indoor air quality concern)
-- No visible cracks, gaps, loose parts, corrosion, water stains, or mold
+- Airflow restriction from heavy dust buildup
+- Indoor air quality concern from accumulated debris
+- Air leakage indicated by dark dust lines at grille perimeter (possible gap/bypass at grille-to-duct connection)
+- Filter may be overdue or poorly sealing upstream
 
 Recommendations:
-- Remove grille and clean thoroughly; vacuum/brush louvers and surrounding duct opening
-- Replace/clean HVAC filter and ensure proper fit/seal
-- Consider HVAC/duct cleaning and system service if buildup is recurring or if maintenance history is unknown
+- Remove grille; clean louvers and accessible return plenum
+- Replace/verify HVAC filter location; install correct size and ensure tight seal
+- Inspect and seal any gaps at grille frame and return-duct connection with mastic/foil tape
+- Consider duct inspection/cleaning if dust quickly reaccumulates
+- Touch up paint after cleaning if desired

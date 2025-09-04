@@ -1,13 +1,13 @@
 Location:
-- Photo shows a “Home Inspection Checklist” page on a desk; not the property.
+- Desktop/office surface; photo of a paper document
 
 Observations:
-- Printed checklist with handwritten notes (Portuguese) mentioning tall grass and intent to paint a door.
-- No building components, systems, or site conditions visible.
+- Sheet titled “Home Inspection Checklist”
+- Handwritten notes: “99th,” “Unit 3,” “Michael”
+- Portuguese notes include: “tudo bem certinho” (everything okay), “grama alta” (tall grass), “pro lado de dentro” (inside), “porta … vai pintar” (door will be painted)
 
 Potential Issues:
-- No visible issues; property elements not shown in this image.
+- No visible issues; image shows only a document, not building components
 
 Recommendations:
-- Provide clear photos of exterior, roof, foundation, grading, doors/windows, interior rooms, attic/crawl, plumbing, electrical, and HVAC for evaluation.
-- If notes are accurate: trim overgrown grass; prep and paint/repair door as needed after on-site inspection.
+- Provide clear photos of actual property elements (exterior, roof, structure, electrical, plumbing, interiors) for inspection and reporting

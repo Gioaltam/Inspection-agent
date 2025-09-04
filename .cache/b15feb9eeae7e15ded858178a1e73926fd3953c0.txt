@@ -1,5 +1,0 @@
-- Location: Exterior wall surface (red-painted siding).
-- Material: Likely wood/fiberboard siding; not cementitious.
-- Issue: Horizontal seam with multiple hairline cracks and peeling paint.
-- Substrate: Exposed brown underlayer at center; potential wood damage/rot if moisture has penetrated.
-- Recommendation: Inspect for rot with moisture meter; repair damaged area (epoxy/wood filler or replace panel), reseal with exterior caulk, and repaint.

@@ -1,22 +1,19 @@
 Location:
-- Interior window with mini-blinds (room not specified)
+- Interior window (room not specified)
 
 Observations:
-- Vinyl-framed window with interior grille and insect screen
-- Multiple blind slats broken and hanging; sharp edges visible
-- Lift/tilt cords tangled and frayed
-- Window track/sill shows dirt/debris accumulation
-- Minor paint/caulk deterioration at left interior jamb/sill return
+- Vinyl-framed window with insect screen and interior grille
+- Horizontal PVC/faux-wood blinds; two slats visibly broken; slats twisted/misaligned
+- Blind cords/ladder strings tangled with visible fraying
+- Window sill/track shows dirt/debris
 
 Potential Issues:
-- Broken/slashed blind slats (loose pieces; sharp edges)
-- Frayed/tangled blind cords; potential child-safety hazard
-- Gaps/failed caulk at interior jamb/sill return may allow drafts/dust
-- Debris in track can impede sash movement/drainage
+- Blinds: cracks/breaks with missing pieces; misalignment/warping; sharp edges possible
+- Frayed/loose cords present a child-strangulation hazard and indicate wear
+- Blinds likely nonfunctional due to damage
 
 Recommendations:
-- Replace damaged blinds; remove sharp fragments
-- Install cord safety cleat or use cordless blinds
-- Clean window tracks/sill; verify smooth operation and drainage weeps
-- Scrape/repair and re-caulk/paint interior jamb/sill where deteriorated
-- Monitor after heavy rain for any moisture intrusion signs
+- Replace damaged blinds; remove broken slats immediately to eliminate sharp edges
+- Install cord-safety devices (cleats, cord stops) or cordless blinds
+- Clean window sill/track; inspect and re-caulk/paint around frame if any gaps are found
+- Verify window/screen operation and locks; repair if binding or loose

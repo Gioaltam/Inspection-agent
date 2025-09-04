@@ -1,5 +1,0 @@
-- Location: Indoor mechanical room/furnace closet; HVAC air handler cabinet.  
-- Materials: Galvanized steel cabinet with attached wiring diagram and component label.  
-- Condition: Exterior shows light dust; no rust or physical damage visible.  
-- Electrical/labels: Electrical data plate present; circuit/voltage not fully legible here (likely 208/230V).  
-- Maintenance note: Ensure access panels remain secure; verify condensate drain and air filters during service.

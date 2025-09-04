@@ -1,0 +1,27 @@
+Location:
+- Exterior side elevation under gable/eave; window, telecom lines, and gas riser
+
+Observations:
+- Stucco exterior; painted
+- Single-hung window with painted trim/sill
+- Wood soffit/fascia; horizontal siding at gable
+- Telecom/low-voltage box with multiple cables; wires pass through soffit and wall
+- Gas riser/shutoff near grade; foundation vent nearby
+
+Potential Issues:
+- Loose/dangling low-voltage cables; unsecured/exposed; potential snag/trip hazard
+- Unsealed wire penetrations at soffit and wall; potential water intrusion and pest entry points
+- Soffit/fascia corner shows water stains/discoloration; possible leak; rot/mold risk
+- Stucco with hairline cracks, localized spalls, and peeling paint; moisture-intrusion risk
+- Window perimeter caulk/paint deteriorated; small gaps/voids at trim/sill
+- Gas piping with surface corrosion; exposed to potential impact
+- Minor cracks/deterioration at foundation/parge near grade/vent
+
+Recommendations:
+- Have qualified low-voltage contractor remove abandoned lines, properly secure/route active cables, and terminate; add protection/conduit where subject to damage
+- Seal all exterior penetrations with exterior-grade sealant; install bushings/escutcheons
+- Investigate source of soffit staining; repair any roof/eave deficiencies; replace/repair damaged wood; prime/paint
+- Repair stucco cracks/spalls; scrape/prime/repaint to maintain weather barrier
+- Re-caulk and paint window perimeter; repair any damaged trim; verify proper operation/weathersealing
+- Clean/treat and coat gas piping to inhibit rust; add impact protection if needed; have licensed plumber/utility inspect if concerns persist
+- Patch foundation parge and ensure vent screen is intact and secure

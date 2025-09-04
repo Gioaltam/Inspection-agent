@@ -25,7 +25,11 @@ AMD/
 
 # Databases and secrets
 *.db
+*.sqlite
+*.sqlite3
 juliana_demo_credentials.json
+mock_portal_data.json
+dashboard_data.json
 
 # Temp/workspace
 temp_zips/

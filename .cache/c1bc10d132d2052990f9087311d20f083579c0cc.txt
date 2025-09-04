@@ -1,23 +1,19 @@
 Location:
-- Ceiling register above wavy wall panels/tiles (likely bathroom)
+- Bathroom ceiling above wavy wall panel/tile (near shower/tub area)
 
 Observations:
-- Painted metal ceiling vent with horizontal louvers; two visible fasteners
-- Noticeable dust buildup on louvers and inside throat
-- Light discoloration/grime around register perimeter on ceiling
-- Wall panels show vertical seam with rough/raised bead
-- Top joint where panels meet ceiling shows thin/missing caulk in areas
-- No visible rust or dents on register
+- Painted drywall ceiling; metal louvered vent/register with two screws
+- Noticeable dust accumulation on vent louvers and inside grille
+- Wavy wall panels/tiles with vertical seam; white caulk bead visible
+- Slight shadow line at vent perimeter and at ceiling-to-wall joint
 
 Potential Issues:
-- Dust/debris accumulation on vent louvers (airflow/IAQ concern)
-- Gaps/voids and failed/missing caulk at panel-to-ceiling joint
-- Irregular/failed caulk along vertical panel seam
-- Staining at vent perimeter suggests air leakage/possible condensation
+- Dust/debris buildup on vent may restrict airflow/ventilation
+- Minor gaps at vent perimeter and at ceiling-to-wall joint (possible air/moisture leakage, dirt streaking)
+- Caulk at vertical panel seam appears uneven with small separations; potential moisture entry if in wet zone
 
 Recommendations:
-- Clean vent register and duct boot; wipe surrounding ceiling
-- Reseal around register with paintable caulk; touch up paint
-- Remove and re-caulk panel seams; use bathroom-grade silicone if in wet area
-- Check ventilation performance (fan CFM/run time); insulate ducting if condensation persists
-- Monitor for recurring stains that may indicate ongoing leakage or moisture issues
+- Clean vent grille and duct opening; verify fan operation and airflow to exterior
+- Seal vent perimeter to ceiling if gaps confirmed (paintable caulk)
+- Remove and re-caulk vertical seam and ceiling-to-wall junction with mildew-resistant silicone if within the shower area
+- Monitor for recurring discoloration; if moisture persists, further evaluate for condensation or leaks

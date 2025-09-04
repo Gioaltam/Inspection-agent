@@ -1,0 +1,17 @@
+Location:
+- Interior wall/ceiling area; HVAC register near ceiling line
+
+Observations:
+- Painted metal louvered register
+- Two visible mounting screws
+- Surrounding drywall shows patch/texture and paint touch-up
+
+Potential Issues:
+- Small gaps/voids and rough, uneven patching around register perimeter; missing/failed caulk
+- Register appears slightly misaligned to wall/ceiling line
+- Possible insufficient fastening; corners not uniformly tight
+
+Recommendations:
+- Reseat/level register; tighten/add fasteners as needed
+- Seal perimeter with paintable caulk/joint compound; sand/texture to match and repaint
+- Verify duct-to-boot connection behind grille is sealed to limit air leakage/dust buildup

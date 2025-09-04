@@ -1,0 +1,33 @@
+Location:
+- Utility closet/mechanical nook with electric water heater below HVAC return plenum/filter
+
+Observations:
+- Electric water heater with CPVC piping and horizontal thermal expansion tank
+- Flexible metal electrical whip entering top of heater
+- HVAC return plenum with 14x18x1 pleated filter
+- Condensate safety (float) switch present on drain line
+- Wood shelf between heater and return plenum
+- Mineral deposits visible at some hot/cold water connections
+- Crowded/limited working space
+
+Potential Issues:
+- HVAC filter very dirty/clogged
+- Filter misaligned/warped with visible gaps around rack (air bypass)
+- Rust/corrosion on sheet-metal return plenum
+- Water staining/warping on wood shelf (moisture history)
+- Electrical whip enters heater without proper connector/strain relief; junction cover appears loose/damaged (improper wiring)
+- Mineral deposits/corrosion at fittings indicate past/possible active seepage
+- Expansion tank unsupported/cantilevered from piping (stress on joints)
+- Restricted access to filter/heater components
+- Gaps/voids at return plenum seams near filter (air leakage)
+
+Recommendations:
+- Replace filter now; confirm correct size and secure/seal filter rack/cover to eliminate bypass
+- Inspect/repair return plenum: clean, treat corrosion, and seal seams with approved mastic/foil tape
+- Trace and correct moisture source causing shelf staining (check condensate pan/drain); repair/replace or seal damaged shelf
+- Have a licensed electrician correct water-heater electrical connection with proper connector/strain relief and secure cover; verify grounding/bonding
+- Have a plumber evaluate/repair seepage at water connections; replace corroded parts as needed
+- Provide independent support/strapping for the expansion tank
+- Improve service clearance where possible for safe maintenance
+- Verify TPR discharge piping and drain pan/drain compliance for the water heater; add/repair if missing or improper
+- Test/clear condensate drain and float switch; general cleaning of the area

@@ -1,662 +1,1304 @@
-# C:\inspection-agent\run_report.py
+#!/usr/bin/env python3
+"""
+Run Report Module - Core functionality for inspection report generation from ZIP files
+This module handles the complete workflow of processing property inspection photos:
+1. Extract photos from ZIP files
+2. Analyze each photo using AI vision
+3. Generate comprehensive HTML and PDF reports
+4. Register reports with the portal system
+"""
+
 import os
-import re
-import zipfile
-import argparse
-import tempfile
-import time
-import concurrent.futures
-import logging
+import sys
 import json
-import uuid
-from datetime import datetime
+import secrets
+import sqlite3
+import zipfile
+import tempfile
+import shutil
 from pathlib import Path
-from dotenv import load_dotenv
-from PIL import Image, ImageOps
-
-from reportlab.lib.pagesizes import LETTER
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, List, Tuple
+from PIL import Image
+from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
 from reportlab.lib.utils import ImageReader
-from reportlab.platypus import Paragraph, Frame, KeepInFrame, Flowable
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.colors import HexColor
+from reportlab.lib.units import inch
 
-from vision import describe_image
+# Import vision analysis module
+try:
+    from vision import describe_image
+except ImportError:
+    print("Warning: vision.py not found, using placeholder analysis")
+    def describe_image(path):
+        return "Image analysis not available"
 
-# ---------------- Env ----------------
-load_dotenv(override=False)  # Don't override existing env vars
+# Directory Configuration
+WORKSPACE = Path(os.environ.get('WORKSPACE_DIR', './workspace'))
+OUTPUTS_DIR = WORKSPACE / 'outputs'
+INCOMING_DIR = WORKSPACE / 'incoming'
+DB_PATH = WORKSPACE / 'inspection_portal.db'
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Ensure directories exist
+for dir_path in [WORKSPACE, OUTPUTS_DIR, INCOMING_DIR]:
+    dir_path.mkdir(parents=True, exist_ok=True)
 
-ANALYSIS_CONCURRENCY = int(os.getenv("ANALYSIS_CONCURRENCY", "3"))
+# Portal configuration
+PORTAL_EXTERNAL_BASE_URL = os.environ.get("PORTAL_EXTERNAL_BASE_URL", "http://localhost:8000").rstrip("/")
 
-# Page geometry
-PAGE_W, PAGE_H = LETTER
-MARGIN = 0.5 * inch
+def ensure_dir(path: Path) -> Path:
+    """Ensure directory exists and return the path"""
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
-# Photo-left / Notes-right geometry
-IMG_MAX_W = 3.6 * inch
-IMG_MAX_H = 8.0 * inch
-NOTEBOX_X = MARGIN + IMG_MAX_W + 0.4 * inch
-NOTEBOX_W = PAGE_W - NOTEBOX_X - MARGIN
-NOTEBOX_BASE_H = IMG_MAX_H  # minimum height; can grow
+# ============== Database Functions ==============
 
-# Branding / style knobs
-BANNER_PATH       = os.getenv("BANNER_PATH", "assets/banner.png")
-BRAND_PRIMARY     = os.getenv("BRAND_PRIMARY", "#0b1e2e")
-BRAND_SECONDARY   = os.getenv("BRAND_SECONDARY", "#113a5c")
-NOTES_FONT_PT     = float(os.getenv("NOTES_FONT_PT", "12.0"))
-NOTES_LEADING_PT  = float(os.getenv("NOTES_LEADING_PT", "16.0"))
-COVER_TITLE_SHIFT_LEFT_IN = float(os.getenv("COVER_TITLE_SHIFT_LEFT_IN", "0.60"))
-RECOMMENDATIONS_EXTRA_GAP_PT = float(os.getenv("RECOMMENDATIONS_EXTRA_GAP_PT", "10"))
-
-# Status icon sources (env overrides supported)
-STATUS_CRITICAL_ICON  = os.getenv("STATUS_CRITICAL_ICON", "assets/critical.png")
-STATUS_IMPORTANT_ICON = os.getenv("STATUS_IMPORTANT_ICON", "assets/important.png")
-# Optional sprite with two icons side-by-side (left=critical, right=important)
-STATUS_SPRITE         = os.getenv("STATUS_SPRITE", "assets/icons.png")
-STATUS_ICON_PT        = float(os.getenv("STATUS_ICON_PT", "30"))
-STATUS_ICON_LABEL_SIZE = float(os.getenv("STATUS_ICON_LABEL_SIZE", "11.5"))
-
-# Optional, customizable repair/action keywords (comma-separated)
-REPAIR_KEYWORDS = os.getenv(
-    "REPAIR_KEYWORDS",
-    "repair,replace,fix,seal,reseal,re-caulk,caulk,secure,anchor,tighten,patch,service,clean and,clean,paint,repaint"
-).split(",")
-
-# Cover page prepared-by info
-BUSINESS_NAME  = os.getenv("BUSINESS_NAME", "")
-BUSINESS_LINE1 = os.getenv("BUSINESS_LINE1", "")
-BUSINESS_LINE2 = os.getenv("BUSINESS_LINE2", "")
-
-# ---------------- Styles ----------------
-_STYLES = getSampleStyleSheet()
-NOTE_BODY = ParagraphStyle(
-    "note-body",
-    parent=_STYLES["Normal"],
-    fontName="Helvetica",
-    fontSize=NOTES_FONT_PT,
-    leading=NOTES_LEADING_PT,
-    textColor="#2b2b2b",
-)
-NOTE_BULLET = ParagraphStyle(
-    "note-bullet",
-    parent=NOTE_BODY,
-    leftIndent=12,
-    bulletIndent=0,
-)
-NOTE_SECTION = ParagraphStyle(
-    "note-section",
-    parent=_STYLES["Heading4"],
-    fontName="Helvetica-Bold",
-    fontSize=NOTES_FONT_PT + 0.5,
-    leading=NOTES_LEADING_PT + 1,
-    textColor=BRAND_SECONDARY,
-    spaceBefore=2,
-    spaceAfter=2,
-)
-NOTE_SECTION_RECS = ParagraphStyle(
-    "note-section-recs",
-    parent=NOTE_SECTION,
-    spaceBefore=NOTE_SECTION.spaceBefore + RECOMMENDATIONS_EXTRA_GAP_PT,
-)
-
-# ---------------- Section helpers ----------------
-ORDERED_SECTIONS = ["Location", "Materials/Description", "Observations", "Potential Issues", "Recommendations"]
-_SECTION_RX = re.compile(r"(?im)^(Location|Materials(?:/Description)?|Description|Observations|Potential\s+Issues|Issues|Recommendations?):\s*$")
-
-def _split_candidate_lines(text: str) -> list[str]:
-    if not text: return []
-    t = text.replace("—", ". ").replace("•", "\n").replace(";", ". ")
-    lines = []
-    for raw in t.splitlines():
-        raw = raw.strip().strip("-*•").strip()
-        if not raw: continue
-        parts = re.split(r"(?<=[.!?])\s+(?=[A-Z(])", raw)
-        for p in parts:
-            p = p.strip().strip("-*•").strip(": ").strip()
-            if p: lines.append(p)
-    return lines
-
-def _route_line(line: str) -> tuple[str, str]:
-    l = line.strip(); low = l.lower()
-    if low.startswith(("location/material", "location & material")):
-        return "Location", (l.split(":",1)[-1].strip() if ":" in l else l)
-    if low.startswith("location:"): return "Location", l.split(":",1)[-1].strip()
-    if low.startswith(("material:", "materials:", "materials/description:", "description:")):
-        return "Materials/Description", l.split(":",1)[-1].strip()
-    if low.startswith(("recommendation", "action ", "action:", "recommend ")):
-        return "Recommendations", (l.split(":",1)[-1].strip() if ":" in l else l)
-    if low.startswith(("issue","risk","hazard","safety","concern","defect","damage","deteriorat","leak","moisture","mold","rot","crack","corrosion","not in conduit","unsecured","trip hazard","minor condition","active leak","stain","missing","loose","unsafe","exposed")):
-        return "Potential Issues", (l.split(":",1)[-1].strip() if ":" in l else l)
-    if any(k in low for k in ["cmu block","drywall","lap siding","asphalt shingle","concrete","paver","brick","plaster","register","vent cover"]):
-        return "Materials/Description", l
-    if any(k in low for k in ["front exterior","interior","exterior wall","entry","porch","driveway","bathroom","kitchen","ceiling","wall "]):
-        return "Location", l
-    return "Observations", l
-
-def _normalize_observation(note_text_or_dict):
-    res = {k: [] for k in ORDERED_SECTIONS}
-    if isinstance(note_text_or_dict, dict):
-        aliases = {"Materials":"Materials/Description","Description":"Materials/Description","Issues":"Potential Issues","Recommendation":"Recommendations"}
-        for k,v in note_text_or_dict.items():
-            if not v: continue
-            key = aliases.get(k,k);  key = key if key in res else "Observations"
-            res[key].extend(_split_candidate_lines(str(v)))
-        if not any(res.values()):
-            joined = " ".join(str(v) for v in note_text_or_dict.values() if v)
-            res["Observations"] = _split_candidate_lines(joined)
-        return res
-    text = str(note_text_or_dict or "").strip()
-    if not text: return res
-    parts,current,buf = {},None,[]
-    has_headers = False
-    for ln in text.splitlines():
-        m = _SECTION_RX.match(ln.strip())
-        if m:
-            has_headers = True
-            if current is not None:
-                parts[current] = "\n".join(buf).strip(); buf=[]
-            current = m.group(1)
-            if current in ("Materials","Description"): current="Materials/Description"
-            if current.startswith("Recommendation"): current="Recommendations"
-            if current=="Issues": current="Potential Issues"
-        else:
-            buf.append(ln)
-    if current is not None: parts[current]="\n".join(buf).strip()
-    if has_headers:
-        for k in ORDERED_SECTIONS:
-            if k in parts and parts[k]:
-                res[k].extend(_split_candidate_lines(parts[k]))
-        return res
-    for cand in _split_candidate_lines(text):
-        sec, clean = _route_line(cand)
-        if sec=="Location" and "location/material" in cand.lower():
-            res["Location"].append(clean); res["Materials/Description"].append(clean); continue
-        res[sec].append(clean)
-    if not any(res.values()):
-        res["Observations"] = ["No visible issues."]
-    return res
-
-# ---------- Status icon helpers ----------
-def _sprite_split_if_needed() -> tuple[str|None, str|None]:
-    crit, imp = STATUS_CRITICAL_ICON, STATUS_IMPORTANT_ICON
-    if os.path.exists(crit) and os.path.exists(imp):
-        return crit, imp
-    if os.path.exists(STATUS_SPRITE):
-        try:
-            with Image.open(STATUS_SPRITE) as im:
-                im = ImageOps.exif_transpose(im)
-                w,h = im.size
-                mid = w//2
-                left = im.crop((0,0,mid,h))
-                right = im.crop((mid,0,w,h))
-                tmp = Path(tempfile.gettempdir())
-                crit_path = str(tmp / "status_crit.png")
-                imp_path  = str(tmp / "status_imp.png")
-                left.save(crit_path); right.save(imp_path)
-                return crit_path, imp_path
-        except Exception:
-            return None, None
-    return (crit if os.path.exists(crit) else None,
-            imp if os.path.exists(imp) else None)
-
-class StatusIconsFlowable(Flowable):
-    def __init__(self, width, critical: bool, important: bool):
-        super().__init__()
-        self.width = width
-        self.critical = critical
-        self.important = important
-        self.height = STATUS_ICON_PT + 6
-        self._crit_path, self._imp_path = _sprite_split_if_needed()
-
-    def wrap(self, availWidth, availHeight):
-        return (self.width, self.height)
-
-    def _draw_one(self, c, x, icon_path, label):
-        if icon_path and os.path.exists(icon_path):
-            try:
-                img = ImageReader(icon_path)
-                c.drawImage(img, x, 0, width=STATUS_ICON_PT, height=STATUS_ICON_PT,
-                            preserveAspectRatio=True, mask="auto")
-                x += STATUS_ICON_PT + 6
-            except Exception:
-                pass
-        c.setFont("Helvetica", STATUS_ICON_LABEL_SIZE)
-        c.setFillColor(HexColor("#333333"))
-        c.drawString(x, STATUS_ICON_PT * 0.28, label)
-        return x + c.stringWidth(label, "Helvetica", STATUS_ICON_LABEL_SIZE) + 12
-
-    def draw(self):
-        c = self.canv
-        x = 0
-        if self.critical:
-            x = self._draw_one(c, x, self._crit_path, "critical")
-        if self.important:
-            x = self._draw_one(c, x, self._imp_path, "important repair")
-
-# --- NEW: Only show wrench when repair/action words appear ---
-def _detect_status_flags(data_dict: dict) -> tuple[bool,bool]:
-    # ignore placeholders
-    issues = [t.lower() for t in data_dict.get("Potential Issues", [])
-              if "no visible issues" not in t.lower()]
-    if not issues:
-        return False, False
-
-    # critical only if the word appears
-    crit = any("critical" in t for t in issues)
-
-    # wrench only if a repair/action keyword appears (or explicit 'important')
-    def matches_action(t: str) -> bool:
-        if "important" in t:
-            return True
-        for raw in REPAIR_KEYWORDS:
-            w = raw.strip().lower()
-            if not w:
-                continue
-            # word-boundary-ish match (supports hyphenated like re-caulk)
-            if re.search(rf"(?<![a-z0-9]){re.escape(w)}(?![a-z0-9])", t):
-                return True
-        return False
-
-    imp = any(matches_action(t) for t in issues)
-    return crit, imp
-
-def _build_note_paragraphs(note_text_or_dict):
-    flows = []
-    data = _normalize_observation(note_text_or_dict)
-    for section in ORDERED_SECTIONS:
-        style = NOTE_SECTION_RECS if section=="Recommendations" else NOTE_SECTION
-        flows.append(Paragraph(f"<b>{section}</b>", style))
-        if section=="Potential Issues":
-            cflag, iflag = _detect_status_flags(data)
-            if cflag or iflag:
-                flows.append(StatusIconsFlowable(NOTEBOX_W - 24, cflag, iflag))
-        bullets = data.get(section, [])
-        if bullets:
-            for b in bullets:
-                flows.append(Paragraph(b, NOTE_BULLET, bulletText="•"))
-        else:
-            flows.append(Paragraph("None noted.", NOTE_BODY))
-    return flows
-
-def _measure_total_height(flows, avail_width) -> float:
-    total = 0.0
-    for f in flows:
-        _, h = f.wrap(avail_width, 10000)
-        total += h
-    return total
-
-# ---------------- Drawing helpers ----------------
-def _brand_bar(c: canvas.Canvas):
-    c.setFillColor(HexColor(BRAND_PRIMARY))
-    c.rect(0, PAGE_H - 14, PAGE_W, 14, fill=1, stroke=0)
-    c.setFillColor(HexColor("#000000"))
-
-def _add_page_header(c: canvas.Canvas, address: str):
-    _brand_bar(c)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(MARGIN, PAGE_H - MARGIN + 6, address)
-
-def _draw_cover_page(c: canvas.Canvas, address: str):
-    header_h = 1.15 * inch
-    c.setFillColor(HexColor(BRAND_PRIMARY))
-    c.rect(0, PAGE_H - header_h, PAGE_W, header_h, fill=1, stroke=0)
-
-    pad_h = 0.20 * inch; pad_w = 0.35 * inch
-    logo_max_h = header_h - 2*pad_h
-    logo_max_w = (PAGE_W / 2.8)
-    x_logo = MARGIN; y_logo = PAGE_H - header_h + pad_h
-
-    if BANNER_PATH and os.path.exists(BANNER_PATH):
-        try:
-            img = ImageReader(BANNER_PATH)
-            iw, ih = img.getSize()
-            scale = min(logo_max_w/iw, logo_max_h/ih, 1.0)
-            lw, lh = iw*scale, ih*scale
-            c.drawImage(img, x_logo, y_logo, lw, lh, preserveAspectRatio=True, mask="auto")
-        except Exception:
-            pass
-
-    c.setFillColor(HexColor("#ffffff"))
-    title = "Property Inspection Report"
-    base_x = x_logo + logo_max_w + pad_w
-    title_x = max(MARGIN + 0.20*inch, base_x - COVER_TITLE_SHIFT_LEFT_IN*inch)
-    c.setFont("Helvetica-Bold", 26); c.drawString(title_x, PAGE_H - header_h/2 + 8, title)
-    c.setFont("Helvetica-Bold", 13); c.drawString(title_x, PAGE_H - header_h/2 - 10, address)
-    c.setFillColor(HexColor("#000000"))
-
-    # Prepared-by box
-    box_x = MARGIN; box_y = PAGE_H - header_h - 1.20*inch
-    box_w = PAGE_W - 2*MARGIN; box_h = 0.95*inch
-    c.setFillColor(HexColor("#f5f6fb")); c.roundRect(box_x, box_y, box_w, box_h, 12, fill=1, stroke=0)
-    c.setFillColor(HexColor("#333333")); c.setFont("Helvetica-Bold", 14)
-    c.drawString(box_x + 18, box_y + box_h - 24, "Prepared by:")
-
-    c.setFont("Helvetica", 12.5)
-    line_x = box_x + 135; line_y = box_y + box_h - 24
-    if BUSINESS_NAME:  c.drawString(line_x, line_y, BUSINESS_NAME);  line_y -= 18
-    if BUSINESS_LINE2: c.drawString(line_x, line_y, BUSINESS_LINE2); line_y -= 18
-    if BUSINESS_LINE1: c.drawString(line_x, line_y, BUSINESS_LINE1); line_y -= 18
-
-    import datetime as _dt
-    c.setFont("Helvetica", 10); c.setFillColor(HexColor("#666666"))
-    c.drawString(MARGIN, MARGIN + 0.5*inch, _dt.datetime.now().strftime("%B %d, %Y"))
-    c.setFillColor(HexColor("#777777")); c.drawRightString(PAGE_W - MARGIN, MARGIN, "1")
-    c.setFillColor(HexColor("#000000"))
-
-def _draw_photo(c: canvas.Canvas, img_path: Path):
-    with Image.open(img_path) as im:
-        im = ImageOps.exif_transpose(im)
-        w_px, h_px = im.size
-
-        # upscale tiny images/icons so they’re visible
-        min_display_w = 2.0 * inch
-        min_display_h = 2.0 * inch
-
-        scale_fit = min(IMG_MAX_W / w_px, IMG_MAX_H / h_px)
-        disp_w, disp_h = w_px * scale_fit, h_px * scale_fit
-
-        if disp_w < min_display_w or disp_h < min_display_h:
-            up = min(min_display_w / max(1, disp_w), min_display_h / max(1, disp_h))
-            disp_w, disp_h = disp_w * up, disp_h * up
-
-        if disp_h > IMG_MAX_H:
-            clamp = IMG_MAX_H / disp_h
-            disp_w, disp_h = disp_w * clamp, disp_h * clamp
-
-        y = PAGE_H - MARGIN - disp_h
-        src = getattr(im, "filename", None) or im
-        c.drawImage(ImageReader(src), MARGIN, y, width=disp_w, height=disp_h,
-                    preserveAspectRatio=True, mask="auto")
-
-def _draw_notes_panel(c: canvas.Canvas, note_text_or_dict):
-    inset = 12
-    content_w = NOTEBOX_W - 2*inset
-    flows = _build_note_paragraphs(note_text_or_dict)
-    needed_h = _measure_total_height(flows, content_w) + 2*inset
-    panel_h = min(max(NOTEBOX_BASE_H, needed_h), PAGE_H - 2*MARGIN)
-
-    c.setFillColor(HexColor("#f8f8f8"))
-    c.roundRect(NOTEBOX_X, PAGE_H - MARGIN - panel_h, NOTEBOX_W, panel_h, 12, fill=1, stroke=0)
-    c.setStrokeColor(HexColor("#d0d0d0")); c.setLineWidth(0.7)
-    c.roundRect(NOTEBOX_X, PAGE_H - MARGIN - panel_h, NOTEBOX_W, panel_h, 12, fill=0, stroke=1)
-    c.setStrokeColor(HexColor("#000000"))
-
-    frame = Frame(NOTEBOX_X + inset, PAGE_H - MARGIN - panel_h + inset,
-                  content_w, panel_h - 2*inset, showBoundary=0)
-    kif = KeepInFrame(content_w, panel_h - 2*inset, flows, mode="shrink")
-    frame.addFromList([kif], c)
-
-# ---------------- ZIP handling ----------------
-def collect_images_from_zip(zip_path: Path, workdir: Path) -> list[Path]:
-    with zipfile.ZipFile(zip_path, "r") as z:
-        z.extractall(workdir)
-    exts = {".jpg", ".jpeg", ".png", ".webp"}
-    imgs = [p for p in Path(workdir).rglob("*") if p.suffix.lower() in exts]
-    imgs.sort()
-    return imgs
-
-# ---------------- Analysis (parallel) ----------------
-def _analyze_one(p: Path) -> tuple[Path, str, Exception | None]:
-    """Analyze a single image with error handling."""
-    try:
-        notes = describe_image(p)
-        return p, notes, None
-    except Exception as e:
-        logger.warning(f"Failed to analyze {p.name}: {e}")
-        return p, "Analysis failed - using fallback.", e
-
-# ---------------- Photo preservation for gallery ----------------
-def preserve_photos_for_gallery(report_id: str, images: list[Path], property_folder: Path) -> dict[Path, str]:
-    """Copy photos to property folder for web gallery viewing."""
-    photo_dir = property_folder / "photos"
-    photo_dir.mkdir(parents=True, exist_ok=True)
+def db_init():
+    """Initialize database with required tables"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
     
-    photo_mapping = {}
-    for idx, img_path in enumerate(images):
-        # Create a clean filename
-        ext = img_path.suffix.lower()
-        new_filename = f"photo_{idx+1:03d}{ext}"
-        dest_path = photo_dir / new_filename
-        
-        # Copy and optionally resize for web
-        try:
-            img = Image.open(img_path)
-            img = ImageOps.exif_transpose(img)
-            
-            # Resize if too large (max 1920px wide for web)
-            if img.width > 1920:
-                ratio = 1920 / img.width
-                new_size = (1920, int(img.height * ratio))
-                img = img.resize(new_size, Image.Resampling.LANCZOS)
-            
-            # Save with optimization
-            if ext in ['.jpg', '.jpeg']:
-                img.save(dest_path, 'JPEG', quality=85, optimize=True)
-            else:
-                img.save(dest_path, 'PNG', optimize=True)
-            
-            # Store the path relative to the property folder
-            web_path = f"photos/{new_filename}"
-            photo_mapping[img_path] = web_path
-            
-        except Exception as e:
-            logger.warning(f"Failed to preserve photo {img_path.name}: {e}")
-            photo_mapping[img_path] = None
+    # Create tables if they don't exist
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS clients (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
     
-    return photo_mapping
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS properties (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_id INTEGER,
+            address TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (client_id) REFERENCES clients(id)
+        )
+    ''')
+    
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS reports (
+            id TEXT PRIMARY KEY,
+            property_id INTEGER,
+            web_dir TEXT,
+            pdf_path TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (property_id) REFERENCES properties(id)
+        )
+    ''')
+    
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS tokens (
+            token TEXT PRIMARY KEY,
+            kind TEXT NOT NULL,
+            report_id TEXT,
+            expires_at TEXT NOT NULL,
+            revoked INTEGER DEFAULT 0,
+            payload_json TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (report_id) REFERENCES reports(id)
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
 
-# ---------------- JSON generation ----------------
-def generate_json_report(report_id: str, address: str, images: list[Path], results: dict[Path, str], photo_mapping: dict[Path, str] = None) -> dict:
-    """Generate JSON report with normalized notes and flags."""
-    photos = []
-    critical_count = 0
-    important_count = 0
-    
-    for img_path in images:
-        note_text = results.get(img_path, "No visible issues.")
-        normalized = _normalize_observation(note_text)
-        critical, important = _detect_status_flags(normalized)
-        
-        if critical:
-            critical_count += 1
-        if important:
-            important_count += 1
-        
-        photo_data = {
-            "file_name": img_path.name,
-            "notes": normalized,
-            "flags": {
-                "critical": critical,
-                "important": important
-            }
-        }
-        
-        # Add image path if available
-        if photo_mapping and img_path in photo_mapping:
-            photo_data["image_path"] = photo_mapping[img_path]
-        
-        photos.append(photo_data)
-    
-    return {
-        "report_id": report_id,
-        "address": address,
-        "generated_at": datetime.now().isoformat(),
-        "totals": {
-            "photos": len(images),
-            "critical_issues": critical_count,
-            "important_issues": important_count
-        },
-        "photos": photos
-    }
+def db_connect():
+    """Connect to database with row factory"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-def update_reports_index(report_id: str, address: str, pdf_path: Path, json_path: Path, 
-                        photo_count: int, critical_count: int, important_count: int):
-    """Update the reports index file with new report record."""
-    index_path = Path("output") / "reports_index.json"
+def db_upsert_client(conn: sqlite3.Connection, name: str, email: str = "") -> int:
+    """Insert or update client and return client ID"""
+    cur = conn.cursor()
     
-    # Load existing index or create new
-    if index_path.exists():
-        with open(index_path, 'r') as f:
-            index = json.load(f)
-    else:
-        index = {"reports": []}
+    # Check if client exists
+    cur.execute("SELECT id FROM clients WHERE name = ? AND email = ?", (name, email))
+    row = cur.fetchone()
     
-    # Add new report record
-    new_record = {
-        "report_id": report_id,
-        "address": address,
-        "created_at": datetime.now().isoformat(),
-        "pdf_path": str(pdf_path),
-        "json_path": str(json_path),
-        "photo_count": photo_count,
-        "critical_count": critical_count,
-        "important_count": important_count
-    }
+    if row:
+        return row['id']
     
-    # Upsert - remove old record if exists, add new
-    index["reports"] = [r for r in index.get("reports", []) if r.get("report_id") != report_id]
-    index["reports"].append(new_record)
-    
-    # Save updated index
-    index_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(index_path, 'w') as f:
-        json.dump(index, f, indent=2)
+    # Insert new client
+    cur.execute("INSERT INTO clients (name, email) VALUES (?, ?)", (name, email))
+    conn.commit()
+    return cur.lastrowid
 
-# ---------------- Main PDF generator ----------------
-def generate_pdf(address: str, images: list[Path], out_pdf: Path) -> dict[Path, str]:
-    c = canvas.Canvas(str(out_pdf), pagesize=LETTER)
+def db_upsert_property(conn: sqlite3.Connection, client_id: int, address: str) -> int:
+    """Insert or update property and return property ID"""
+    cur = conn.cursor()
+    
+    # Check if property exists
+    cur.execute("SELECT id FROM properties WHERE client_id = ? AND address = ?", (client_id, address))
+    row = cur.fetchone()
+    
+    if row:
+        return row['id']
+    
+    # Insert new property
+    cur.execute("INSERT INTO properties (client_id, address) VALUES (?, ?)", (client_id, address))
+    conn.commit()
+    return cur.lastrowid
 
-    # Cover page
-    _draw_cover_page(c, address)
-    c.showPage()
-    _add_page_header(c, address)
+def db_insert_report(conn: sqlite3.Connection, report_id: str, property_id: int, web_dir: str, pdf_path: str) -> str:
+    """Insert report and return report ID"""
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO reports (id, property_id, web_dir, pdf_path) VALUES (?, ?, ?, ?)",
+        (report_id, property_id, web_dir, pdf_path)
+    )
+    conn.commit()
+    return report_id
 
+def db_create_token(conn: sqlite3.Connection, kind: str, ttl_hours: int, 
+                   report_id: Optional[str] = None, payload_json: Optional[str] = None) -> str:
+    """Create access token with expiration"""
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.utcnow() + timedelta(hours=ttl_hours)).isoformat() + 'Z'
+    
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO tokens (token, kind, report_id, expires_at, payload_json) VALUES (?, ?, ?, ?, ?)",
+        (token, kind, report_id, expires_at, payload_json)
+    )
+    conn.commit()
+    return token
+
+def now_iso() -> str:
+    """Return current time in ISO format"""
+    return datetime.utcnow().isoformat() + 'Z'
+
+# ============== Image Processing Functions ==============
+
+def extract_zip(zip_path: Path) -> Path:
+    """Extract ZIP file to temporary directory and return path to photos"""
+    extract_dir = Path(tempfile.mkdtemp(prefix="inspection_"))
+    
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        z.extractall(extract_dir)
+    
+    # Check for common photo directory names
+    for subdir_name in ['photos', 'images', 'Pictures']:
+        subdir = extract_dir / subdir_name
+        if subdir.exists() and subdir.is_dir():
+            return subdir
+    
+    # Return root extraction dir if no subdirectory found
+    return extract_dir
+
+def collect_images(photos_dir: Path) -> List[Path]:
+    """Collect all image files from directory"""
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'}
+    images = []
+    
+    for file_path in photos_dir.rglob('*'):
+        if file_path.is_file() and file_path.suffix.lower() in image_extensions:
+            images.append(file_path)
+    
+    # Sort by name for consistent ordering
+    images.sort(key=lambda p: p.name.lower())
+    return images
+
+def analyze_images(images: List[Path]) -> Dict[str, str]:
+    """Analyze all images using vision AI with concurrent processing"""
+    import concurrent.futures
+    import threading
+    
+    results = {}
     total = len(images)
-    start = time.time()
-
-    # Analyze images in parallel (frontend reads these progress lines)
-    results: dict[Path, str] = {}
-    errs: dict[Path, Exception] = {}
-    done = 0
-
-    print(f"Starting analysis of {total} images with {ANALYSIS_CONCURRENCY} workers...", flush=True)
-    with concurrent.futures.ThreadPoolExecutor(max_workers=ANALYSIS_CONCURRENCY) as ex:
-        futs = {ex.submit(_analyze_one, p): p for p in images}
-        for fut in concurrent.futures.as_completed(futs):
-            p, notes, err = fut.result()
-            results[p] = notes
-            if err:
-                errs[p] = err
-            done += 1
-            elapsed = time.time() - start
-            avg = elapsed / max(1, done)
-            eta = int(avg * (total - done))
-            print(f"[{done}/{total}] {p.name}  | elapsed {int(elapsed)}s  ETA ~{eta}s", flush=True)
-
-    # Assemble pages
-    for p in images:
-        _draw_photo(c, p)
-        _draw_notes_panel(c, results.get(p, "No visible issues."))
-        c.showPage()
-        _add_page_header(c, address)
-
-    c.save()
-
-    if errs:
-        logger.warning(f"Completed with {len(errs)} image(s) using fallback notes due to errors.")
-        for path, error in errs.items():
-            logger.debug(f"  {path.name}: {error}")
+    
+    # Get concurrency setting from environment
+    max_workers = int(os.getenv('ANALYSIS_CONCURRENCY', '3'))
+    
+    print(f"Starting analysis of {total} images (concurrency={max_workers})...")
+    
+    # Thread-safe counter for progress
+    counter_lock = threading.Lock()
+    counter = [0]
+    
+    def analyze_one(img_path: Path) -> Tuple[str, str]:
+        """Analyze a single image and return path and result"""
+        with counter_lock:
+            counter[0] += 1
+            current = counter[0]
+        
+        print(f"[{current}/{total}] Analyzing {img_path.name}...")
+        try:
+            analysis = describe_image(img_path)
+            return str(img_path), analysis
+        except Exception as e:
+            print(f"  Error analyzing {img_path.name}: {e}")
+            return str(img_path), f"Analysis failed: {str(e)}"
+    
+    # Process images concurrently
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all tasks
+        futures = [executor.submit(analyze_one, img) for img in images]
+        
+        # Collect results as they complete
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                path, analysis = future.result()
+                results[path] = analysis
+            except Exception as e:
+                print(f"  Unexpected error: {e}")
     
     return results
 
-# ---------------- CLI ----------------
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--zip", required=True, type=Path, help="Path to a .zip containing photos")
-    parser.add_argument("--address", required=False, type=str, help="Report title/address (defaults to ZIP name)")
-    parser.add_argument("--out", required=False, type=Path, help="Optional output PDF path")
-    args = parser.parse_args()
+# ============== Report Generation Functions ==============
 
-    if not args.zip.exists():
-        raise SystemExit(f"ZIP not found: {args.zip}")
+def parse_analysis(text: str) -> Dict[str, Any]:
+    """Parse vision analysis text into structured sections"""
+    sections = {
+        "location": "",
+        "observations": [],
+        "potential_issues": [],
+        "recommendations": []
+    }
+    
+    current_section = None
+    lines = text.strip().split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        
+        # Check for section headers
+        if line.lower().startswith("location:"):
+            current_section = "location"
+            sections[current_section] = line.split(":", 1)[1].strip() if ":" in line else ""
+        elif line.lower().startswith("observations:"):
+            current_section = "observations"
+        elif line.lower().startswith("potential issues:"):
+            current_section = "potential_issues"
+        elif line.lower().startswith("recommendations:"):
+            current_section = "recommendations"
+        elif line.startswith("- ") and current_section in ["observations", "potential_issues", "recommendations"]:
+            sections[current_section].append(line[2:].strip())
+        elif line and current_section == "location":
+            sections[current_section] += " " + line
+        elif line and current_section in ["observations", "potential_issues", "recommendations"]:
+            sections[current_section].append(line)
+    
+    return sections
 
-    # Generate a unique report ID
-    report_id = str(uuid.uuid4())
+def categorize_issue(sections: Dict[str, Any]) -> str:
+    """Categorize issue severity based on analysis content"""
+    critical_keywords = ["structural", "foundation", "roof leak", "electrical hazard", 
+                        "gas leak", "mold", "asbestos", "safety", "immediate", "dangerous"]
+    important_keywords = ["repair", "replace", "damage", "deteriorat", "crack", "leak", 
+                         "moisture", "worn", "failing", "maintenance needed"]
     
-    address = args.address or args.zip.stem.replace("_", " ").replace("-", " ")
+    # Combine text for analysis
+    text = " ".join(sections.get("potential_issues", [])) + " " + " ".join(sections.get("recommendations", []))
+    text_lower = text.lower()
     
-    # Create a clean folder name for this property
-    safe_address = re.sub(r'[^\w\s-]', '', address).strip().replace(' ', '_').lower()
-    property_folder = Path("output") / "properties" / safe_address
-    property_folder.mkdir(parents=True, exist_ok=True)
+    # Check for critical issues
+    for keyword in critical_keywords:
+        if keyword in text_lower:
+            return "critical"
     
-    # All files for this property go in its folder
-    out_pdf = args.out or property_folder / f"{safe_address}.pdf"
-    out_json = property_folder / f"{report_id}.json"
+    # Check for important issues
+    for keyword in important_keywords:
+        if keyword in text_lower:
+            return "important"
+    
+    return "minor"
 
-    with tempfile.TemporaryDirectory() as td:
-        imgs = collect_images_from_zip(args.zip, Path(td))
-        if not imgs:
-            raise SystemExit("No images found in ZIP.")
+def save_report_json(report_data: Dict[str, Any], output_dir: Path) -> Path:
+    """Save report data as JSON for template consumption"""
+    json_path = output_dir / "report.json"
+    
+    # Enhanced JSON structure with metadata
+    enhanced_data = {
+        **report_data,
+        'generated_at': datetime.now().isoformat(),
+        'version': '2.0',
+        'categories': categorize_photos(report_data['items']),
+        'statistics': calculate_statistics(report_data['items'])
+    }
+    
+    json_path.write_text(json.dumps(enhanced_data, indent=2), encoding='utf-8')
+    return json_path
+
+def categorize_photos(items: List[Dict]) -> Dict[str, List[int]]:
+    """Categorize photos by location and severity"""
+    categories = {
+        'by_location': {},
+        'by_severity': {'critical': [], 'important': [], 'minor': []},
+        'by_type': {}
+    }
+    
+    for i, item in enumerate(items):
+        # By severity
+        categories['by_severity'][item['severity']].append(i)
         
-        # Generate PDF and get results
-        results = generate_pdf(address, imgs, out_pdf)
+        # By location
+        location = item.get('location', 'General').split(':')[0].strip()
+        if location not in categories['by_location']:
+            categories['by_location'][location] = []
+        categories['by_location'][location].append(i)
         
-        # Preserve photos for gallery
-        photo_mapping = preserve_photos_for_gallery(report_id, imgs, property_folder)
+        # By issue type (extracted from observations)
+        for obs in item.get('observations', []):
+            if 'water' in obs.lower() or 'leak' in obs.lower():
+                categories['by_type'].setdefault('Water/Moisture', []).append(i)
+            if 'electrical' in obs.lower():
+                categories['by_type'].setdefault('Electrical', []).append(i)
+            if 'structural' in obs.lower():
+                categories['by_type'].setdefault('Structural', []).append(i)
+    
+    return categories
+
+def calculate_statistics(items: List[Dict]) -> Dict:
+    """Calculate report statistics"""
+    return {
+        'total_photos': len(items),
+        'critical_count': sum(1 for item in items if item['severity'] == 'critical'),
+        'important_count': sum(1 for item in items if item['severity'] == 'important'),
+        'minor_count': sum(1 for item in items if item['severity'] == 'minor'),
+        'has_issues': sum(1 for item in items if item.get('potential_issues')),
+        'needs_action': sum(1 for item in items if item.get('recommendations'))
+    }
+
+def generate_html_report(report_data: Dict[str, Any], output_dir: Path) -> Path:
+    """Generate HTML report with all photos and analysis"""
+    html_path = output_dir / "index.html"
+    
+    # Count issues by severity
+    critical_count = sum(1 for item in report_data['items'] if item['severity'] == 'critical')
+    important_count = sum(1 for item in report_data['items'] if item['severity'] == 'important')
+    minor_count = sum(1 for item in report_data['items'] if item['severity'] == 'minor')
+    
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Report - {report_data['property_address']}</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+        }}
+        .header {{
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(44, 62, 80, 0.1);
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }}
+        .header::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #e74c3c 0%, #2c3e50 100%);
+        }}
+        .logo-section {{
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }}
+        .logo-icon {{
+            position: relative;
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+        }}
+        .logo-house {{
+            width: 35px;
+            height: 35px;
+            background: #2c3e50;
+            transform: rotate(45deg);
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }}
+        .logo-window {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+        }}
+        .logo-window span {{
+            background: white;
+            display: block;
+        }}
+        .logo-check {{
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }}
+        .logo-check::after {{
+            content: '';
+            width: 8px;
+            height: 4px;
+            border: 2px solid white;
+            border-top: none;
+            border-right: none;
+            transform: rotate(-45deg);
+            margin-bottom: 2px;
+        }}
+        .logo-text {{
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }}
+        .header h1 {{
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }}
+        .header-info {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }}
+        .header-info-item {{
+            display: flex;
+            flex-direction: column;
+        }}
+        .header-info-label {{
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }}
+        .header-info-value {{
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }}
+        .summary {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        .summary-card {{
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(44, 62, 80, 0.1);
+        }}
+        .summary-card:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }}
+        .summary-card .number {{
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }}
+        .summary-card .label {{
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+        }}
+        .critical {{ 
+            color: #e74c3c;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }}
+        .important {{ 
+            color: #f39c12;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }}
+        .minor {{ 
+            color: #27ae60;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }}
+        .item {{
+            background: rgba(255, 255, 255, 0.98);
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            border: 1px solid rgba(44, 62, 80, 0.1);
+            transition: transform 0.3s ease;
+        }}
+        .item:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+        }}
+        .item-header {{
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 3px solid #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }}
+        .item-header h3 {{
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+            font-weight: 600;
+        }}
+        .severity-badge {{
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }}
+        .severity-critical {{
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }}
+        .severity-important {{
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }}
+        .severity-minor {{
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }}
+        .item-image {{
+            width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }}
+        .item-content {{
+            padding: 30px;
+            background: white;
+        }}
+        .section {{
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2c3e50;
+        }}
+        .section h4 {{
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+        .section ul {{
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+        }}
+        .section li {{
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.8;
+            color: #495057;
+        }}
+        .section li::before {{
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #e74c3c;
+            font-weight: bold;
+        }}
+        .footer {{
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(44, 62, 80, 0.1);
+        }}
+        .footer-logo {{
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }}
+        .footer-text {{
+            color: #7f8c8d;
+            font-size: 14px;
+        }}
+        @media print {{
+            body {{ background: white; }}
+            .item {{ page-break-inside: avoid; box-shadow: none; }}
+            .summary-card {{ box-shadow: none; }}
+            .header {{ box-shadow: none; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <div class="logo-house">
+                        <div class="logo-window">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="logo-check"></div>
+                </div>
+                <div class="logo-text">CheckMyRental</div>
+            </div>
+            <h1>Property Inspection Report</h1>
+            <div class="header-info">
+                <div class="header-info-item">
+                    <div class="header-info-label">Property Address</div>
+                    <div class="header-info-value">{report_data['property_address']}</div>
+                </div>
+                <div class="header-info-item">
+                    <div class="header-info-label">Client</div>
+                    <div class="header-info-value">{report_data['client_name']}</div>
+                </div>
+                <div class="header-info-item">
+                    <div class="header-info-label">Inspection Date</div>
+                    <div class="header-info-value">{report_data['inspection_date']}</div>
+                </div>
+                <div class="header-info-item">
+                    <div class="header-info-label">Report ID</div>
+                    <div class="header-info-value">{report_data['report_id'][:8]}...</div>
+                </div>
+            </div>
+        </div>
         
-        # Generate JSON report with photo paths
-        json_report = generate_json_report(report_id, address, imgs, results, photo_mapping)
+        <div class="summary">
+            <div class="summary-card">
+                <div class="number">{len(report_data['items'])}</div>
+                <div class="label">Total Photos</div>
+            </div>
+            <div class="summary-card">
+                <div class="number critical">{critical_count}</div>
+                <div class="label">Critical Issues</div>
+            </div>
+            <div class="summary-card">
+                <div class="number important">{important_count}</div>
+                <div class="label">Important Issues</div>
+            </div>
+            <div class="summary-card">
+                <div class="number minor">{minor_count}</div>
+                <div class="label">Minor Issues</div>
+            </div>
+        </div>
+"""
+    
+    # Add each photo and analysis
+    for i, item in enumerate(report_data['items'], 1):
+        severity_class = f"severity-{item['severity']}"
         
-        # Save JSON file
-        with open(out_json, 'w') as f:
-            json.dump(json_report, f, indent=2)
+        # Copy image to output directory
+        img_path = Path(item['image_path'])
+        img_dest = output_dir / f"photo_{i:03d}{img_path.suffix}"
+        shutil.copy2(img_path, img_dest)
         
-        # Update reports index
-        update_reports_index(
-            report_id=report_id,
-            address=address,
-            pdf_path=out_pdf,
-            json_path=out_json,
-            photo_count=len(imgs),
-            critical_count=json_report["totals"]["critical_issues"],
-            important_count=json_report["totals"]["important_issues"]
+        html_content += f"""
+    <div class="item">
+        <div class="item-header">
+            <h3>Photo {i}: {item['location'] or 'General Area'}</h3>
+            <span class="severity-badge {severity_class}">{item['severity']}</span>
+        </div>
+        <img src="{img_dest.name}" alt="Photo {i}" class="item-image">
+        <div class="item-content">
+"""
+        
+        if item['observations']:
+            html_content += """
+            <div class="section">
+                <h4>Observations</h4>
+                <ul>
+"""
+            for obs in item['observations']:
+                html_content += f"                    <li>{obs}</li>\n"
+            html_content += """                </ul>
+            </div>
+"""
+        
+        if item['potential_issues']:
+            html_content += """
+            <div class="section">
+                <h4>Potential Issues</h4>
+                <ul>
+"""
+            for issue in item['potential_issues']:
+                html_content += f"                    <li>{issue}</li>\n"
+            html_content += """                </ul>
+            </div>
+"""
+        
+        if item['recommendations']:
+            html_content += """
+            <div class="section">
+                <h4>Recommendations</h4>
+                <ul>
+"""
+            for rec in item['recommendations']:
+                html_content += f"                    <li>{rec}</li>\n"
+            html_content += """                </ul>
+            </div>
+"""
+        
+        html_content += """        </div>
+    </div>
+"""
+    
+    html_content += """
+        <div class="footer">
+            <div class="footer-logo">CheckMyRental</div>
+            <div class="footer-text">Professional Property Inspection Services</div>
+            <div class="footer-text" style="margin-top: 10px;">© 2025 Altam CO LLC. All rights reserved.</div>
+        </div>
+    </div>
+</body>
+</html>
+"""
+    
+    html_path.write_text(html_content, encoding='utf-8')
+    return html_path
+
+def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results: Optional[Dict[str, str]] = None, client_name: str = "") -> None:
+    """Generate print-optimized PDF report with branded styling"""
+    from PIL import Image as PILImage
+    from reportlab.lib.colors import HexColor
+    
+    c = canvas.Canvas(str(out_pdf), pagesize=letter)
+    width, height = letter
+    
+    # Brand colors
+    primary_color = HexColor('#2c3e50')
+    accent_color = HexColor('#e74c3c')
+    gray_light = HexColor('#f8f9fa')
+    
+    # Cover page with branded header
+    # Draw header background
+    c.setFillColor(primary_color)
+    c.rect(0, height - 120, width, 120, fill=1, stroke=0)
+    
+    # Draw accent stripe
+    c.setFillColor(accent_color)
+    c.rect(0, height - 125, width, 5, fill=1, stroke=0)
+    
+    # Draw logo icon
+    logo_x = 72
+    logo_y = height - 80
+    
+    # House shape (rotated square)
+    c.saveState()
+    c.translate(logo_x + 20, logo_y + 20)
+    c.rotate(45)
+    c.setFillColor(HexColor('#ffffff'))
+    c.rect(-15, -15, 30, 30, fill=1, stroke=0)
+    c.restoreState()
+    
+    # Window grid
+    c.setFillColor(primary_color)
+    c.rect(logo_x + 14, logo_y + 14, 5, 5, fill=1)
+    c.rect(logo_x + 21, logo_y + 14, 5, 5, fill=1)
+    c.rect(logo_x + 14, logo_y + 21, 5, 5, fill=1)
+    c.rect(logo_x + 21, logo_y + 21, 5, 5, fill=1)
+    
+    # Check mark circle
+    c.setFillColor(accent_color)
+    c.circle(logo_x + 32, logo_y + 8, 8, fill=1, stroke=0)
+    c.setStrokeColor(HexColor('#ffffff'))
+    c.setLineWidth(2)
+    c.line(logo_x + 29, logo_y + 8, logo_x + 31, logo_y + 6)
+    c.line(logo_x + 31, logo_y + 6, logo_x + 35, logo_y + 10)
+    
+    # Brand name
+    c.setFillColor(HexColor('#ffffff'))
+    c.setFont("Helvetica-Bold", 36)
+    c.drawString(logo_x + 50, height - 60, "CheckMyRental")
+    c.setFont("Helvetica", 14)
+    c.drawString(logo_x + 50, height - 85, "Professional Property Inspection Services")
+    
+    # Property info box
+    c.setFillColor(gray_light)
+    c.roundRect(50, height - 380, width - 100, 230, 10, fill=1, stroke=0)
+    
+    # Title
+    c.setFillColor(primary_color)
+    c.setFont("Helvetica-Bold", 28)
+    c.drawString(72, height - 170, "Property Inspection Report")
+    
+    # Property details
+    c.setFont("Helvetica", 11)
+    c.setFillColor(HexColor('#7f8c8d'))
+    c.drawString(72, height - 210, "PROPERTY ADDRESS")
+    c.setFont("Helvetica-Bold", 16)
+    c.setFillColor(primary_color)
+    c.drawString(72, height - 230, address)
+    
+    if client_name:
+        c.setFont("Helvetica", 11)
+        c.setFillColor(HexColor('#7f8c8d'))
+        c.drawString(72, height - 260, "CLIENT")
+        c.setFont("Helvetica-Bold", 14)
+        c.setFillColor(primary_color)
+        c.drawString(72, height - 280, client_name)
+    
+    # Date and stats
+    c.setFont("Helvetica", 11)
+    c.setFillColor(HexColor('#7f8c8d'))
+    c.drawString(72, height - 310, "INSPECTION DATE")
+    c.setFont("Helvetica", 12)
+    c.setFillColor(primary_color)
+    c.drawString(72, height - 330, datetime.now().strftime('%B %d, %Y'))
+    
+    c.drawString(250, height - 310, f"Total Photos: {len(images)}")
+    
+    # Footer
+    c.setFont("Helvetica", 9)
+    c.setFillColor(HexColor('#7f8c8d'))
+    c.drawString(72, 40, "© 2025 Altam CO LLC. All rights reserved.")
+    c.drawString(width - 200, 40, "CheckMyRental.com")
+    
+    c.showPage()
+    
+    # Add each image with analysis
+    for i, img_path in enumerate(images, 1):
+        try:
+            # Compress image for smaller PDF size
+            with PILImage.open(img_path) as pil_img:
+                # Convert to RGB if necessary
+                if pil_img.mode in ('RGBA', 'P'):
+                    pil_img = pil_img.convert('RGB')
+                
+                # Resize if too large (max 1200px on longest side for print)
+                max_dim = max(pil_img.size)
+                if max_dim > 1200:
+                    scale = 1200 / max_dim
+                    new_size = (int(pil_img.width * scale), int(pil_img.height * scale))
+                    pil_img = pil_img.resize(new_size, PILImage.Resampling.LANCZOS)
+                
+                # Save to temporary compressed JPEG
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+                    pil_img.save(tmp.name, 'JPEG', quality=85, optimize=True)
+                    compressed_path = tmp.name
+            
+            # Page header with branding
+            c.setFillColor(primary_color)
+            c.rect(0, height - 50, width, 50, fill=1, stroke=0)
+            
+            # Small logo on each page
+            c.saveState()
+            c.translate(30, height - 25)
+            c.rotate(45)
+            c.setFillColor(HexColor('#ffffff'))
+            c.rect(-8, -8, 16, 16, fill=1, stroke=0)
+            c.restoreState()
+            
+            # Mini check mark
+            c.setFillColor(accent_color)
+            c.circle(38, height - 30, 4, fill=1, stroke=0)
+            
+            c.setFillColor(HexColor('#ffffff'))
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(50, height - 32, f"Photo {i} of {len(images)}")
+            c.setFont("Helvetica", 10)
+            c.drawString(width - 200, height - 32, address[:40])
+            
+            # Add compressed image
+            img = ImageReader(compressed_path)
+            img_width, img_height = img.getSize()
+            
+            # Calculate scaling to fit on page with room for text
+            max_width = width - 100
+            max_height = 400  # Leave room for analysis text
+            scale = min(max_width / img_width, max_height / img_height, 1.0)
+            
+            draw_width = img_width * scale
+            draw_height = img_height * scale
+            
+            # Center image horizontally
+            x = (width - draw_width) / 2
+            y = height - draw_height - 60
+            
+            # Draw image
+            c.drawImage(img, x, y, draw_width, draw_height, preserveAspectRatio=True)
+            
+            # Clean up temp file
+            os.unlink(compressed_path)
+            
+            # Add analysis text below image
+            if vision_results and str(img_path) in vision_results:
+                analysis = vision_results[str(img_path)]
+                
+                # Starting Y position for text
+                text_y = y - 20
+                
+                # Write analysis as simple text
+                c.setFont("Helvetica", 10)
+                lines = analysis.split('\n')
+                for line in lines:
+                    if text_y < 60:  # Start new page if running out of room
+                        c.setFont("Helvetica", 8)
+                        c.drawString(width - 100, 30, f"Page {c.getPageNumber()}")
+                        c.showPage()
+                        c.setFont("Helvetica-Bold", 12)
+                        c.drawString(50, height - 40, f"Photo {i} (continued)")
+                        text_y = height - 60
+                        c.setFont("Helvetica", 10)
+                    
+                    # Handle section headers with color coding
+                    if line.strip().endswith(':') and line.strip() in ['Location:', 'Observations:', 'Potential Issues:', 'Recommendations:']:
+                        if 'Issues' in line:
+                            c.setFillColor(accent_color)
+                        else:
+                            c.setFillColor(primary_color)
+                        c.setFont("Helvetica-Bold", 11)
+                        c.drawString(50, text_y, line.strip())
+                        c.setFillColor(HexColor('#333333'))
+                        c.setFont("Helvetica", 10)
+                        text_y -= 15
+                    elif line.strip().startswith('-'):
+                        # Wrap long lines
+                        text = line.strip()
+                        if len(text) > 90:
+                            words = text.split()
+                            current_line = ""
+                            for word in words:
+                                test_line = current_line + " " + word if current_line else word
+                                if len(test_line) > 90:
+                                    c.drawString(60, text_y, current_line)
+                                    text_y -= 12
+                                    current_line = word
+                                else:
+                                    current_line = test_line
+                            if current_line:
+                                c.drawString(60, text_y, current_line)
+                                text_y -= 12
+                        else:
+                            c.drawString(60, text_y, text)
+                            text_y -= 12
+                    elif line.strip():
+                        c.drawString(50, text_y, line.strip())
+                        text_y -= 12
+            
+            # Page number
+            c.setFont("Helvetica", 8)
+            c.drawString(width / 2 - 20, 30, f"Page {c.getPageNumber()}")
+            
+            c.showPage()
+            
+        except Exception as e:
+            print(f"Error adding {img_path.name} to PDF: {e}")
+            continue
+    
+    c.save()
+    print(f"PDF saved to: {out_pdf}")
+
+def build_reports(source_path: Path, client_name: str, property_address: str) -> Dict[str, Any]:
+    """
+    Main function to build inspection reports from source (ZIP or directory)
+    Returns artifacts dictionary with paths to generated files
+    """
+    print(f"\n{'='*60}")
+    print(f"Building report for: {property_address}")
+    print(f"Client: {client_name}")
+    print(f"{'='*60}\n")
+    
+    # Extract if ZIP, otherwise use as directory
+    if source_path.suffix.lower() == '.zip':
+        photos_dir = extract_zip(source_path)
+        cleanup_needed = True
+    else:
+        photos_dir = source_path
+        cleanup_needed = False
+    
+    try:
+        # Collect and analyze images
+        images = collect_images(photos_dir)
+        if not images:
+            raise ValueError(f"No images found in {photos_dir}")
+        
+        print(f"Found {len(images)} images to process")
+        
+        # Analyze images with vision AI
+        vision_results = analyze_images(images)
+        
+        # Generate report ID and create descriptive directory name
+        report_id = secrets.token_hex(16)
+        
+        # Create descriptive directory name from ZIP filename or property address
+        if source_path.suffix.lower() == '.zip':
+            # Use ZIP filename (without extension) as base
+            dir_name = source_path.stem
+        else:
+            # Use sanitized property address for directories
+            dir_name = property_address.replace(' ', '_').replace(',', '').replace('.', '')
+            dir_name = ''.join(c if c.isalnum() or c in '_-' else '_' for c in dir_name)
+        
+        # Add timestamp to ensure uniqueness
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        full_dir_name = f"{dir_name}_{timestamp}"
+        
+        print(f"\nREPORT_ID={report_id}")
+        print(f"OUTPUT_DIR={full_dir_name}")
+        
+        # Create output directory with descriptive name and organized subfolders
+        report_dir = OUTPUTS_DIR / full_dir_name
+        
+        # Create organized subfolder structure
+        web_dir = ensure_dir(report_dir / 'web')
+        photos_dir = ensure_dir(report_dir / 'photos')
+        analysis_dir = ensure_dir(report_dir / 'analysis')
+        pdf_dir = ensure_dir(report_dir / 'pdf')
+        
+        # Prepare report data
+        report_data = {
+            'report_id': report_id,
+            'client_name': client_name,
+            'property_address': property_address,
+            'inspection_date': datetime.now().strftime('%Y-%m-%d'),
+            'items': []
+        }
+        
+        # Copy photos to organized folder for reference and archival
+        for i, img_path in enumerate(images, 1):
+            # Copy image to photos subfolder with numbered prefix for archival
+            dest_path = photos_dir / f"{i:03d}_{img_path.name}"
+            shutil.copy2(img_path, dest_path)
+            
+            # Also copy to web/photos for web serving
+            web_photos_dir = ensure_dir(web_dir / 'photos')
+            web_photo_path = web_photos_dir / f"photo_{i:03d}{img_path.suffix}"
+            shutil.copy2(img_path, web_photo_path)
+        
+        # Save individual analysis files
+        for i, img_path in enumerate(images, 1):
+            analysis_text = vision_results.get(str(img_path), "")
+            if analysis_text:
+                analysis_file = analysis_dir / f"{i:03d}_{img_path.stem}_analysis.txt"
+                analysis_file.write_text(analysis_text, encoding='utf-8')
+        
+        # Process each image and analysis for report
+        for i, img_path in enumerate(images, 1):
+            analysis_text = vision_results.get(str(img_path), "")
+            sections = parse_analysis(analysis_text)
+            severity = categorize_issue(sections)
+            
+            # Create relative path for web access
+            web_image_path = f"photos/photo_{i:03d}{img_path.suffix}"
+            
+            report_data['items'].append({
+                'image_path': str(img_path),
+                'image_url': web_image_path,  # Relative URL for web access
+                'image_filename': img_path.name,
+                'location': sections['location'],
+                'observations': sections['observations'],
+                'potential_issues': sections['potential_issues'],
+                'recommendations': sections['recommendations'],
+                'severity': severity
+            })
+        
+        # Save enhanced JSON report data
+        json_path = save_report_json(report_data, web_dir)
+        print(f"JSON data saved: {json_path}")
+        
+        # Copy gallery template to web folder
+        template_src = Path('static/gallery-template.html')
+        if template_src.exists():
+            html_path = web_dir / 'index.html'
+            shutil.copy2(template_src, html_path)
+            print(f"Gallery template copied: {html_path}")
+        else:
+            # Fallback to generating HTML if template doesn't exist
+            html_path = generate_html_report(report_data, web_dir)
+            print(f"HTML report generated: {html_path}")
+        
+        # Generate PDF report in pdf subfolder
+        pdf_filename = f"{property_address.replace(' ', '_').replace(',', '')}_inspection.pdf"
+        pdf_path = pdf_dir / pdf_filename
+        generate_pdf(property_address, images, pdf_path, vision_results, client_name)
+        print(f"PDF report: {pdf_path}")
+        
+        # Also save a copy of JSON in main directory for reference
+        main_json_path = report_dir / 'report_data.json'
+        main_json_path.write_text(json.dumps(report_data, indent=2), encoding='utf-8')
+        
+        # Create summary file
+        summary_path = report_dir / 'summary.txt'
+        summary_content = f"""Property Inspection Report
+========================
+Property: {property_address}
+Client: {client_name}
+Date: {datetime.now().strftime('%B %d, %Y')}
+Report ID: {report_id}
+
+Total Photos: {len(images)}
+Issues Found: {sum(1 for item in report_data['items'] if item['potential_issues'])}
+
+Output Directory Structure:
+- /photos/ - Original inspection photos (archival copies)
+- /analysis/ - Individual AI analysis text files for each photo  
+- /pdf/ - PDF report optimized for printing
+- /web/ - HTML report with embedded photos for web viewing
+- report_data.json - Structured JSON data
+- summary.txt - This summary file
+"""
+        summary_path.write_text(summary_content, encoding='utf-8')
+        
+        return {
+            'report_id': report_id,
+            'web_dir': str(web_dir),
+            'pdf_path': str(pdf_path),
+            'html_path': str(html_path) if 'html_path' in locals() else str(web_dir / 'index.html'),
+            'json_path': str(json_path) if 'json_path' in locals() else str(web_dir / 'report.json'),
+            'client_name': client_name,
+            'property_address': property_address
+        }
+        
+    finally:
+        # Clean up temporary extraction directory
+        if cleanup_needed and photos_dir.exists():
+            try:
+                shutil.rmtree(photos_dir)
+            except Exception as e:
+                print(f"Warning: Could not clean up temp directory: {e}")
+
+def register_with_portal(artifacts: Dict[str, Any], client_name: str, client_email: str, 
+                        property_address: str, ttl_hours: int = 720) -> Dict[str, Any]:
+    """
+    Register report with portal and create access token
+    """
+    db_init()
+    conn = db_connect()
+    
+    try:
+        # Create or get client and property
+        client_id = db_upsert_client(conn, client_name, client_email)
+        property_id = db_upsert_property(conn, client_id, property_address)
+        
+        # Insert report
+        report_id = db_insert_report(
+            conn,
+            artifacts['report_id'],
+            property_id,
+            artifacts['web_dir'],
+            artifacts['pdf_path']
         )
         
-        # Copy gallery template to create individual HTML file for this report
-        template_path = Path("output") / "gallery_template.html"
-        if template_path.exists():
-            # HTML file goes in the property folder
-            out_html = property_folder / "report.html"
-            
-            # Read template and replace the default report ID
-            with open(template_path, 'r', encoding='utf-8') as f:
-                template_content = f.read()
-            
-            # Replace the default report ID with this specific report's ID
-            template_content = template_content.replace(
-                "const reportId = urlParams.get('id') || 'eab3af62-1ce6-4086-bcf3-8be09e930e61';",
-                f"const reportId = urlParams.get('id') || '{report_id}';"
-            )
-            
-            # Write the customized template
-            with open(out_html, 'w', encoding='utf-8') as f:
-                f.write(template_content)
-            
-            print(f"Wrote: {out_html}")
+        # Create view token
+        token = db_create_token(conn, kind='view', ttl_hours=ttl_hours, report_id=report_id)
+        
+        # Build share URL
+        share_url = f"{PORTAL_EXTERNAL_BASE_URL}/r/{token}"
+        
+        print(f"\n{'='*60}")
+        print(f"Report registered successfully!")
+        print(f"Share URL: {share_url}")
+        print(f"Token expires: {(datetime.utcnow() + timedelta(hours=ttl_hours)).strftime('%Y-%m-%d %H:%M UTC')}")
+        print(f"{'='*60}\n")
+        
+        return {
+            'report_id': report_id,
+            'token': token,
+            'share_url': share_url,
+            'expires_at': (datetime.utcnow() + timedelta(hours=ttl_hours)).isoformat() + 'Z'
+        }
+    finally:
+        conn.close()
 
-    print(f"Wrote: {out_pdf}")
-    print(f"Wrote: {out_json}")
-    print(f"REPORT_ID={report_id}")
-    print(f"Property folder: {property_folder}")
-    print(f"Photos saved: {property_folder / 'photos'}")
-    print(f"HTML Report: {property_folder / 'report.html'}")
-    print(f"Interactive Gallery: Open {property_folder / 'report.html'} in browser")
+# ============== CLI Interface ==============
+
+def main():
+    """Command-line interface for running reports"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Generate inspection report from photos')
+    parser.add_argument('--zip', type=str, help='Path to ZIP file containing photos')
+    parser.add_argument('--dir', type=str, help='Path to directory containing photos')
+    parser.add_argument('--client', type=str, default='Property Owner', help='Client name')
+    parser.add_argument('--email', type=str, default='', help='Client email')
+    parser.add_argument('--property', type=str, default='Property Address', help='Property address')
+    parser.add_argument('--register', action='store_true', help='Register with portal and generate share link')
+    
+    args = parser.parse_args()
+    
+    # Determine source
+    if args.zip:
+        source = Path(args.zip)
+        if not source.exists():
+            print(f"Error: ZIP file not found: {source}")
+            sys.exit(1)
+    elif args.dir:
+        source = Path(args.dir)
+        if not source.exists():
+            print(f"Error: Directory not found: {source}")
+            sys.exit(1)
+    else:
+        print("Error: Please specify --zip or --dir")
+        parser.print_help()
+        sys.exit(1)
+    
+    try:
+        # Generate reports
+        artifacts = build_reports(source, args.client, args.property)
+        
+        # Register with portal if requested
+        if args.register:
+            register_with_portal(artifacts, args.client, args.email, args.property)
+        
+        print("\nReport generation complete!")
+        
+    except Exception as e:
+        print(f"\nError: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

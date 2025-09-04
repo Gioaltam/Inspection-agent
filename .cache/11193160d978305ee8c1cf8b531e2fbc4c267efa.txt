@@ -1,28 +1,32 @@
 Location:
-- Front exterior facade and entry approach/ramp
+- Front exterior: façade, entry porch, wood ramp, sidewalk/yard
 
 Observations:
-- Single-story home with vinyl siding and asphalt shingle gable roof
-- Small covered stoop; no gutters/downspouts visible at eaves
-- Wood wheelchair ramp with cross-braced rails; painted, heavily weathered
-- Organic staining/algae on right-front siding; vine growth on left facade
-- Wood privacy fence at right side yard
+- One-story house; asphalt shingle roof; vinyl siding; small covered entry
+- Wood access ramp with simple wood guardrails; weathered finish
+- No gutters visible at front eave
+- Organic growth/stains on right-front siding; vegetation touching siding
+- Concrete sidewalk to ramp; turf encroaching
+- Loose cable/cord/hose visible near right side of ramp
 
 Potential Issues:
-- Ramp: warped/cupped/cracked decking boards; broken/missing boards near foot; loose/missing fasteners; misaligned/leaning rails; open guard/rail gaps; failed/peeling paint with bare wood substrate exposure
-- Trip/fall hazards at uneven transition from concrete to ramp; damaged board at base; loose doormat on sidewalk
-- Suspected wood rot at ramp components from prolonged moisture exposure
-- Failed/missing sealant/paint on exterior wood elements
-- Mold/mildew/algae staining on siding; potential moisture/splash-back
-- Vegetation/vines against siding—holds moisture and creates pest pathways
-- No gutters present—risk of water splash-back, siding staining, and foundation moisture
-- Possible pest entry points where siding terminates low to grade/around ramp interface (limited view)
+- Ramp boards cracked/split/warped; suspected rot at lower boards
+- Loose/missing fasteners; sections of ramp misaligned
+- Handrails/guards loose/damaged; openings large; low height; likely not to current safety standards
+- Uneven transition and gaps between sidewalk and ramp; missing/loose boards — trip/fall hazard
+- Worn/peeling finish exposing bare wood; lacks non-slip surface
+- No edge protection on ramp — fall risk
+- Algae/mildew staining on siding; moisture exposure; possible water intrusion risk
+- No gutters/downspouts at front — splash-back onto siding/ramp
+- Vegetation against siding — pest/rot risk
+- Unsecured surface cord/hose — trip hazard
+- Possible gaps at bottom of siding near ramp area — potential pest entry
 
 Recommendations:
-- Restrict use of ramp; have a qualified contractor evaluate and rebuild/repair to provide sound structure, secure fasteners, proper handrails/guards, code-compliant slope/landings, and slip-resistant surface
-- Replace any rotted/damaged ramp boards and rails; realign rails; tighten/replace fasteners; remove/replace loose doormat
-- Scrape, prime, and repaint/seal all exterior wood after repairs
-- Clean siding (soft wash) to remove algae/mildew; monitor for recurring moisture
-- Install gutters and downspouts with proper discharge away from foundation
-- Trim/remove vegetation contacting siding; maintain clearance from grade
-- Inspect siding-to-foundation/ramp interfaces for gaps; seal to deter pests and moisture intrusion
+- Have a licensed contractor evaluate and repair/rebuild ramp to current safety standards (structure, proper handrails/guards/edge protection, non-slip surface, proper landings)
+- Replace decayed/damaged boards; re-secure with corrosion-resistant fasteners; correct misalignment and sidewalk transition
+- Install gutters/downspouts with directed drainage away from house and ramp
+- Clean siding and ramp to remove algae/mildew; seal/paint wood surfaces
+- Trim vegetation away from siding; maintain clearance from grade
+- Inspect lower siding for gaps; repair/replace and seal; add pest screening as needed
+- Remove or secure any loose cords/hoses near the entry path

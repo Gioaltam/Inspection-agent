@@ -1,16 +1,22 @@
 Location:
-- Bathroom sink base cabinet
+- Under-sink cabinet (bathroom vanity)
 
 Observations:
-- White plastic P-trap to wall stub with slip-joint nuts
-- Corrugated flexible tailpiece/extension from gray sink tailpiece to trap
-- Braided water-supply lines/angle stop visible
-- Cabinet base and fittings appear dry; no active drips noted
+- Plastic tubular P-trap with slip-joint nuts
+- Corrugated/accordion tailpiece used to connect sink to trap
+- Wall drain stub-out at rear; rough opening around pipe
+- Braided water supply lines and angle stop visible
+- Items and an electrical cord stored on cabinet floor
+- No obvious active leaks or water staining observed
 
 Potential Issues:
-- Corrugated/accordion drain connector used as tailpiece; not code-approved in many areas, interior ridges trap debris and biofilm, restrict flow, and increase clog/odor/leak risk
+- Corrugated/accordion tailpiece restricts flow and traps debris; often not code-compliant
+- Multiple slip-joint connections increase leak points
+- Gap/unfinished opening around wall drain stub-out; potential pest entry/odor path
+- Electrical cord stored directly under plumbing; shock/fire risk if a leak occurs
 
 Recommendations:
-- Replace the flexible accordion tailpiece with a smooth, rigid tailpiece and proper slip-joint fittings; align trap with rigid offsets as needed
-- Test run after replacement and check all joints for leaks
-- Keep area under sink clear to allow early leak detection
+- Replace corrugated tailpiece with smooth-walled rigid tailpiece and proper fittings; align trap correctly
+- Inspect/tighten slip-joint nuts and monitor for drips; replace worn washers as needed
+- Seal wall penetration around drain (escutcheon/caulk/foam) to close gaps
+- Remove/relocate electrical cord and nonessential items from under sink to reduce damage and safety risk

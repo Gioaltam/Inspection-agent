@@ -77,7 +77,8 @@ async def process_report_upload(zip_path: str, client_id: str, property_id: str,
         extract_dir = photos_dir
 
         # 2. Run vision analysis (hook into your vision.py)
-        from scripts.vision import analyze_photos
+        # Import the vision analyzer from the project root module
+        from vision import analyze_photos
         vision_results = analyze_photos(photos_dir)
 
         # 3. Init storage & processor

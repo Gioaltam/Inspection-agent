@@ -1,0 +1,22 @@
+Location:
+- Exterior window, red-painted sill at ground level
+
+Observations:
+- Aluminum slider window with screen; visible oxidation/soiling on frame
+- Red painted masonry or concrete sill; scuffs, small chips/holes
+- Flat white cable routed through gap under bottom window frame and over sill
+
+Potential Issues:
+- Gaps/voids at bottom frame where cable passes; failed/missing sealant/caulk
+- Improper wiring: exterior cable not in conduit/UV-rated jacket; mechanical damage risk
+- Window weather seal likely compromised by cable; possible water intrusion path
+- Pest entry point at unsealed penetration
+- Substrate exposure from paint wear/chips on sill
+- Trip hazard from loose cable along exterior wall/walk path
+
+Recommendations:
+- Remove/relocate cable; install properly rated exterior wiring in conduit with sealed wall penetration and drip loop
+- Seal/caulk the frame-to-sill joint and any penetrations with exterior-grade sealant after cable relocation
+- Clean frame; prep and repaint sill with exterior-grade coating; patch chips/holes
+- Verify window closes/locks and weatherstrips seal after repairs
+- Monitor/inspect interior below this window for any moisture; address if found

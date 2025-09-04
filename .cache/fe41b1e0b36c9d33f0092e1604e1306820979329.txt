@@ -1,23 +1,22 @@
 Location:
-- Ceiling/wall-mounted HVAC register (room unspecified)
+- Interior wall near ceiling; small louvered HVAC register/grille
 
 Observations:
-- Small metal louvered register with two visible screws
-- Noticeable dust/soot on louvers and along top edge of grille
-- Slight discoloration/smudging on adjacent drywall
-- One center louver appears bent/out of alignment
-- Minor gap/shadowing at top flange where grille meets drywall
+- Painted textured drywall
+- Metal louvered register with two screws; adjustable center lever
+- Moderate dust/soot on louvers and along top edge
+- Dark “ghosting” stain on wall just above register
+- One louver appears bent/out of alignment
+- Register appears generally secure; no visible rust
 
 Potential Issues:
-- Dust buildup may restrict airflow and distribute particulates
-- Bent louver may reduce/alter airflow; potential damage
-- Possible air leakage at register-to-drywall joint drawing dust (gap/void)
-- Minor surface stain on drywall; no clear signs of active water intrusion or mold
-- No visible corrosion, missing fasteners, or electrical concerns
+- Dust buildup and wall staining indicate dirty airflow and/or air leakage at register/duct boot
+- Bent louver may restrict or misdirect airflow
+- Possible unsealed gap at boot-to-drywall suggested by filtration staining
+- No visible water intrusion, cracks, missing fasteners, or electrical hazards
 
 Recommendations:
-- Remove and clean register; vacuum/brush duct boot just behind grille
-- Straighten or replace damaged register if it doesn’t operate smoothly
-- Seal the duct boot to drywall behind the grille with mastic/caulk to reduce leakage and dust streaking
-- Check/replace HVAC filters; consider duct cleaning if heavy debris persists
-- Clean and touch up paint on surrounding drywall; monitor for recurring staining
+- Clean grille and surrounding surface; replace HVAC filter; consider duct/coil cleaning if debris persists
+- Straighten or replace damaged register
+- Air-seal boot-to-drywall with mastic/caulk to prevent filtration soiling; repaint after cleaning
+- HVAC technician to evaluate airflow balance and confirm tight duct connection, especially if this is a return grille

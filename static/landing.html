@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckMyRental - Smart Property Inspections</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f8f8;
+            color: #1a1a1a;
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #cbd5e1;
+        }
+
+        /* Starfield Background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        body.dark-mode .stars {
+            opacity: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: twinkle 4s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            animation: shoot 4s linear infinite;
+            z-index: 2;
+        }
+
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.6));
+            transform-origin: right center;
+            z-index: -1;
+        }
+
+        @keyframes shoot {
+            0% { transform: translateX(-100px) translateY(0) rotate(45deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(calc(100vw + 100px)) translateY(calc(100vh + 100px)) rotate(45deg); opacity: 0; }
+        }
+
+        .header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: white;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        body.dark-mode .header {
+            background: rgba(22, 27, 34, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(56, 68, 89, 0.3);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+            height: 80px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+        }
+
+        .logo-house {
+            width: 35px;
+            height: 35px;
+            background: #2c3e50;
+            transform: rotate(45deg);
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .logo-window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+        }
+
+        .logo-window span {
+            background: white;
+            display: block;
+        }
+
+        .logo-check {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-check::after {
+            content: '';
+            width: 8px;
+            height: 4px;
+            border: 2px solid white;
+            border-top: none;
+            border-right: none;
+            transform: rotate(-45deg) translateY(-1px);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .logo-text .check {
+            color: #1a1a1a;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .logo-text .check {
+            color: #e0e0e0;
+        }
+
+        .logo-text .my {
+            color: #1a1a1a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .logo-text .my {
+            color: #e0e0e0;
+        }
+
+        .logo-text .rental {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .menu a {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 1rem;
+            transition: all 0.3s;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            white-space: nowrap;
+        }
+
+        body.dark-mode .menu a {
+            color: #cbd5e1;
+        }
+
+        .menu a:hover {
+            background: #f8f8f8;
+            color: #e74c3c;
+        }
+
+        .menu a.cta-button {
+            background: #e74c3c;
+            color: white;
+            padding: 0.6rem 1.8rem;
+        }
+
+        .menu a.cta-button:hover {
+            background: #c0392b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .hero-section {
+            margin-top: 80px;
+            padding: 6rem 3rem 2rem;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 200;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        .hero-title strong {
+            font-weight: 600;
+            color: #e74c3c;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #666;
+            font-weight: 300;
+            margin-bottom: 3rem;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 320px;
+            gap: 1.5rem;
+            margin: 4rem auto;
+            max-width: 1400px;
+            padding: 0 3rem;
+            background: transparent;
+        }
+
+        .photo-item {
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        body.dark-mode .photo-item {
+            background: rgba(30, 37, 48, 0.4);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .photo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(231, 76, 60, 0.2);
+        }
+
+        /* Responsive grid layout */
+        @media (max-width: 1024px) {
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .photo-grid {
+                grid-template-columns: 1fr;
+                padding: 0 1.5rem;
+            }
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.08);
+        }
+
+        .photo-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.7));
+            color: white;
+            padding: 2.5rem 2rem 2rem;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .photo-item:hover .photo-label {
+            transform: translateY(0);
+        }
+
+        .photo-label h3 {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .photo-label p {
+            font-size: 1.05rem;
+            opacity: 0.95;
+            font-weight: 400;
+            line-height: 1.5;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e74c3c;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.4rem;
+            z-index: 1001;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(20deg);
+            box-shadow: 0 6px 30px rgba(231, 76, 60, 0.3);
+        }
+
+        body.dark-mode .theme-toggle {
+            background: rgba(30, 37, 48, 0.95);
+            border-color: rgba(231, 76, 60, 0.6);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Gallery section */
+        .gallery-section {
+            background: transparent;
+            padding: 4rem 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Portal Login Widget Styles */
+        .portal-login-widget {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            width: 320px;
+            z-index: 1100;
+            overflow: hidden;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        body.dark-mode .portal-login-widget {
+            background: rgba(22, 27, 34, 0.98);
+            border: 1px solid rgba(56, 68, 89, 0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        
+        .portal-login-widget.active {
+            display: block;
+        }
+        
+        .widget-header {
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            position: relative;
+        }
+        
+        .widget-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+        
+        .widget-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        
+        .widget-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .widget-body {
+            padding: 1.5rem;
+        }
+        
+        .widget-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .widget-input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        body.dark-mode .widget-input {
+            background: rgba(17, 22, 31, 0.6);
+            color: #cbd5e1;
+            border-color: rgba(56, 68, 89, 0.5);
+        }
+        
+        .widget-input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+        
+        .widget-button {
+            padding: 0.75rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .widget-button:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+        
+        .widget-error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .widget-error.active {
+            display: block;
+        }
+        
+        .widget-success {
+            color: #27ae60;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .widget-success.active {
+            display: block;
+        }
+        
+        .widget-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .widget-divider::before,
+        .widget-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        body.dark-mode .widget-divider {
+            color: #666;
+        }
+        
+        body.dark-mode .widget-divider::before,
+        body.dark-mode .widget-divider::after {
+            background: rgba(56, 68, 89, 0.3);
+        }
+        
+        .widget-divider::before {
+            left: 0;
+        }
+        
+        .widget-divider::after {
+            right: 0;
+        }
+        
+        .widget-link {
+            color: #e74c3c;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-align: center;
+            display: block;
+            margin-top: 1rem;
+            transition: color 0.3s;
+        }
+        
+        .widget-link:hover {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+        
+        .portal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 1050;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .portal-overlay.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Tab styles for login/register */
+        .widget-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(56, 68, 89, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        
+        .widget-tab {
+            flex: 1;
+            padding: 0.75rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        body.dark-mode .widget-tab {
+            color: #94a3b8;
+        }
+        
+        .widget-tab.active {
+            color: #e74c3c;
+            border-bottom-color: #e74c3c;
+        }
+        
+        .widget-tab:hover {
+            color: #e74c3c;
+        }
+        
+        .widget-form-container {
+            display: none;
+        }
+        
+        .widget-form-container.active {
+            display: block;
+        }
+        
+        /* Keep existing portal form styles for the bottom section */
+        .portal-link-form {
+            display: none;
+        }
+        
+        .portal-tokens-container {
+            display: none;
+        }
+        
+        .portal-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+        }
+        
+        body.dark-mode .portal-card {
+            background: rgba(30, 37, 48, 0.8);
+            border-color: rgba(56, 68, 89, 0.3);
+        }
+        
+        .portal-card-id {
+            font-family: monospace;
+            color: #666;
+        }
+        
+        body.dark-mode .portal-card-id {
+            color: #94a3b8;
+        }
+        
+        .portal-card-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .portal-card-link {
+            color: #e74c3c;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #e74c3c;
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        
+        .portal-card-link:hover {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .portal-no-properties {
+            padding: 1rem;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            color: #666;
+        }
+        
+        body.dark-mode .portal-no-properties {
+            background: rgba(231, 76, 60, 0.15);
+            color: #94a3b8;
+        }
+        
+        .portal-logout-btn {
+            margin-top: 1rem;
+            padding: 0.6rem 1.5rem;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .portal-logout-btn:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+        
+        /* Minimal styles for portal forms */
+        .err { color: #e74c3c; margin-top: 0.5rem; }
+        .msg { color: #27ae60; margin-top: 0.5rem; }
+        .portal-auth { max-width: 640px; margin: 3rem auto; padding: 1.5rem; }
+        .portal-auth h2 { text-align: center; margin-bottom: 1rem; font-weight: 400; }
+        .portal-auth form { background: white; border: 1px solid #eee; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+        body.dark-mode .portal-auth form { background: rgba(30,37,48,0.8); border-color: rgba(56,68,89,0.3); }
+        .portal-auth h3 { margin-bottom: 0.75rem; font-weight: 500; }
+        .portal-auth input { width: 100%; padding: 0.75rem 0.9rem; margin: 0.4rem 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        body.dark-mode .portal-auth input { background: rgba(17,22,31,0.6); color: #cbd5e1; border-color: rgba(56,68,89,0.5); }
+        .portal-auth button { margin-top: 0.6rem; padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid #e74c3c; background: #e74c3c; color: white; cursor: pointer; }
+        .portal-auth button:hover { filter: brightness(1.05); }
+
+        body.dark-mode .theme-toggle:hover {
+            background: rgba(30, 37, 48, 0.95);
+            box-shadow: 0 6px 30px rgba(231, 76, 60, 0.4);
+        }
+
+        .stats-section {
+            padding: 6rem 3rem;
+            background: white;
+            transition: background-color 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        body.dark-mode .stats-section {
+            background: rgba(22, 27, 34, 0.95);
+        }
+
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 4rem;
+            text-align: center;
+        }
+
+        .stat {
+            padding: 2rem;
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 200;
+            color: #e74c3c;
+            margin-bottom: 0.5rem;
+            animation: countUp 2s ease-out;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 300;
+            transition: color 0.3s;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .stat-number {
+            color: #f1f5f9;
+        }
+
+        .cta-section {
+            padding: 8rem 3rem;
+            text-align: center;
+            background: linear-gradient(135deg, #2c3e50 0%, #e74c3c 100%);
+            color: white;
+        }
+
+        .cta-title {
+            font-size: 3rem;
+            font-weight: 200;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 400;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #e74c3c;
+        }
+
+        .process-section {
+            padding: 6rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .process-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 200;
+            margin-bottom: 4rem;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+
+        .process-step {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            font-weight: 400;
+        }
+
+        .step-description {
+            color: #666;
+            font-weight: 300;
+            line-height: 1.8;
+        }
+
+        footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 4rem 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-logo .logo-house {
+            background: white;
+        }
+
+        .footer-logo .logo-window span {
+            background: #1a1a1a;
+        }
+
+        .footer-logo .logo-text {
+            font-size: 1.8rem;
+        }
+
+        .footer-logo .logo-text .check,
+        .footer-logo .logo-text .my {
+            color: white;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 3rem;
+            justify-content: center;
+            margin: 2rem 0;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+            }
+            
+            .photo-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: repeat(6, 200px);
+            }
+            
+            .photo-item:nth-child(1) {
+                grid-column: span 2;
+                grid-row: span 1;
+            }
+            
+            .photo-item:nth-child(4) {
+                grid-column: span 1;
+            }
+            
+            .photo-item:nth-child(7) {
+                grid-row: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Starfield Background -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle" title="Toggle dark mode">
+        <span id="theme-icon">🌙</span>
+    </button>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <div class="logo-house">
+                        <div class="logo-window">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="logo-check"></div>
+                </div>
+                <div class="logo-text">
+                    <span class="check">Check</span><span class="my">My</span><span class="rental">Rental</span>
+                </div>
+            </div>
+            <ul class="menu">
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#process">How It Works</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li style="position: relative;">
+                    <a href="#" class="cta-button" onclick="toggleLoginWidget(event)">Owner Portal</a>
+                    <!-- Login Widget -->
+                    <div id="portal-login-widget" class="portal-login-widget">
+                        <div class="widget-header">
+                            <h3>Owner Portal Access</h3>
+                            <button class="widget-close" onclick="closeLoginWidget()">&times;</button>
+                        </div>
+                        <div class="widget-body">
+                            <div class="widget-tabs">
+                                <button class="widget-tab active" onclick="switchTab('login')">Sign In</button>
+                                <button class="widget-tab" onclick="switchTab('register')">Sign Up</button>
+                            </div>
+                            
+                            <!-- Login Form -->
+                            <div id="widget-login-form" class="widget-form-container active">
+                                <form class="widget-form" onsubmit="return handleWidgetLogin(event)">
+                                    <input type="email" class="widget-input" name="email" placeholder="Email" required />
+                                    <input type="password" class="widget-input" name="password" placeholder="Password" required />
+                                    <button type="submit" class="widget-button">Sign In</button>
+                                    <div id="widget-login-error" class="widget-error"></div>
+                                    <div id="widget-login-success" class="widget-success"></div>
+                                </form>
+                            </div>
+                            
+                            <!-- Register Form -->
+                            <div id="widget-register-form" class="widget-form-container">
+                                <form class="widget-form" onsubmit="return handleWidgetRegister(event)">
+                                    <input type="text" class="widget-input" name="full_name" placeholder="Full Name (optional)" />
+                                    <input type="email" class="widget-input" name="email" placeholder="Email" required />
+                                    <input type="password" class="widget-input" name="password" placeholder="Password (min 8 chars)" minlength="8" required />
+                                    <button type="submit" class="widget-button">Create Account</button>
+                                    <div id="widget-register-error" class="widget-error"></div>
+                                    <div id="widget-register-success" class="widget-success"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <h1 class="hero-title">Property Inspections<br>Powered by <strong>Artificial Intelligence</strong></h1>
+        <p class="hero-subtitle">Book quarterly maintenance inspections with CheckMyRental. Get comprehensive reports with AI-powered issue detection, priority recommendations, and 24/7 report access—all within 24 hours.</p>
+    </section>
+
+    <section id="gallery" class="gallery-section">
+        <div class="photo-grid">
+            <div class="photo-item">
+                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" alt="Move-In Inspection">
+                <div class="photo-label">
+                    <h3>Move-In Inspections</h3>
+                    <p>Document property condition before new tenants arrive with comprehensive photo evidence</p>
+                </div>
+            </div>
+            <div class="photo-item">
+                <img src="https://images.unsplash.com/photo-1560448075-cbc16bb4af8e?w=600" alt="Move-Out Inspection">
+                <div class="photo-label">
+                    <h3>Move-Out Inspections</h3>
+                    <p>Detailed assessment for security deposits and tenant damage claims</p>
+                </div>
+            </div>
+            <div class="photo-item">
+                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600" alt="Buyer's Inspection">
+                <div class="photo-label">
+                    <h3>Buyer's Inspections</h3>
+                    <p>Thorough pre-purchase property evaluations to protect your investment</p>
+                </div>
+            </div>
+            <div class="photo-item">
+                <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800" alt="Quarterly Maintenance">
+                <div class="photo-label">
+                    <h3>Quarterly Maintenance Inspections</h3>
+                    <p>Regular preventive inspections every 3 months to catch issues before they become expensive</p>
+                </div>
+            </div>
+            <div class="photo-item">
+                <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600" alt="HVAC Inspection">
+                <div class="photo-label">
+                    <h3>HVAC System Inspections</h3>
+                    <p>Specialized heating and cooling system assessments to ensure efficiency and safety</p>
+                </div>
+            </div>
+            <div class="photo-item">
+                <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=600" alt="Roof Inspection">
+                <div class="photo-label">
+                    <h3>Roof & Exterior Inspections</h3>
+                    <p>Comprehensive roof condition assessments including gutters, shingles, and structural integrity</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat">
+                <div class="stat-number">AI</div>
+                <div class="stat-label">Powered Analysis</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">6+</div>
+                <div class="stat-label">Inspection Types</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Property Coverage</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">24hr</div>
+                <div class="stat-label">Report Delivery</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="process-section" id="process">
+        <h2 class="process-title">Why Choose CheckMyRental?</h2>
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Easy Online Booking</h3>
+                <p class="step-description">Book inspections instantly online. Set up quarterly maintenance inspections on autopilot.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">2</div>
+                <h3 class="step-title">AI-Enhanced Inspection</h3>
+                <p class="step-description">Our inspectors capture 200+ photos, then AI analyzes every detail to catch issues humans might miss.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Smart Issue Detection</h3>
+                <p class="step-description">AI technology identifies maintenance issues, safety concerns, and lease violations automatically.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Owner Portal Access</h3>
+                <p class="step-description">Track all your properties, view reports, and monitor issues through your personalized dashboard.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <h2 class="cta-title">Book Your Inspection with CheckMyRental</h2>
+        <p class="cta-subtitle">Join property owners who trust our AI-powered quarterly maintenance inspections to protect their investments</p>
+        <div class="cta-buttons">
+            <a href="#" class="btn btn-primary">Book Inspection Now</a>
+            <a href="#" class="btn btn-secondary">Schedule Quarterly Plan</a>
+        </div>
+    </section>
+
+    <!-- Hidden portal section for backwards compatibility -->
+    <section id="portal-access" style="display: none;">
+        <!-- Kept for any existing integrations but hidden from view -->
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="logo-icon">
+                    <div class="logo-house">
+                        <div class="logo-window">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="logo-check"></div>
+                </div>
+                <div class="logo-text">
+                    <span class="check">Check</span><span class="my">My</span><span class="rental">Rental</span>
+                </div>
+            </div>
+            <ul class="footer-links">
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Support</a></li>
+                <li><a href="#">API Documentation</a></li>
+            </ul>
+            <p style="margin-top: 2rem; opacity: 0.6;">&copy; 2025 CheckMyRental by Altam CO LLC</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dark Mode Functions
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark-mode');
+                if (themeIcon) themeIcon.textContent = '☀️';
+            } else {
+                if (themeIcon) themeIcon.textContent = '🌙';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.textContent = isDark ? '☀️' : '🌙';
+            }
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Generate Starfield
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            starsContainer.innerHTML = '';
+            
+            // Generate random stars
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (3 + Math.random() * 2) + 's';
+                
+                // Vary star sizes
+                const size = Math.random() * 3;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.opacity = Math.random() * 0.8 + 0.2;
+                
+                starsContainer.appendChild(star);
+            }
+            
+            // Add shooting stars that periodically appear
+            function createShootingStar() {
+                const shootingStar = document.createElement('div');
+                shootingStar.className = 'shooting-star';
+                
+                // Random starting position
+                if (Math.random() > 0.5) {
+                    shootingStar.style.left = '-100px';
+                    shootingStar.style.top = Math.random() * 30 + '%';
+                } else {
+                    shootingStar.style.left = Math.random() * 30 + '%';
+                    shootingStar.style.top = '-100px';
+                }
+                
+                shootingStar.style.animationDelay = '0s';
+                shootingStar.style.animationDuration = (3 + Math.random() * 2) + 's';
+                starsContainer.appendChild(shootingStar);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    shootingStar.remove();
+                }, 5000);
+            }
+            
+            // Create shooting stars periodically with cleanup
+            let shootingStarInterval;
+            
+            function startShootingStars() {
+                // Clear any existing interval
+                if (shootingStarInterval) clearInterval(shootingStarInterval);
+                
+                // Create new interval
+                shootingStarInterval = setInterval(() => {
+                    // Only create if dark mode is active and we don't have too many
+                    if (document.body.classList.contains('dark-mode')) {
+                        const existingStars = starsContainer.querySelectorAll('.shooting-star');
+                        if (existingStars.length < 3) {
+                            createShootingStar();
+                        }
+                    }
+                }, 4000 + Math.random() * 4000);
+            }
+            
+            startShootingStars();
+            
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                if (shootingStarInterval) clearInterval(shootingStarInterval);
+            });
+        }
+
+        // Listen for theme changes from other tabs/windows
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const isDark = e.newValue === 'dark';
+                const themeIcon = document.getElementById('theme-icon');
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    if (themeIcon) themeIcon.textContent = '☀️';
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    if (themeIcon) themeIcon.textContent = '🌙';
+                }
+            }
+        });
+
+        // Initialize on page load
+        initTheme();
+        generateStars();
+    </script>
+
+    <!-- Portal client JS: register/login/link/list tokens -->
+    <script>
+    const API_BASE = "/api/portal";                 // same-origin; no CORS headaches
+    const PORTAL_JWT_KEY = "portal_jwt";            // localStorage key
+    // Use relative paths so it works when opening this file directly or via a server
+    const DASHBOARD_URL = "owner-dashboard.html";  // adjust if your paths differ
+    const GALLERY_URL   = "multi-property-gallery.html";
+    
+    // Toggle Login Widget
+    function toggleLoginWidget(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const widget = document.getElementById('portal-login-widget');
+      widget.classList.toggle('active');
+      
+      if (widget.classList.contains('active')) {
+        // Focus on email field when opening
+        setTimeout(() => {
+          const emailField = widget.querySelector('input[type="email"]');
+          if (emailField) emailField.focus();
+        }, 100);
+        
+        // Add click outside listener
+        setTimeout(() => {
+          document.addEventListener('click', handleClickOutside);
+        }, 100);
+      } else {
+        document.removeEventListener('click', handleClickOutside);
+      }
+    }
+    
+    function closeLoginWidget() {
+      const widget = document.getElementById('portal-login-widget');
+      widget.classList.remove('active');
+      document.removeEventListener('click', handleClickOutside);
+      // Clear any error messages
+      document.querySelectorAll('.widget-error, .widget-success').forEach(el => {
+        el.textContent = '';
+        el.classList.remove('active');
+      });
+    }
+    
+    function handleClickOutside(e) {
+      const widget = document.getElementById('portal-login-widget');
+      const portalButton = e.target.closest('.cta-button');
+      
+      if (!widget.contains(e.target) && !portalButton) {
+        closeLoginWidget();
+      }
+    }
+    
+    function switchTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.widget-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update form visibility
+      document.querySelectorAll('.widget-form-container').forEach(f => f.classList.remove('active'));
+      if (tab === 'login') {
+        document.getElementById('widget-login-form').classList.add('active');
+      } else {
+        document.getElementById('widget-register-form').classList.add('active');
+      }
+      
+      // Clear error messages
+      document.querySelectorAll('.widget-error, .widget-success').forEach(el => {
+        el.textContent = '';
+        el.classList.remove('active');
+      });
+    }
+    
+    async function handleWidgetLogin(e) {
+      e.preventDefault();
+      const form = e.target;
+      const errorEl = document.getElementById('widget-login-error');
+      const successEl = document.getElementById('widget-login-success');
+      
+      errorEl.textContent = '';
+      errorEl.classList.remove('active');
+      successEl.textContent = '';
+      successEl.classList.remove('active');
+      
+      try {
+        const response = await fetch(`${API_BASE}/login`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            email: form.email.value.trim(),
+            password: form.password.value
+          })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Login failed");
+        
+        setJWT(data.access_token);
+        successEl.textContent = 'Login successful! Redirecting...';
+        successEl.classList.add('active');
+        
+        // Get user's tokens and redirect to dashboard
+        setTimeout(async () => {
+          const tokens = await fetchUserTokens();
+          if (tokens && tokens.length > 0) {
+            window.location.href = `${DASHBOARD_URL}?token=${encodeURIComponent(tokens[0])}`;
+          } else {
+            // If no tokens, refresh the page to show the link property form
+            await refreshLinkedTokens();
+            closeLoginWidget();
+          }
+        }, 1000);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.add('active');
+      }
+      return false;
+    }
+    
+    async function handleWidgetRegister(e) {
+      e.preventDefault();
+      const form = e.target;
+      const errorEl = document.getElementById('widget-register-error');
+      const successEl = document.getElementById('widget-register-success');
+      
+      errorEl.textContent = '';
+      errorEl.classList.remove('active');
+      successEl.textContent = '';
+      successEl.classList.remove('active');
+      
+      try {
+        const response = await fetch(`${API_BASE}/register`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            email: form.email.value.trim(),
+            password: form.password.value,
+            full_name: form.full_name.value.trim()
+          })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Registration failed");
+        
+        setJWT(data.access_token);
+        successEl.textContent = 'Account created! Please enter your Portal ID below.';
+        successEl.classList.add('active');
+        
+        // Switch to login tab and refresh
+        setTimeout(() => {
+          switchTab('login');
+          refreshLinkedTokens();
+        }, 2000);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.add('active');
+      }
+      return false;
+    }
+
+    // --- helpers ---
+    function setJWT(t){ localStorage.setItem(PORTAL_JWT_KEY, t); }
+    function getJWT(){ return localStorage.getItem(PORTAL_JWT_KEY); }
+    function clearJWT(){ localStorage.removeItem(PORTAL_JWT_KEY); }
+    function show(el){ el.style.display=""; }
+    function hide(el){ el.style.display="none"; }
+    
+    async function fetchUserTokens() {
+      try {
+        const r = await fetch(`${API_BASE}/my-tokens`, {
+          headers: { "Authorization":"Bearer "+getJWT() }
+        });
+        const data = await r.json();
+        if (!r.ok) return [];
+        return data.tokens || [];
+      } catch {
+        return [];
+      }
+    }
+
+    async function portalRegister(e){
+      e.preventDefault();
+      const f = e.target;
+      document.getElementById("reg_err").textContent = "";
+      try{
+        const r = await fetch(`${API_BASE}/register`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            email: f.email.value.trim(),
+            password: f.password.value,
+            full_name: f.full_name.value.trim()
+          })
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.detail || "Registration failed");
+        setJWT(data.access_token);
+        await refreshLinkedTokens();
+      }catch(err){
+        document.getElementById("reg_err").textContent = err.message;
+      }
+      return false;
+    }
+
+    async function portalLogin(e){
+      e.preventDefault();
+      const f = e.target;
+      document.getElementById("log_err").textContent = "";
+      try{
+        const r = await fetch(`${API_BASE}/login`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            email: f.email.value.trim(),
+            password: f.password.value
+          })
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.detail || "Login failed");
+        setJWT(data.access_token);
+        // After successful login, check if user has linked properties
+        await refreshLinkedTokens();
+        // If user has properties, redirect to dashboard with first property token
+        setTimeout(async () => {
+          const tokens = await fetchUserTokens();
+          if (tokens && tokens.length > 0) {
+            window.location.href = `${DASHBOARD_URL}?token=${encodeURIComponent(tokens[0])}`;
+          }
+        }, 500);
+      }catch(err){
+        document.getElementById("log_err").textContent = err.message;
+      }
+      return false;
+    }
+
+    async function portalLinkCode(e){
+      e.preventDefault();
+      const f = e.target;
+      document.getElementById("link_msg").textContent = "";
+      document.getElementById("link_err").textContent = "";
+      try{
+        const r = await fetch(`${API_BASE}/link-code`, {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer " + getJWT()
+          },
+          body: JSON.stringify({ code: f.code.value.trim().toUpperCase() })
+        });
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.detail || "Linking failed");
+        document.getElementById("link_msg").textContent = "Linked successfully.";
+        f.reset();
+        await refreshLinkedTokens();
+      }catch(err){
+        document.getElementById("link_err").textContent = err.message;
+      }
+      return false;
+    }
+
+    async function refreshLinkedTokens(){
+      const linkForm = document.getElementById("portal-link");
+      const tokensBox = document.getElementById("portal-tokens");
+      if(!getJWT()){
+        hide(linkForm); hide(tokensBox);
+        return;
+      }
+      try {
+        const r = await fetch(`${API_BASE}/my-tokens`, {
+          headers: { "Authorization":"Bearer "+getJWT() }
+        });
+        const data = await r.json();
+        if(!r.ok){
+          // token likely expired or invalid
+          clearJWT();
+          hide(linkForm); hide(tokensBox);
+          return;
+        }
+        // Logged in → show linking UI + tokens
+        show(linkForm); show(tokensBox);
+        
+        // Hide registration and login forms when logged in
+        const regForm = document.getElementById("portal-register");
+        const loginForm = document.getElementById("portal-login");
+        if (regForm) hide(regForm);
+        if (loginForm) hide(loginForm);
+        
+        tokensBox.innerHTML = (data.tokens && data.tokens.length)
+          ? data.tokens.map(t => `
+              <div class="portal-card">
+                <div class="portal-card-id">Portal ID: ${t}</div>
+                <div class="portal-card-actions">
+                  <a href="${DASHBOARD_URL}?token=${encodeURIComponent(t)}" class="portal-card-link">Open Dashboard</a>
+                  <a href="${GALLERY_URL}?token=${encodeURIComponent(t)}" class="portal-card-link">Open Gallery</a>
+                </div>
+              </div>
+            `).join("")
+          : `<p class="portal-no-properties">No properties linked yet. Enter your Portal ID above to link a property.</p>`;
+        
+        // Add logout button if not present
+        if (!document.getElementById('logout-btn')) {
+          const logoutBtn = document.createElement('button');
+          logoutBtn.id = 'logout-btn';
+          logoutBtn.className = 'portal-logout-btn';
+          logoutBtn.textContent = 'Sign Out';
+          logoutBtn.onclick = () => {
+            clearJWT();
+            location.reload();
+          };
+          tokensBox.appendChild(logoutBtn);
+        }
+      } catch(err) {
+        console.error('Error fetching tokens:', err);
+        hide(linkForm); hide(tokensBox);
+      }
+    }
+
+    // boot: if user already logged in, populate their tokens
+    document.addEventListener("DOMContentLoaded", refreshLinkedTokens);
+    </script>
+</body>
+</html>
