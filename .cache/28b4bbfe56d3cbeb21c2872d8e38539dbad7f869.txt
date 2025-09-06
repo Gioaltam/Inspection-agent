@@ -1,0 +1,28 @@
+Location:
+- Indoor air handler in garage/utility area on concrete floor
+
+Observations:
+- Vertical metal AHU on stand; labels intact
+- PVC condensate drain with multiple fittings/tee; no clear P-trap or cleanout cap visible
+- Refrigerant suction line insulated; insulation torn and taped; gap at cabinet penetration
+- Exposed low‑voltage wiring and open splices at base, lying on floor
+- Rust/corrosion along lower cabinet, stand, and floor; visible water staining
+- Spare 18x20x1 filter stored below; area partly cluttered near unit
+
+Potential Issues:
+- Corrosion/rust at lower cabinet/stand (active or past moisture damage)
+- Water intrusion/leaks indicated by floor staining and rust
+- Condensate drain likely improper/missing trap and cleanout; overflow/backup risk
+- Gaps/failed sealant at line‑set/penetrations; air leakage and potential condensate formation; possible pest entry
+- Refrigerant line insulation damaged/missing in sections; risk of sweating/drips and efficiency loss
+- Improper wiring: exposed splices/wires on floor without junction box/conduit; shock/fire and trip hazard
+- Restricted service access due to clutter around unit
+
+Recommendations:
+- Licensed HVAC technician to inspect system; identify/repair source of moisture; address corrosion and clean cabinet/stand
+- Reconfigure condensate drain per manufacturer: add proper P‑trap, slope, and cleanout; flush line; add float safety switch where applicable
+- Reseal all cabinet/penetration openings with approved mastic/foam; close pest entry points
+- Replace/repair and fully cover refrigerant line insulation; secure and seal at cabinet
+- Place all electrical splices in approved junction box; secure wiring off floor and protect with conduit as required
+- Clear area to provide safe service clearance; clean and dry floor; monitor for further leaks
+- Verify correct air filter is installed and replace as needed; set regular maintenance schedule

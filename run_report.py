@@ -266,34 +266,45 @@ def parse_analysis(text: str) -> Dict[str, Any]:
     for line in lines:
         line = line.strip()
         
-        # Check for section headers
+        # Check for section headers (support both old and new formats)
         if line.lower().startswith("location:"):
             current_section = "location"
             sections[current_section] = line.split(":", 1)[1].strip() if ":" in line else ""
-        elif line.lower().startswith("observations:"):
+        elif line.lower().startswith("what i see:") or line.lower().startswith("observations:"):
             current_section = "observations"
-        elif line.lower().startswith("potential issues:"):
+        elif line.lower().startswith("issues to address:") or line.lower().startswith("potential issues:"):
             current_section = "potential_issues"
-        elif line.lower().startswith("recommendations:"):
+        elif line.lower().startswith("recommended action:") or line.lower().startswith("recommendations:"):
             current_section = "recommendations"
         elif line.startswith("- ") and current_section in ["observations", "potential_issues", "recommendations"]:
             sections[current_section].append(line[2:].strip())
         elif line and current_section == "location":
             sections[current_section] += " " + line
         elif line and current_section in ["observations", "potential_issues", "recommendations"]:
-            sections[current_section].append(line)
+            # Handle "No repairs needed" or similar messages
+            if "no repairs needed" in line.lower() or "no issues" in line.lower():
+                if current_section == "potential_issues" and not sections[current_section]:
+                    sections[current_section] = []  # Keep empty for no issues
+            else:
+                sections[current_section].append(line)
     
     return sections
 
 def categorize_issue(sections: Dict[str, Any]) -> str:
     """Categorize issue severity based on analysis content"""
     critical_keywords = ["structural", "foundation", "roof leak", "electrical hazard", 
-                        "gas leak", "mold", "asbestos", "safety", "immediate", "dangerous"]
-    important_keywords = ["repair", "replace", "damage", "deteriorat", "crack", "leak", 
-                         "moisture", "worn", "failing", "maintenance needed"]
+                        "gas leak", "black mold", "asbestos", "immediate safety", "dangerous", "urgent"]
+    important_keywords = ["needs repair", "should replace", "significant damage", "water damage", 
+                         "major crack", "active leak", "extensive", "failing"]
     
-    # Combine text for analysis
-    text = " ".join(sections.get("potential_issues", [])) + " " + " ".join(sections.get("recommendations", []))
+    # Combine text for analysis - focus on actual issues reported
+    issues = sections.get("potential_issues", [])
+    
+    # If no issues reported, it's informational
+    if not issues or all("no repairs" in str(i).lower() or "no issues" in str(i).lower() for i in issues):
+        return "informational"
+    
+    text = " ".join(issues) + " " + " ".join(sections.get("recommendations", []))
     text_lower = text.lower()
     
     # Check for critical issues
@@ -328,13 +339,15 @@ def categorize_photos(items: List[Dict]) -> Dict[str, List[int]]:
     """Categorize photos by location and severity"""
     categories = {
         'by_location': {},
-        'by_severity': {'critical': [], 'important': [], 'minor': []},
+        'by_severity': {'critical': [], 'important': [], 'minor': [], 'informational': []},
         'by_type': {}
     }
     
     for i, item in enumerate(items):
-        # By severity
-        categories['by_severity'][item['severity']].append(i)
+        # By severity - handle all possible values including 'informational'
+        severity = item.get('severity', 'minor')
+        if severity in categories['by_severity']:
+            categories['by_severity'][severity].append(i)
         
         # By location
         location = item.get('location', 'General').split(':')[0].strip()
@@ -357,9 +370,10 @@ def calculate_statistics(items: List[Dict]) -> Dict:
     """Calculate report statistics"""
     return {
         'total_photos': len(items),
-        'critical_count': sum(1 for item in items if item['severity'] == 'critical'),
-        'important_count': sum(1 for item in items if item['severity'] == 'important'),
-        'minor_count': sum(1 for item in items if item['severity'] == 'minor'),
+        'critical_count': sum(1 for item in items if item.get('severity') == 'critical'),
+        'important_count': sum(1 for item in items if item.get('severity') == 'important'),
+        'minor_count': sum(1 for item in items if item.get('severity') == 'minor'),
+        'informational_count': sum(1 for item in items if item.get('severity') == 'informational'),
         'has_issues': sum(1 for item in items if item.get('potential_issues')),
         'needs_action': sum(1 for item in items if item.get('recommendations'))
     }
@@ -369,9 +383,10 @@ def generate_html_report(report_data: Dict[str, Any], output_dir: Path) -> Path:
     html_path = output_dir / "index.html"
     
     # Count issues by severity
-    critical_count = sum(1 for item in report_data['items'] if item['severity'] == 'critical')
-    important_count = sum(1 for item in report_data['items'] if item['severity'] == 'important')
-    minor_count = sum(1 for item in report_data['items'] if item['severity'] == 'minor')
+    critical_count = sum(1 for item in report_data['items'] if item.get('severity') == 'critical')
+    important_count = sum(1 for item in report_data['items'] if item.get('severity') == 'important')
+    minor_count = sum(1 for item in report_data['items'] if item.get('severity') == 'minor')
+    informational_count = sum(1 for item in report_data['items'] if item.get('severity') == 'informational')
     
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -605,6 +620,10 @@ def generate_html_report(report_data: Dict[str, Any], output_dir: Path) -> Path:
             background: linear-gradient(135deg, #27ae60, #229954);
             color: white;
         }}
+        .severity-informational {{
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+        }}
         .item-image {{
             width: 100%;
             max-height: 600px;
@@ -738,10 +757,8 @@ def generate_html_report(report_data: Dict[str, Any], output_dir: Path) -> Path:
     for i, item in enumerate(report_data['items'], 1):
         severity_class = f"severity-{item['severity']}"
         
-        # Copy image to output directory
-        img_path = Path(item['image_path'])
-        img_dest = output_dir / f"photo_{i:03d}{img_path.suffix}"
-        shutil.copy2(img_path, img_dest)
+        # Use the image URL that's already set in report_data (photos are already copied)
+        img_url = item.get('image_url', f"photos/photo_{i:03d}.jpg")
         
         html_content += f"""
     <div class="item">
@@ -749,7 +766,7 @@ def generate_html_report(report_data: Dict[str, Any], output_dir: Path) -> Path:
             <h3>Photo {i}: {item['location'] or 'General Area'}</h3>
             <span class="severity-badge {severity_class}">{item['severity']}</span>
         </div>
-        <img src="{img_dest.name}" alt="Photo {i}" class="item-image">
+        <img src="{img_url}" alt="Photo {i}" class="item-image">
         <div class="item-content">
 """
         
@@ -808,101 +825,169 @@ def generate_html_report(report_data: Dict[str, Any], output_dir: Path) -> Path:
     return html_path
 
 def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results: Optional[Dict[str, str]] = None, client_name: str = "") -> None:
-    """Generate print-optimized PDF report with branded styling"""
-    from PIL import Image as PILImage
-    from reportlab.lib.colors import HexColor
+    """Generate executive-quality PDF report with sophisticated design"""
+    from PIL import Image as PILImage, ImageOps, ImageDraw, ImageFilter
+    from reportlab.lib.colors import HexColor, Color
+    from reportlab.pdfgen.canvas import Canvas
+    from reportlab.lib.units import inch
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.platypus import Paragraph
+    from reportlab.lib.styles import ParagraphStyle
     
-    c = canvas.Canvas(str(out_pdf), pagesize=letter)
+    c = Canvas(str(out_pdf), pagesize=letter)
     width, height = letter
     
-    # Brand colors
-    primary_color = HexColor('#2c3e50')
-    accent_color = HexColor('#e74c3c')
-    gray_light = HexColor('#f8f9fa')
+    # Executive color palette - sophisticated and professional
+    primary_color = HexColor('#1a1a2e')      # Deep navy
+    accent_color = HexColor('#e74c3c')       # Signature red
+    text_primary = HexColor('#2c3e50')       # Dark blue-gray
+    text_secondary = HexColor('#7f8c8d')     # Medium gray
+    text_light = HexColor('#95a5a6')         # Light gray
+    bg_light = HexColor('#f8f9fa')           # Very light gray
+    bg_accent = HexColor('#ecf0f1')          # Light accent
+    gold_accent = HexColor('#d4af37')        # Executive gold
     
-    # Cover page with branded header
-    # Draw header background
-    c.setFillColor(primary_color)
-    c.rect(0, height - 120, width, 120, fill=1, stroke=0)
+    # EXECUTIVE COVER PAGE DESIGN
     
-    # Draw accent stripe
-    c.setFillColor(accent_color)
-    c.rect(0, height - 125, width, 5, fill=1, stroke=0)
-    
-    # Draw logo icon
-    logo_x = 72
-    logo_y = height - 80
-    
-    # House shape (rotated square)
-    c.saveState()
-    c.translate(logo_x + 20, logo_y + 20)
-    c.rotate(45)
+    # Subtle gradient background effect using overlapping rectangles
     c.setFillColor(HexColor('#ffffff'))
-    c.rect(-15, -15, 30, 30, fill=1, stroke=0)
+    c.rect(0, 0, width, height, fill=1, stroke=0)
+    
+    # Top section with subtle gray background
+    c.setFillColor(bg_accent)
+    c.rect(0, height - 180, width, 180, fill=1, stroke=0)
+    
+    # Thin accent line at top
+    c.setFillColor(accent_color)
+    c.rect(0, height - 3, width, 3, fill=1, stroke=0)
+    
+    # Logo symbol only (centered at top) - larger and more prominent
+    logo_x = width / 2 - 30
+    logo_y = height - 120
+    
+    # Draw sophisticated logo mark
+    # Outer circle for elegance
+    c.setStrokeColor(primary_color)
+    c.setLineWidth(2)
+    c.circle(logo_x + 30, logo_y + 30, 35, fill=0, stroke=1)
+    
+    # House shape (rotated square) - refined design
+    c.saveState()
+    c.translate(logo_x + 30, logo_y + 30)
+    c.rotate(45)
+    c.setFillColor(primary_color)
+    c.rect(-18, -18, 36, 36, fill=1, stroke=0)
     c.restoreState()
     
-    # Window grid
-    c.setFillColor(primary_color)
-    c.rect(logo_x + 14, logo_y + 14, 5, 5, fill=1)
-    c.rect(logo_x + 21, logo_y + 14, 5, 5, fill=1)
-    c.rect(logo_x + 14, logo_y + 21, 5, 5, fill=1)
-    c.rect(logo_x + 21, logo_y + 21, 5, 5, fill=1)
-    
-    # Check mark circle
-    c.setFillColor(accent_color)
-    c.circle(logo_x + 32, logo_y + 8, 8, fill=1, stroke=0)
-    c.setStrokeColor(HexColor('#ffffff'))
-    c.setLineWidth(2)
-    c.line(logo_x + 29, logo_y + 8, logo_x + 31, logo_y + 6)
-    c.line(logo_x + 31, logo_y + 6, logo_x + 35, logo_y + 10)
-    
-    # Brand name
+    # Window grid - more sophisticated
     c.setFillColor(HexColor('#ffffff'))
-    c.setFont("Helvetica-Bold", 36)
-    c.drawString(logo_x + 50, height - 60, "CheckMyRental")
+    window_size = 7
+    c.rect(logo_x + 23, logo_y + 23, window_size, window_size, fill=1)
+    c.rect(logo_x + 31, logo_y + 23, window_size, window_size, fill=1)
+    c.rect(logo_x + 23, logo_y + 31, window_size, window_size, fill=1)
+    c.rect(logo_x + 31, logo_y + 31, window_size, window_size, fill=1)
+    
+    # Checkmark badge - positioned elegantly
+    c.setFillColor(accent_color)
+    c.circle(logo_x + 45, logo_y + 15, 10, fill=1, stroke=0)
+    c.setStrokeColor(HexColor('#ffffff'))
+    c.setLineWidth(3)
+    c.line(logo_x + 40, logo_y + 15, logo_x + 43, logo_y + 12)
+    c.line(logo_x + 43, logo_y + 12, logo_x + 50, logo_y + 19)
+    
+    # MAIN TITLE - Centered and elegant
     c.setFont("Helvetica", 14)
-    c.drawString(logo_x + 50, height - 85, "Professional Property Inspection Services")
+    c.setFillColor(text_secondary)
+    title_text = "PROPERTY INSPECTION"
+    title_width = c.stringWidth(title_text, "Helvetica", 14)
+    c.drawString((width - title_width) / 2, height - 200, title_text)
     
-    # Property info box
-    c.setFillColor(gray_light)
-    c.roundRect(50, height - 380, width - 100, 230, 10, fill=1, stroke=0)
+    c.setFont("Helvetica-Bold", 32)
+    c.setFillColor(text_primary)
+    report_text = "REPORT"
+    report_width = c.stringWidth(report_text, "Helvetica-Bold", 32)
+    c.drawString((width - report_width) / 2, height - 235, report_text)
     
-    # Title
-    c.setFillColor(primary_color)
-    c.setFont("Helvetica-Bold", 28)
-    c.drawString(72, height - 170, "Property Inspection Report")
+    # Decorative line under title
+    line_width = 100
+    c.setStrokeColor(gold_accent)
+    c.setLineWidth(2)
+    c.line((width - line_width) / 2, height - 250, (width + line_width) / 2, height - 250)
     
-    # Property details
-    c.setFont("Helvetica", 11)
-    c.setFillColor(HexColor('#7f8c8d'))
-    c.drawString(72, height - 210, "PROPERTY ADDRESS")
-    c.setFont("Helvetica-Bold", 16)
-    c.setFillColor(primary_color)
-    c.drawString(72, height - 230, address)
+    # Property Information Card - elevated design
+    card_y = height - 480
+    card_height = 180
+    card_margin = 60
     
+    # Card shadow effect
+    c.setFillColor(HexColor('#e8e8e8'))
+    c.roundRect(card_margin + 2, card_y - 2, width - (2 * card_margin), card_height, 8, fill=1, stroke=0)
+    
+    # Main card
+    c.setFillColor(HexColor('#ffffff'))
+    c.setStrokeColor(HexColor('#e0e0e0'))
+    c.setLineWidth(1)
+    c.roundRect(card_margin, card_y, width - (2 * card_margin), card_height, 8, fill=1, stroke=1)
+    
+    # Property Address Section
+    info_x = card_margin + 30
+    info_y = card_y + card_height - 40
+    
+    c.setFont("Helvetica", 10)
+    c.setFillColor(text_light)
+    c.drawString(info_x, info_y, "PROPERTY ADDRESS")
+    
+    c.setFont("Helvetica-Bold", 18)
+    c.setFillColor(text_primary)
+    c.drawString(info_x, info_y - 25, address[:50])  # Truncate if too long
+    if len(address) > 50:
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(info_x, info_y - 45, address[50:100])
+    
+    # Vertical separator
+    c.setStrokeColor(HexColor('#e0e0e0'))
+    c.setLineWidth(1)
+    separator_x = width / 2
+    c.line(separator_x, card_y + 20, separator_x, card_y + card_height - 20)
+    
+    # Right side information
+    right_x = separator_x + 30
+    
+    # Date
+    c.setFont("Helvetica", 10)
+    c.setFillColor(text_light)
+    c.drawString(right_x, info_y, "INSPECTION DATE")
+    c.setFont("Helvetica-Bold", 14)
+    c.setFillColor(text_primary)
+    c.drawString(right_x, info_y - 22, datetime.now().strftime('%B %d, %Y'))
+    
+    # Client name if provided
     if client_name:
-        c.setFont("Helvetica", 11)
-        c.setFillColor(HexColor('#7f8c8d'))
-        c.drawString(72, height - 260, "CLIENT")
+        c.setFont("Helvetica", 10)
+        c.setFillColor(text_light)
+        c.drawString(right_x, info_y - 50, "PREPARED FOR")
         c.setFont("Helvetica-Bold", 14)
-        c.setFillColor(primary_color)
-        c.drawString(72, height - 280, client_name)
+        c.setFillColor(text_primary)
+        c.drawString(right_x, info_y - 72, client_name[:30])
     
-    # Date and stats
+    # Statistics box at bottom
+    stats_y = card_y - 60
+    c.setFillColor(bg_accent)
+    c.roundRect(card_margin, stats_y, width - (2 * card_margin), 45, 8, fill=1, stroke=0)
+    
+    # Photo count with icon
     c.setFont("Helvetica", 11)
-    c.setFillColor(HexColor('#7f8c8d'))
-    c.drawString(72, height - 310, "INSPECTION DATE")
-    c.setFont("Helvetica", 12)
-    c.setFillColor(primary_color)
-    c.drawString(72, height - 330, datetime.now().strftime('%B %d, %Y'))
+    c.setFillColor(text_secondary)
+    stats_text = f"This report contains {len(images)} detailed inspection photographs with professional analysis"
+    stats_width = c.stringWidth(stats_text, "Helvetica", 11)
+    c.drawString((width - stats_width) / 2, stats_y + 18, stats_text)
     
-    c.drawString(250, height - 310, f"Total Photos: {len(images)}")
-    
-    # Footer
-    c.setFont("Helvetica", 9)
-    c.setFillColor(HexColor('#7f8c8d'))
-    c.drawString(72, 40, "© 2025 Altam CO LLC. All rights reserved.")
-    c.drawString(width - 200, 40, "CheckMyRental.com")
+    # Professional footer - minimal and elegant
+    c.setFont("Helvetica", 8)
+    c.setFillColor(text_light)
+    c.drawString(card_margin, 40, "Confidential Property Inspection Report")
+    c.drawRightString(width - card_margin, 40, f"Generated {datetime.now().strftime('%Y-%m-%d')}")
     
     c.showPage()
     
@@ -911,7 +996,29 @@ def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results
         try:
             # Compress image for smaller PDF size
             with PILImage.open(img_path) as pil_img:
-                # Convert to RGB if necessary
+                # IMPORTANT: Auto-rotate image based on EXIF orientation
+                # This ensures the image appears upright in the PDF
+                try:
+                    # Use ImageOps.exif_transpose to automatically handle EXIF orientation
+                    pil_img = ImageOps.exif_transpose(pil_img)
+                except Exception:
+                    # If EXIF handling fails, try manual rotation based on orientation tag
+                    try:
+                        exif = pil_img._getexif()
+                        if exif:
+                            orientation = exif.get(0x0112)  # Orientation tag
+                            if orientation:
+                                rotations = {
+                                    3: PILImage.Transpose.ROTATE_180,
+                                    6: PILImage.Transpose.ROTATE_270,
+                                    8: PILImage.Transpose.ROTATE_90
+                                }
+                                if orientation in rotations:
+                                    pil_img = pil_img.transpose(rotations[orientation])
+                    except (AttributeError, KeyError):
+                        pass  # No EXIF data or orientation info
+                
+                # Convert to RGB if necessary (after rotation)
                 if pil_img.mode in ('RGBA', 'P'):
                     pil_img = pil_img.convert('RGB')
                 
@@ -922,41 +1029,52 @@ def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results
                     new_size = (int(pil_img.width * scale), int(pil_img.height * scale))
                     pil_img = pil_img.resize(new_size, PILImage.Resampling.LANCZOS)
                 
-                # Save to temporary compressed JPEG
+                # Save to temporary compressed JPEG with corrected orientation
                 import tempfile
                 with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
                     pil_img.save(tmp.name, 'JPEG', quality=85, optimize=True)
                     compressed_path = tmp.name
             
-            # Page header with branding
-            c.setFillColor(primary_color)
-            c.rect(0, height - 50, width, 50, fill=1, stroke=0)
+            # EXECUTIVE PAGE HEADER - Minimal and sophisticated
+            # Thin top border
+            c.setStrokeColor(accent_color)
+            c.setLineWidth(2)
+            c.line(0, height - 30, width, height - 30)
             
-            # Small logo on each page
+            # Small logo mark (left side)
+            logo_size = 12
             c.saveState()
-            c.translate(30, height - 25)
+            c.translate(35, height - 18)
             c.rotate(45)
-            c.setFillColor(HexColor('#ffffff'))
-            c.rect(-8, -8, 16, 16, fill=1, stroke=0)
+            c.setFillColor(primary_color)
+            c.rect(-logo_size/2, -logo_size/2, logo_size, logo_size, fill=1, stroke=0)
             c.restoreState()
             
-            # Mini check mark
-            c.setFillColor(accent_color)
-            c.circle(38, height - 30, 4, fill=1, stroke=0)
-            
+            # Mini window
             c.setFillColor(HexColor('#ffffff'))
-            c.setFont("Helvetica-Bold", 12)
-            c.drawString(50, height - 32, f"Photo {i} of {len(images)}")
-            c.setFont("Helvetica", 10)
-            c.drawString(width - 200, height - 32, address[:40])
+            c.rect(32, height - 21, 3, 3, fill=1)
+            c.rect(36, height - 21, 3, 3, fill=1)
+            
+            # Check badge
+            c.setFillColor(accent_color)
+            c.circle(42, height - 22, 3, fill=1, stroke=0)
+            
+            # Page information - clean typography
+            c.setFont("Helvetica", 9)
+            c.setFillColor(text_secondary)
+            c.drawString(55, height - 22, f"Photo {i} of {len(images)}")
+            
+            # Property address (right aligned)
+            c.setFont("Helvetica", 8)
+            c.drawRightString(width - 35, height - 22, address[:45])
             
             # Add compressed image
             img = ImageReader(compressed_path)
             img_width, img_height = img.getSize()
             
             # Calculate scaling to fit on page with room for text
-            max_width = width - 100
-            max_height = 400  # Leave room for analysis text
+            max_width = width - 120  # More margin for executive look
+            max_height = 380  # Leave room for analysis text
             scale = min(max_width / img_width, max_height / img_height, 1.0)
             
             draw_width = img_width * scale
@@ -964,7 +1082,17 @@ def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results
             
             # Center image horizontally
             x = (width - draw_width) / 2
-            y = height - draw_height - 60
+            y = height - draw_height - 50
+            
+            # Image frame with shadow effect
+            c.setFillColor(HexColor('#e0e0e0'))
+            c.rect(x - 2, y - 2, draw_width + 4, draw_height + 4, fill=1, stroke=0)
+            
+            # White border around image
+            c.setFillColor(HexColor('#ffffff'))
+            c.setStrokeColor(HexColor('#d0d0d0'))
+            c.setLineWidth(1)
+            c.rect(x - 5, y - 5, draw_width + 10, draw_height + 10, fill=1, stroke=1)
             
             # Draw image
             c.drawImage(img, x, y, draw_width, draw_height, preserveAspectRatio=True)
@@ -973,59 +1101,82 @@ def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results
             os.unlink(compressed_path)
             
             # Add analysis text below image
-            if vision_results and str(img_path) in vision_results:
-                analysis = vision_results[str(img_path)]
+            if vision_results:
+                # Try to find the analysis with different path formats
+                analysis = None
+                img_path_str = str(img_path)
                 
-                # Starting Y position for text
-                text_y = y - 20
+                # Check exact match first
+                if img_path_str in vision_results:
+                    analysis = vision_results[img_path_str]
+                else:
+                    # Try matching by filename
+                    for key, value in vision_results.items():
+                        if Path(key).name == img_path.name:
+                            analysis = value
+                            break
                 
-                # Write analysis as simple text
-                c.setFont("Helvetica", 10)
-                lines = analysis.split('\n')
-                for line in lines:
-                    if text_y < 60:  # Start new page if running out of room
-                        c.setFont("Helvetica", 8)
-                        c.drawString(width - 100, 30, f"Page {c.getPageNumber()}")
-                        c.showPage()
-                        c.setFont("Helvetica-Bold", 12)
-                        c.drawString(50, height - 40, f"Photo {i} (continued)")
-                        text_y = height - 60
-                        c.setFont("Helvetica", 10)
-                    
-                    # Handle section headers with color coding
-                    if line.strip().endswith(':') and line.strip() in ['Location:', 'Observations:', 'Potential Issues:', 'Recommendations:']:
-                        if 'Issues' in line:
-                            c.setFillColor(accent_color)
-                        else:
-                            c.setFillColor(primary_color)
-                        c.setFont("Helvetica-Bold", 11)
-                        c.drawString(50, text_y, line.strip())
-                        c.setFillColor(HexColor('#333333'))
-                        c.setFont("Helvetica", 10)
-                        text_y -= 15
-                    elif line.strip().startswith('-'):
-                        # Wrap long lines
-                        text = line.strip()
-                        if len(text) > 90:
-                            words = text.split()
-                            current_line = ""
-                            for word in words:
-                                test_line = current_line + " " + word if current_line else word
-                                if len(test_line) > 90:
+                if analysis:
+                    # Starting Y position for text
+                    text_y = y - 20
+                else:
+                    # No analysis found - add a note
+                    c.setFont("Helvetica-Oblique", 9)
+                    c.setFillColor(text_secondary)
+                    c.drawString(50, y - 20, "Analysis pending for this image")
+                    analysis = None
+                
+                if analysis:
+                    # Write analysis as simple text
+                    c.setFont("Helvetica", 10)
+                    lines = analysis.split('\n')
+                    for line in lines:
+                        if text_y < 60:  # Start new page if running out of room
+                            c.setFont("Helvetica", 8)
+                            c.drawString(width - 100, 30, f"Page {c.getPageNumber()}")
+                            c.showPage()
+                            c.setFont("Helvetica-Bold", 12)
+                            c.drawString(50, height - 40, f"Photo {i} (continued)")
+                            text_y = height - 60
+                            c.setFont("Helvetica", 10)
+                        
+                        # Handle section headers with color coding (updated for new format)
+                        line_stripped = line.strip()
+                        if line_stripped.endswith(':') and any(header in line_stripped for header in 
+                            ['Location:', 'What I See:', 'Issues to Address:', 'Recommended Action:', 
+                             'Observations:', 'Potential Issues:', 'Recommendations:']):
+                            if 'Issues' in line_stripped:
+                                c.setFillColor(accent_color)
+                            else:
+                                c.setFillColor(primary_color)
+                            c.setFont("Helvetica-Bold", 11)
+                            c.drawString(50, text_y, line_stripped)
+                            c.setFillColor(HexColor('#333333'))
+                            c.setFont("Helvetica", 10)
+                            text_y -= 15
+                        elif line.strip().startswith('-'):
+                            # Wrap long lines
+                            text = line.strip()
+                            if len(text) > 90:
+                                words = text.split()
+                                current_line = ""
+                                for word in words:
+                                    test_line = current_line + " " + word if current_line else word
+                                    if len(test_line) > 90:
+                                        c.drawString(60, text_y, current_line)
+                                        text_y -= 12
+                                        current_line = word
+                                    else:
+                                        current_line = test_line
+                                if current_line:
                                     c.drawString(60, text_y, current_line)
                                     text_y -= 12
-                                    current_line = word
-                                else:
-                                    current_line = test_line
-                            if current_line:
-                                c.drawString(60, text_y, current_line)
+                            else:
+                                c.drawString(60, text_y, text)
                                 text_y -= 12
-                        else:
-                            c.drawString(60, text_y, text)
+                        elif line.strip():
+                            c.drawString(50, text_y, line.strip())
                             text_y -= 12
-                    elif line.strip():
-                        c.drawString(50, text_y, line.strip())
-                        text_y -= 12
             
             # Page number
             c.setFont("Helvetica", 8)
@@ -1093,7 +1244,7 @@ def build_reports(source_path: Path, client_name: str, property_address: str) ->
         
         # Create organized subfolder structure
         web_dir = ensure_dir(report_dir / 'web')
-        photos_dir = ensure_dir(report_dir / 'photos')
+        # Remove redundant photos_dir - we'll only use web/photos
         analysis_dir = ensure_dir(report_dir / 'analysis')
         pdf_dir = ensure_dir(report_dir / 'pdf')
         
@@ -1106,14 +1257,10 @@ def build_reports(source_path: Path, client_name: str, property_address: str) ->
             'items': []
         }
         
-        # Copy photos to organized folder for reference and archival
+        # Copy photos ONLY to web/photos folder (single location)
+        web_photos_dir = ensure_dir(web_dir / 'photos')
         for i, img_path in enumerate(images, 1):
-            # Copy image to photos subfolder with numbered prefix for archival
-            dest_path = photos_dir / f"{i:03d}_{img_path.name}"
-            shutil.copy2(img_path, dest_path)
-            
-            # Also copy to web/photos for web serving
-            web_photos_dir = ensure_dir(web_dir / 'photos')
+            # Copy to web/photos for both web serving and archival
             web_photo_path = web_photos_dir / f"photo_{i:03d}{img_path.suffix}"
             shutil.copy2(img_path, web_photo_path)
         
@@ -1148,22 +1295,28 @@ def build_reports(source_path: Path, client_name: str, property_address: str) ->
         json_path = save_report_json(report_data, web_dir)
         print(f"JSON data saved: {json_path}")
         
-        # Copy gallery template to web folder
+        # Copy gallery template to web folder (portal uses this to display reports)
         template_src = Path('static/gallery-template.html')
         if template_src.exists():
             html_path = web_dir / 'index.html'
             shutil.copy2(template_src, html_path)
-            print(f"Gallery template copied: {html_path}")
+            print(f"Gallery template copied for portal display: {html_path}")
         else:
-            # Fallback to generating HTML if template doesn't exist
-            html_path = generate_html_report(report_data, web_dir)
-            print(f"HTML report generated: {html_path}")
+            # Template is required for portal display
+            print(f"Warning: Gallery template not found at {template_src}")
+            html_path = web_dir / 'index.html'
         
         # Generate PDF report in pdf subfolder
         pdf_filename = f"{property_address.replace(' ', '_').replace(',', '')}_inspection.pdf"
         pdf_path = pdf_dir / pdf_filename
-        generate_pdf(property_address, images, pdf_path, vision_results, client_name)
-        print(f"PDF report: {pdf_path}")
+        try:
+            generate_pdf(property_address, images, pdf_path, vision_results, client_name)
+            print(f"PDF report: {pdf_path}")
+        except Exception as e:
+            print(f"ERROR generating PDF: {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"Failed to generate PDF at: {pdf_path}")
         
         # Also save a copy of JSON in main directory for reference
         main_json_path = report_dir / 'report_data.json'
@@ -1182,11 +1335,12 @@ Total Photos: {len(images)}
 Issues Found: {sum(1 for item in report_data['items'] if item['potential_issues'])}
 
 Output Directory Structure:
-- /photos/ - Original inspection photos (archival copies)
-- /analysis/ - Individual AI analysis text files for each photo  
-- /pdf/ - PDF report optimized for printing
-- /web/ - HTML report with embedded photos for web viewing
-- report_data.json - Structured JSON data
+- /web/photos/ - Inspection photos for portal display
+- /web/report.json - Structured report data for portal
+- /web/index.html - Gallery template for portal viewer
+- /analysis/ - Individual AI analysis text files  
+- /pdf/ - PDF report for download/printing
+- report_data.json - Backup of structured data
 - summary.txt - This summary file
 """
         summary_path.write_text(summary_content, encoding='utf-8')
@@ -1210,7 +1364,7 @@ Output Directory Structure:
                 print(f"Warning: Could not clean up temp directory: {e}")
 
 def register_with_portal(artifacts: Dict[str, Any], client_name: str, client_email: str, 
-                        property_address: str, ttl_hours: int = 720) -> Dict[str, Any]:
+                        property_address: str, owner_id: str = None, ttl_hours: int = 720) -> Dict[str, Any]:
     """
     Register report with portal and create access token
     """
@@ -1219,7 +1373,9 @@ def register_with_portal(artifacts: Dict[str, Any], client_name: str, client_ema
     
     try:
         # Create or get client and property
-        client_id = db_upsert_client(conn, client_name, client_email)
+        # If owner_id is provided, use it as the client name for owner-specific galleries
+        effective_client_name = owner_id if owner_id else client_name
+        client_id = db_upsert_client(conn, effective_client_name, client_email)
         property_id = db_upsert_property(conn, client_id, property_address)
         
         # Insert report
@@ -1264,6 +1420,7 @@ def main():
     parser.add_argument('--client', type=str, default='Property Owner', help='Client name')
     parser.add_argument('--email', type=str, default='', help='Client email')
     parser.add_argument('--property', type=str, default='Property Address', help='Property address')
+    parser.add_argument('--owner-id', type=str, default=None, help='Owner ID for routing to specific dashboard')
     parser.add_argument('--register', action='store_true', help='Register with portal and generate share link')
     
     args = parser.parse_args()
@@ -1290,7 +1447,8 @@ def main():
         
         # Register with portal if requested
         if args.register:
-            register_with_portal(artifacts, args.client, args.email, args.property)
+            owner_id = getattr(args, 'owner_id', None)
+            register_with_portal(artifacts, args.client, args.email, args.property, owner_id)
         
         print("\nReport generation complete!")
         

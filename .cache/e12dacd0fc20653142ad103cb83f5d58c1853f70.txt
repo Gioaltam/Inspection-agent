@@ -1,0 +1,31 @@
+Location:
+- Exterior side yard, against blue lap siding; outdoor A/C condenser on concrete pad
+
+Observations:
+- Tempstar condensing unit with vertical wire grille and top fan guard
+- Plastic/cloth top cover strapped over fan guard
+- Coils visibly dusty; some bent fins low on face
+- Vegetation/tall grass around pad
+- PVC vent termination immediately right of unit
+- Rear/right sides close to walls/structure
+- Pad corner chipped; unit appears mostly level
+- Electrical whip/disconnect not visible from this view
+
+Potential Issues:
+- Dirty/clogged condenser fins restricting airflow
+- Vegetation encroachment blocking airflow
+- Top cover could block airflow/overheat unit if operated covered
+- Limited side/rear clearance to walls may not meet manufacturer specs
+- Bent/damaged fins at lower coil sections
+- Service disconnect not visible; if absent/out of sight, safety/code concern
+- Chipped pad corner; potential instability if deterioration progresses
+- Nearby vent may discharge heat/lint toward condenser, causing fouling
+
+Recommendations:
+- Remove any cover before operation; only use for off‑season
+- Clean coils; straighten fins; schedule HVAC service
+- Cut back vegetation and maintain 12–24 in. side and clear top clearance
+- Verify required clearances; modify surroundings/relocate if inadequate
+- Confirm a code‑compliant service disconnect is present within sight; install if missing
+- Monitor/repair/replace pad if settling or instability observed
+- Identify adjacent vent; if dryer exhaust, reroute or add deflector to reduce lint to coils

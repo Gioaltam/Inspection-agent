@@ -1,0 +1,14 @@
+Location: HVAC air handler closet
+
+What I See:
+- 18x20x1 return air filter is very dirty and bowed, not seated tightly in the rack.
+- Light dust/debris on the unit face; filter gap could allow air bypass.
+
+Issues to Address:
+- No repairs needed.
+
+Recommended Action:
+- Replace the 18x20x1 filter now; install with airflow arrow toward the unit.
+- Ensure the filter slot seals tightly (use correct-size filter, intact cover/clips) to prevent air bypass and bowing.
+- After replacement, monitor airflow; if weak or coil ices, have an HVAC tech inspect and clean the blower/coil due to possible past dust buildup.
+- Set a regular filter change schedule (about every 1–3 months depending on use).

@@ -45,6 +45,9 @@ def generate_pdf(photos_dir: str, vision_results: dict[str, str], output_path: s
     from reportlab.pdfgen import canvas
     from reportlab.lib.utils import ImageReader
     from reportlab.lib.units import inch
+    from PIL import Image as PILImage, ImageOps
+    import tempfile
+    import os
 
     c = canvas.Canvas(output_path, pagesize=letter)
     W, H = letter
@@ -59,7 +62,25 @@ def generate_pdf(photos_dir: str, vision_results: dict[str, str], output_path: s
     # Pages
     for p in images:
         try:
-            img = ImageReader(str(p))
+            # Auto-rotate image based on EXIF orientation before adding to PDF
+            with PILImage.open(p) as pil_img:
+                # Apply EXIF orientation
+                try:
+                    pil_img = ImageOps.exif_transpose(pil_img)
+                except Exception:
+                    pass  # If EXIF handling fails, use image as-is
+                
+                # Convert to RGB if necessary
+                if pil_img.mode in ('RGBA', 'P'):
+                    pil_img = pil_img.convert('RGB')
+                
+                # Save to temporary file with correct orientation
+                with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+                    pil_img.save(tmp.name, 'JPEG', quality=85)
+                    temp_path = tmp.name
+            
+            # Now use the corrected image in PDF
+            img = ImageReader(temp_path)
             iw, ih = img.getSize()
             max_w, max_h = W - 120, H - 170
             scale = min(max_w / iw, max_h / ih)
@@ -67,6 +88,9 @@ def generate_pdf(photos_dir: str, vision_results: dict[str, str], output_path: s
             x = (W - dw) / 2
             y = (H - dh) / 2 + 20
             c.drawImage(img, x, y, dw, dh, preserveAspectRatio=True, mask="auto")
+            
+            # Clean up temp file
+            os.unlink(temp_path)
 
             # Notes (if provided)
             note = vision_results.get(str(p), "") or vision_results.get(p.name, "")

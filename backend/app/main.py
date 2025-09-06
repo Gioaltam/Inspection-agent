@@ -1,10 +1,12 @@
 # FastAPI entrypoint
 import os
 from pathlib import Path
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .database import engine
 from .models import Base
@@ -32,6 +34,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Custom exception handlers to ensure JSON responses for API errors
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    # Only return JSON for API routes
+    if request.url.path.startswith("/api/"):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail}
+        )
+    # For non-API routes, let default handler take over
+    raise exc
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )
+
 # API routes
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(portal_router, prefix="/api/portal", tags=["portal"])
@@ -54,6 +75,14 @@ def landing():
     if index.exists():
         return FileResponse(str(index))
     return {"message": "Static landing not found", "static_dir": str(static_dir)}
+
+@app.get("/owner/{owner_id}")
+def owner_dashboard(owner_id: str):
+    """Serve owner dashboard for specific owner ID"""
+    dashboard = static_dir / "owner-dashboard.html"
+    if dashboard.exists():
+        return FileResponse(str(dashboard))
+    return {"message": "Owner dashboard not found", "owner_id": owner_id}
 
 # Temporary dashboard endpoint for demo portal
 @app.get("/api/portal/dashboard")

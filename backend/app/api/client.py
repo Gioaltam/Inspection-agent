@@ -4,23 +4,112 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime
 import requests
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 from ..database import get_db
-from ..auth import get_current_user
+from ..auth import get_current_user, get_password_hash, verify_password, create_access_token
 from ..models import Client, Property, Report
 from ..storage import StorageService
 from ..config import settings
 
 router = APIRouter()
 
+# ---------- Schemas ----------
+class OwnerRegisterRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+    owner_id: str
+    password: str
+    phone: Optional[str] = None
+
+class OwnerLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    owner_id: Optional[str] = None
+
+# ---------- Owner Registration & Login ----------
+@router.post("/register-owner", response_model=AuthResponse)
+def register_owner(request: OwnerRegisterRequest, db: Session = Depends(get_db)):
+    """Register a new property owner with their own dashboard"""
+    
+    # Check if owner_id already exists
+    existing = db.query(Client).filter(
+        (Client.name == request.owner_id) | (Client.email == request.email)
+    ).first()
+    
+    if existing:
+        if existing.email == request.email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        else:
+            raise HTTPException(status_code=400, detail="Owner ID already taken")
+    
+    # Create new client/owner
+    client = Client(
+        name=request.owner_id,  # Use owner_id as the unique identifier
+        company_name=request.full_name,
+        contact_name=request.full_name,
+        email=request.email,
+        phone=request.phone,
+        portal_token=request.owner_id,  # Set portal token to owner_id for easy access
+        password_hash=get_password_hash(request.password)
+    )
+    
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    
+    # Create access token
+    access_token = create_access_token(data={"sub": request.email, "owner_id": request.owner_id})
+    
+    return AuthResponse(
+        access_token=access_token,
+        owner_id=request.owner_id
+    )
+
+@router.post("/login-owner", response_model=AuthResponse)
+def login_owner(request: OwnerLoginRequest, db: Session = Depends(get_db)):
+    """Login for property owners"""
+    
+    # Find client by email
+    client = db.query(Client).filter(Client.email == request.email).first()
+    
+    if not client:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Verify password
+    if not hasattr(client, 'password_hash') or not client.password_hash:
+        raise HTTPException(status_code=401, detail="Account not set up for login")
+    
+    if not verify_password(request.password, client.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Create access token
+    owner_id = client.name if client.name else client.email.split('@')[0]
+    access_token = create_access_token(data={"sub": client.email, "owner_id": owner_id})
+    
+    return AuthResponse(
+        access_token=access_token,
+        owner_id=owner_id
+    )
+
 # ---------- Portal Dashboard (for simple token-based access) ----------
 @router.get("/dashboard")
 def get_portal_dashboard(portal_token: str, db: Session = Depends(get_db)):
-    """Get dashboard data for a specific portal token (property)"""
+    """Get dashboard data for a specific portal token (owner ID)"""
     print(f"Dashboard requested for token: {portal_token}")
     
-    # Try to find a client with this portal token
+    # Try to find a client with this owner ID (portal_token could be the owner name/ID)
+    # First try exact match on portal_token field
     client = db.query(Client).filter(Client.portal_token == portal_token).first()
+    
+    # If not found, try to match by name (for owner IDs)
+    if not client:
+        client = db.query(Client).filter(Client.name == portal_token).first()
     
     if not client:
         # For now, return mock data for the demo token

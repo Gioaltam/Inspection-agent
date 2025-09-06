@@ -41,6 +41,7 @@ class Client(Base):
     name = Column(String, nullable=False)  # Added for compatibility
     email = Column(String, unique=True, nullable=False, index=True)  # Added for portal
     portal_token = Column(String, unique=True, index=True)  # Added for portal authentication
+    password_hash = Column(String)  # Added for owner authentication
     phone = Column(String)
     address = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)

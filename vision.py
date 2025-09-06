@@ -13,27 +13,27 @@ if os.getenv("OPENAI_API_KEY"):
 client = OpenAI()
 
 # ---------------- Tunables (override via .env if desired) ----------------
-# Stricter home‑inspection instructions. We still allow free text because run_report.py
-# normalizes sections, but we strongly suggest section headers to the model.
+# Human-focused inspection instructions - only report what needs fixing
 SYSTEM = (
-    "You are an expert home inspector. Analyze the photo and produce concise, factual notes "
-    "with the following sections and only short bullet lines:\n"
-    "Location:\n"
-    "Observations: (materials/description go here; no actions)\n"
-    "Potential Issues: (ONLY real defects/safety concerns. Be explicit.)\n"
-    "Recommendations: (repairs, sealing, cleaning, evaluation, etc.)\n\n"
-    "Explicitly check for and include in Potential Issues if present: dents, bends, warping, "
-    "cracks, gaps/voids/separations, loose or missing parts/fasteners, misalignment, failed or "
-    "missing sealant/caulk, substrate exposure, corrosion/rust, water intrusion/leaks/stains, "
-    "mold/mildew/rot, improper wiring or missing conduit, blocked/unsafe conditions, trip/fall "
-    "hazards, pest entry points. If nothing notable: 'No visible issues.'"
+    "You are a practical property inspector talking to a homeowner. Focus ONLY on the main subject "
+    "of the photo - what the photographer intended to document. Ignore background items unless they're "
+    "the clear focus.\n\n"
+    "Be conversational and helpful. Use these sections:\n"
+    "Location: (brief, e.g., 'Front door', 'Kitchen sink', 'Garage ceiling')\n"
+    "What I See: (1-2 simple observations about the main issue)\n"
+    "Issues to Address: (ONLY list actual damage that needs repair - skip if nothing is broken)\n"
+    "Recommended Action: (practical next steps if repairs are needed)\n\n"
+    "IMPORTANT: Normal wear, aging, or weathering is NOT an issue unless it's causing actual damage. "
+    "Paint fading, minor surface rust, or old materials are fine if still functional. "
+    "If the main subject looks fine, just say 'No repairs needed' under Issues to Address.\n"
+    "Example: If photo shows a damaged mailbox, focus on the mailbox damage, not the old fence behind it."
 )
 
 # A focused follow‑up used only when the first pass seems to miss defects.
 SECOND_PASS_NUDGE = (
-    "Re-check the SAME photo and list ALL visible defects in the 'Potential Issues' section if present. "
-    "Focus on physical damage: dents/bends/warping, cracks, gaps/voids, loose or missing parts, failed/missing "
-    "sealant, substrate exposure, corrosion/rust, water intrusion, mold/rot. Keep bullets short."
+    "Look again at the main subject of this photo. If there's actual damage that needs repair, "
+    "list it under 'Issues to Address'. Remember: only mention things that are broken or damaged, "
+    "not just old or weathered. Focus on what the photographer was trying to show."
 )
 
 ANALYSIS_MAX_PX = int(os.getenv("ANALYSIS_MAX_PX", "1600"))  # downscale long side for analysis only
@@ -123,9 +123,13 @@ def _looks_empty_or_safe(text: str) -> bool:
     if not text or not text.strip():
         return True
     s = text.lower()
-    # No Potential Issues section AND no classic defect words anywhere
-    if "potential issues" not in s and not _DEFECT_WORDS_RE.search(s):
+    # Check for both old and new section names
+    # No issues section AND no classic defect words anywhere
+    if ("issues to address" not in s and "potential issues" not in s) and not _DEFECT_WORDS_RE.search(s):
         return True
+    # If it says "no repairs needed" or similar, that's fine
+    if "no repairs needed" in s or "no issues" in s:
+        return False  # This is a valid response, not empty
     return False
 
 

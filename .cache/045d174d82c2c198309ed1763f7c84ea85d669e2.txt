@@ -1,0 +1,20 @@
+Location:
+- Under kitchen sink (base cabinet)
+
+Observations:
+- White PVC tubular drain with sanitary tee and horizontal waste arm
+- Slip-joint fittings/nuts present; P-trap not visible (obstructed)
+- Electrical cords/cables draped along back wall
+- Stored items in contact with plumbing
+- No visible water stains or corrosion on exposed fittings
+
+Potential Issues:
+- Trap not visible—cannot confirm required P-trap or configuration; potential improper setup
+- Unsecured/draped cords/cables under sink—subject to moisture and mechanical damage; possible improper wiring/missing support/conduit
+- Storage crowding restricts access and can stress fittings
+
+Recommendations:
+- Clear cabinet space; keep items off plumbing
+- Verify/install proper P-trap and correct alignment/slope; repair as needed
+- Securely route cords/cables away from plumbing; have a licensed electrician evaluate and provide proper protection/support and GFCI-protected outlet if not present
+- Operate sink and inspect for leaks during a full evaluation

@@ -1,0 +1,21 @@
+Location:
+- Utility/mechanical area – electric water heater (EnergyGuide label side)
+
+Observations:
+- Electric water heater; EnergyGuide shows 35-gallon first-hour rating
+- Listed energy use: ~4,828 kWh/yr; estimated yearly cost $406 (1994 basis)
+- Model on label: 81SV30D (D13880)
+- Label is aged/worn; tank exterior white with gray top band
+- Light rust/discoloration visible along top seam and near side access panel
+- No visible dents, warping, cracks, or missing screws on visible areas
+
+Potential Issues:
+- Corrosion/rust staining at top seam and around element/access panel – indicates past or ongoing moisture
+- Apparent advanced age (1990s-era unit) – elevated risk of tank/component failure and leaks
+- No visible gaps, loose/missing fasteners, substrate exposure, wiring issues, or obvious leaks on the shown side
+
+Recommendations:
+- Have a licensed plumber evaluate corrosion and check for active leaks at top connections and element gasket
+- Plan for replacement due to age/efficiency and increased failure risk
+- Clean and monitor for new rust or moisture; install drip pan and drain to an approved location if not present
+- Verify TPR valve and discharge piping, electrical connection, bonding/grounding, and seismic strapping (if required) during full system inspection

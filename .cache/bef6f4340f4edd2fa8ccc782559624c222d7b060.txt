@@ -1,0 +1,21 @@
+Location:
+- Exterior, ground-mounted AC condensing unit area
+
+Observations:
+- Metal condenser cabinet with side intake grilles
+- Flexible electrical conduit present; PVC drain/discharge pipe at grade
+- Dense grass/vegetation in contact with cabinet and around base
+- Visible water pooling/damp soil at base; pad not clearly visible
+
+Potential Issues:
+- Blocked/unsafe conditions: vegetation obstructs condenser airflow and service access
+- Water intrusion/corrosion risk: standing water at base of unit
+- Possible pest harborage due to overgrowth and moisture
+- Trip/fall hazard when servicing due to hidden ground/pipe
+
+Recommendations:
+- Cut vegetation back 2–3 ft around and above unit; maintain clear access
+- Verify unit is on a solid, level pad raised above grade; adjust/replace pad as needed
+- Redirect/extend condensate/discharge to drain away from unit and foundation; add gravel/splash block to prevent pooling
+- Clean condenser coils and cabinet after clearing debris
+- Have HVAC technician inspect operation once area is cleared and drainage corrected

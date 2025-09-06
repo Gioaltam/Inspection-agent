@@ -1,0 +1,11 @@
+Location: Exterior window
+
+What I See:
+- Metal-framed window with security bars.
+- Lower-right window screen has a loose/torn corner at the bottom edge.
+
+Issues to Address:
+- Damaged/loose insect screen on the lower-right pane.
+
+Recommended Action:
+- Re-screen or replace the affected screen panel and secure it in the track (check spline/tabs).

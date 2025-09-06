@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Owner Portal - CheckMyRental</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     /* Base + branding to match landing page */
     * { 
@@ -14,99 +17,122 @@
     
     body {
       margin: 0;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background: #f8f8f8;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #fafafa;
       color: #1a1a1a;
       line-height: 1.6;
-      transition: background-color 0.3s, color 0.3s;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       min-height: 100vh;
+      position: relative;
     }
     
-    /* Dark mode gradient to match landing */
+    /* Dark mode to match landing */
     body.dark-mode {
-      background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
-      color: #cbd5e1;
+      background: #0a0a0f;
+      color: #f0f0f0;
     }
     
-    /* Starfield background (landing) */
-    .stars { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      pointer-events: none; 
-      z-index: 0; 
-      opacity: 0; 
-      transition: opacity 0.5s; 
+    /* Clean top gradient */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(
+        180deg,
+        rgba(231, 76, 60, 0.03) 0%,
+        transparent 100%
+      );
+      pointer-events: none;
+      z-index: 1;
     }
     
-    body.dark-mode .stars { 
-      opacity: 1; 
+    /* Clean Minimal Background */
+    .executive-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 1;
     }
     
-    .star { 
-      position: absolute; 
-      background: white; 
-      border-radius: 50%; 
-      box-shadow: 0 0 10px rgba(255,255,255,0.5); 
-      animation: twinkle 4s ease-in-out infinite; 
+    /* Subtle dot pattern */
+    .executive-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0.5;
     }
     
-    @keyframes twinkle { 
-      0%, 100% { opacity: 0.2; transform: scale(0.8); } 
-      50% { opacity: 1; transform: scale(1.2); } 
+    /* Clean accent gradient */
+    .executive-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80vh;
+      background: linear-gradient(180deg, 
+        rgba(231, 76, 60, 0.02) 0%, 
+        transparent 50%);
+      opacity: 1;
     }
     
-    .shooting-star { 
-      position: absolute; 
-      width: 4px; 
-      height: 4px; 
-      background: white; 
-      border-radius: 50%; 
-      box-shadow: 0 0 10px 2px rgba(255,255,255,0.8); 
-      opacity: 0; 
-      animation: shoot 4s linear infinite; 
-      z-index: 2; 
+    body.dark-mode .executive-bg::before {
+      background-image: radial-gradient(circle, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
     }
     
-    .shooting-star::before { 
-      content: ''; 
-      position: absolute; 
-      top: 50%; 
-      right: 100%; 
-      transform: translateY(-50%); 
-      width: 100px; 
-      height: 1px; 
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), rgba(255,255,255,0.6)); 
-      transform-origin: right center; 
-      z-index: -1; 
+    body.dark-mode .executive-bg::after {
+      background: linear-gradient(180deg, 
+        rgba(231, 76, 60, 0.015) 0%, 
+        transparent 50%);
     }
     
-    @keyframes shoot { 
-      0% { transform: translateX(-100px) translateY(0) rotate(45deg); opacity: 0; } 
-      10% { opacity: 1; } 
-      90% { opacity: 1; } 
-      100% { transform: translateX(calc(100vw + 100px)) translateY(calc(100vh + 100px)) rotate(45deg); opacity: 0; } 
-    }
-    
-    /* Header (landing) */
+    /* Premium Header */
     .header { 
       position: fixed; 
       width: 100%; 
       top: 0; 
-      background: white; 
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 252, 0.95) 100%);
+      -webkit-backdrop-filter: saturate(180%) blur(30px);
+      backdrop-filter: saturate(180%) blur(30px);
       z-index: 1000; 
-      box-shadow: 0 2px 20px rgba(0,0,0,0.05); 
-      transition: background-color 0.3s, box-shadow 0.3s; 
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        0 1px 1px rgba(0,0,0,0.08),
+        0 2px 2px rgba(0,0,0,0.08),
+        0 4px 4px rgba(0,0,0,0.08),
+        0 8px 8px rgba(0,0,0,0.08),
+        0 16px 16px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(0,0,0,0.05);
     }
     
     body.dark-mode .header { 
-      background: rgba(22, 27, 34, 0.95); 
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px); 
-      box-shadow: 0 2px 20px rgba(0,0,0,0.5); 
-      border-bottom: 1px solid rgba(56,68,89,0.3); 
+      background: linear-gradient(135deg, rgba(10, 10, 20, 0.95) 0%, rgba(20, 20, 35, 0.9) 100%);
+      -webkit-backdrop-filter: saturate(200%) blur(30px);
+      backdrop-filter: saturate(200%) blur(30px); 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        0 1px 1px rgba(0,0,0,0.25),
+        0 2px 2px rgba(0,0,0,0.22),
+        0 4px 4px rgba(0,0,0,0.19),
+        0 8px 8px rgba(0,0,0,0.16),
+        0 16px 16px rgba(0,0,0,0.13),
+        0 32px 32px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
     }
     
     .header-content { 
@@ -398,30 +424,80 @@
       border-color: #3b82f6;
     }
     
-    /* Property cards */
+    /* Premium Property Cards */
     .property-card { 
-      background: rgba(255,255,255,0.95); 
-      border: 1px solid rgba(56,68,89,0.1); 
-      border-radius: 12px; 
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.98) 0%, 
+        rgba(252, 252, 253, 0.95) 50%,
+        rgba(250, 250, 252, 0.9) 100%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 24px; 
       padding: 1.5rem;
-      transition: all 0.3s;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        0 1px 2px rgba(0,0,0,0.08),
+        0 2px 4px rgba(0,0,0,0.08),
+        0 4px 8px rgba(0,0,0,0.08),
+        0 8px 16px rgba(0,0,0,0.08),
+        0 16px 32px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(0,0,0,0.05);
     }
     
     body.dark-mode .property-card { 
-      background: rgba(30,37,48,0.6); 
-      border: 1px solid rgba(56,68,89,0.2);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 50%,
+        rgba(255, 255, 255, 0.01) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 
+        0 1px 2px rgba(0,0,0,0.2),
+        0 2px 4px rgba(0,0,0,0.2),
+        0 4px 8px rgba(0,0,0,0.2),
+        0 8px 16px rgba(0,0,0,0.2),
+        0 16px 32px rgba(0,0,0,0.25),
+        0 32px 64px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
     }
     
     .property-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 
+        0 1px 2px rgba(231, 76, 60, 0.15),
+        0 2px 4px rgba(231, 76, 60, 0.15),
+        0 4px 8px rgba(231, 76, 60, 0.15),
+        0 8px 16px rgba(231, 76, 60, 0.2),
+        0 16px 32px rgba(231, 76, 60, 0.25),
+        0 32px 64px rgba(231, 76, 60, 0.3),
+        0 64px 128px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+      border-color: rgba(231, 76, 60, 0.3);
     }
     
-    body.dark-mode .property-card:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    /* Glow effect on hover */
+    .property-card:hover::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at center, 
+        rgba(231, 76, 60, 0.1) 0%, 
+        transparent 40%);
+      opacity: 0;
+      animation: cardGlow 0.5s forwards;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    @keyframes cardGlow {
+      to { opacity: 1; }
     }
     
     /* Property filters */
@@ -522,48 +598,92 @@
       color: #94a3b8; 
     }
     
-    /* Buttons */
+    /* Premium Buttons */
     .view-btn, 
     .inspection-btn,
     .btn-back { 
-      padding: 0.6rem 1.2rem; 
-      background: rgba(255,255,255,0.9); 
-      border: 1px solid rgba(56,68,89,0.2); 
-      border-radius: 8px; 
+      padding: 0.7rem 1.5rem; 
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 252, 0.95) 100%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 12px; 
       cursor: pointer; 
-      transition: all 0.2s;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       font-size: 0.95rem;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        0 2px 4px rgba(0,0,0,0.08),
+        0 4px 8px rgba(0,0,0,0.08),
+        0 8px 16px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(0,0,0,0.05);
     }
     
     .btn-back {
-      background: white;
-      border: 1px solid #e74c3c;
-      color: #e74c3c;
-      padding: 0.6rem 1.5rem;
+      background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 0.7rem 1.8rem;
+      font-weight: 600;
+      box-shadow: 
+        0 2px 4px rgba(231, 76, 60, 0.2),
+        0 4px 8px rgba(231, 76, 60, 0.25),
+        0 8px 16px rgba(231, 76, 60, 0.3),
+        0 16px 32px rgba(231, 76, 60, 0.35),
+        inset 0 2px 0 rgba(255,255,255,0.25),
+        inset 0 -2px 0 rgba(0,0,0,0.15);
     }
     
     .btn-back:hover {
-      background: #e74c3c;
-      color: white;
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 
+        0 2px 4px rgba(231, 76, 60, 0.2),
+        0 4px 8px rgba(231, 76, 60, 0.25),
+        0 8px 16px rgba(231, 76, 60, 0.3),
+        0 16px 32px rgba(231, 76, 60, 0.35),
+        0 32px 64px rgba(231, 76, 60, 0.4),
+        inset 0 2px 0 rgba(255,255,255,0.3),
+        inset 0 -2px 0 rgba(0,0,0,0.15);
     }
     
     body.dark-mode .view-btn, 
     body.dark-mode .inspection-btn { 
-      background: rgba(30,37,48,0.6); 
-      color: #cbd5e1; 
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 2px 4px rgba(0,0,0,0.2),
+        0 4px 8px rgba(0,0,0,0.2),
+        0 8px 16px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
     }
     
     .view-btn:hover, 
     .inspection-btn:hover { 
-      background: rgba(231,76,60,0.1); 
-      border-color: #e74c3c; 
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 
+        0 2px 4px rgba(231, 76, 60, 0.15),
+        0 4px 8px rgba(231, 76, 60, 0.15),
+        0 8px 16px rgba(231, 76, 60, 0.2),
+        0 16px 32px rgba(231, 76, 60, 0.25),
+        inset 0 1px 0 rgba(255,255,255,0.25),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+      border-color: rgba(231, 76, 60, 0.4);
     }
     
     .view-btn.active, 
     .inspection-btn.active { 
-      background: #e74c3c; 
+      background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
       color: white; 
-      border-color: #e74c3c; 
+      border-color: transparent;
+      box-shadow: 
+        0 2px 4px rgba(231, 76, 60, 0.2),
+        0 4px 8px rgba(231, 76, 60, 0.25),
+        0 8px 16px rgba(231, 76, 60, 0.3),
+        inset 0 2px 0 rgba(255,255,255,0.25),
+        inset 0 -2px 0 rgba(0,0,0,0.15);
     }
     
     /* Stats grid */
@@ -646,35 +766,57 @@
       border-color: #e74c3c;
     }
     
-    /* Floating dark-mode toggle */
-    .theme-toggle { 
-      position: fixed; 
-      bottom: 2rem; 
-      right: 2rem; 
-      width: 55px; 
-      height: 55px; 
-      border-radius: 50%; 
-      background: white; 
-      border: 2px solid #e74c3c; 
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      transition: all 0.3s; 
-      font-size: 1.4rem; 
-      z-index: 1001; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+    /* Premium Floating dark-mode toggle */
+    .theme-toggle {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 252, 0.95) 100%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 1.5rem;
+      z-index: 1001;
+      box-shadow: 
+        0 2px 4px rgba(0,0,0,0.08),
+        0 4px 8px rgba(0,0,0,0.08),
+        0 8px 16px rgba(0,0,0,0.08),
+        0 16px 32px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(0,0,0,0.05);
     }
     
-    .theme-toggle:hover { 
-      transform: scale(1.1) rotate(20deg); 
-      box-shadow: 0 6px 30px rgba(231, 76, 60, 0.3); 
+    .theme-toggle:hover {
+      transform: scale(1.1) rotate(180deg);
+      box-shadow: 
+        0 2px 4px rgba(231, 76, 60, 0.2),
+        0 4px 8px rgba(231, 76, 60, 0.2),
+        0 8px 16px rgba(231, 76, 60, 0.2),
+        0 16px 32px rgba(231, 76, 60, 0.3),
+        0 32px 64px rgba(231, 76, 60, 0.35),
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+      border-color: rgba(231, 76, 60, 0.4);
     }
     
-    body.dark-mode .theme-toggle { 
-      background: rgba(30, 37, 48, 0.95); 
-      border-color: rgba(231, 76, 60, 0.6); 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
+    body.dark-mode .theme-toggle {
+      background: linear-gradient(135deg, rgba(20, 20, 30, 0.95) 0%, rgba(30, 30, 45, 0.9) 100%);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 
+        0 2px 4px rgba(0,0,0,0.2),
+        0 4px 8px rgba(0,0,0,0.2),
+        0 8px 16px rgba(0,0,0,0.2),
+        0 16px 32px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
     }
     
     /* Utility classes */
@@ -794,8 +936,8 @@
 <body>
   <a href="#dashboardSection" class="visually-hidden">Skip to content</a>
   
-  <!-- Starfield for dark mode, matching landing -->
-  <div class="stars" id="stars"></div>
+  <!-- Clean Executive Background matching landing -->
+  <div class="executive-bg"></div>
   
   <!-- Floating Dark Mode Toggle -->
   <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
@@ -959,9 +1101,18 @@
     let allProperties = [];
     
     document.addEventListener('DOMContentLoaded', () => {
+      // Support both token parameter and owner ID in URL path
       if (!token) {
-        alert('Error: No access token provided.');
-        return;
+        // Check if we have an owner ID in the path (e.g., /owner/john_smith)
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.includes('owner') && pathParts.length > pathParts.indexOf('owner') + 1) {
+          const ownerId = pathParts[pathParts.indexOf('owner') + 1];
+          // Use owner ID as token
+          window.token = ownerId;
+        } else {
+          alert('Error: No access token or owner ID provided.');
+          return;
+        }
       }
       loadDashboardData();
       setupEventListeners();
@@ -975,10 +1126,12 @@
     
     async function loadDashboardData() {
       try {
-        const res = await fetch(`${API_BASE}/api/portal/dashboard?portal_token=${encodeURIComponent(token)}`);
+        // Use window.token if token is not defined
+        const accessToken = token || window.token;
+        const res = await fetch(`${API_BASE}/api/portal/dashboard?portal_token=${encodeURIComponent(accessToken)}`);
         if (!res.ok) {
           if (res.status === 401) throw new Error('Invalid or expired access token');
-          if (res.status === 404) throw new Error('Property not found');
+          if (res.status === 404) throw new Error('Owner dashboard not found. Please check the Owner ID.');
           throw new Error('Failed to load dashboard');
         }
         dashboardData = await res.json();
@@ -989,7 +1142,7 @@
     }
     
     function renderDashboard() {
-      const ownerName = dashboardData.owner?.name || 'Owner';
+      const ownerName = dashboardData.owner?.name || dashboardData.owner || 'Owner';
       document.getElementById('owner-name').textContent = ownerName;
       document.getElementById('welcome-name').textContent = ownerName;
       
@@ -1377,7 +1530,8 @@
     // PDF Download function
     async function downloadPdf(reportId) {
       try {
-        const pdfUrl = `${API_BASE}/api/portal/report/${reportId}/pdf?portal_token=${encodeURIComponent(token)}`;
+        const accessToken = token || window.token;
+        const pdfUrl = `${API_BASE}/api/portal/report/${reportId}/pdf?portal_token=${encodeURIComponent(accessToken)}`;
         
         // Create a temporary link and trigger download
         const link = document.createElement('a');
@@ -1417,7 +1571,8 @@
     // Load report data into gallery view
     async function loadReportData(reportId) {
       try {
-        const response = await fetch(`${API_BASE}/api/portal/report/${reportId}?portal_token=${encodeURIComponent(token)}`);
+        const accessToken = token || window.token;
+        const response = await fetch(`${API_BASE}/api/portal/report/${reportId}?portal_token=${encodeURIComponent(accessToken)}`);
         if (!response.ok) throw new Error('Failed to load report');
         
         const data = await response.json();

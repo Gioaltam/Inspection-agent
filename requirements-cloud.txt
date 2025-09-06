@@ -1,0 +1,4 @@
+# Cloud Storage Requirements
+boto3                 # AWS SDK for Python
+python-dotenv         # Environment variable management
+pillow                # Image processing for thumbnails
