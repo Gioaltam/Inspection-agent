@@ -864,6 +864,125 @@
       color: #cbd5e1;
     }
     
+    /* Enhanced photo gallery grid styles */
+    #photoGalleryGrid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+      gap: 1.5rem !important;
+      margin-bottom: 2rem;
+    }
+    
+    .photo-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .photo-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 
+        0 4px 8px rgba(0,0,0,0.1),
+        0 8px 16px rgba(0,0,0,0.08),
+        0 16px 32px rgba(0,0,0,0.06);
+      border-color: #e74c3c;
+    }
+    
+    .photo-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    
+    .photo-card:hover img {
+      transform: scale(1.05);
+    }
+    
+    .photo-card-content {
+      padding: 1rem;
+    }
+    
+    .photo-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.5rem;
+    }
+    
+    .photo-card-title {
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.95rem;
+      line-height: 1.3;
+    }
+    
+    .photo-card-description {
+      color: #6b7280;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-top: 0.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .photo-card-location {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .severity-badge {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    
+    .severity-critical {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .severity-important {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .severity-minor {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+    
+    body.dark-mode .photo-card {
+      background: rgba(30,37,48,0.8);
+      border-color: rgba(56,68,89,0.3);
+    }
+    
+    body.dark-mode .photo-card:hover {
+      border-color: #e74c3c;
+      background: rgba(30,37,48,0.95);
+    }
+    
+    body.dark-mode .photo-card-title {
+      color: #e5e7eb;
+    }
+    
+    body.dark-mode .photo-card-description {
+      color: #94a3b8;
+    }
+    
     body.dark-mode #reportContent {
       background: rgba(30,37,48,0.6) !important;
       color: #cbd5e1;
@@ -1760,44 +1879,60 @@
       }
     }
     
-    // Update photo gallery grid
+    // Update photo gallery grid with enhanced display
     function updatePhotoGallery() {
       const grid = document.getElementById('photoGalleryGrid');
       
       if (galleryPhotos.length === 0) {
-        grid.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 2rem;">No photos available for this inspection.</div>';
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #6b7280; padding: 3rem; background: rgba(255,255,255,0.5); border-radius: 12px;">No photos available for this inspection.</div>';
         return;
       }
       
-      grid.innerHTML = galleryPhotos.map((photo, index) => `
-        <div class="photo-card" data-index="${index}" data-severity="${photo.severity}" data-searchable="${(photo.section + ' ' + photo.issue + ' ' + photo.description).toLowerCase()}" 
-             style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s;"
-             onclick="openPhotoFromGallery(${index})">
-          <img src="${photo.url}" alt="${photo.issue}" style="width: 100%; height: 200px; object-fit: cover;" 
-               onerror="this.src='/static/placeholder.jpg'; this.onerror=null;">
-          <div style="padding: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-              <div style="font-weight: 600; color: #374151; font-size: 0.9rem;">${photo.section}</div>
+      grid.innerHTML = galleryPhotos.map((photo, index) => {
+        const severityClass = photo.severity === 'critical' ? 'severity-critical' : 
+                              photo.severity === 'important' ? 'severity-important' : 
+                              photo.severity === 'minor' ? 'severity-minor' : '';
+        
+        return `
+          <div class="photo-card" 
+               data-index="${index}" 
+               data-severity="${photo.severity}" 
+               data-searchable="${(photo.section + ' ' + photo.issue + ' ' + photo.description).toLowerCase()}"
+               onclick="openPhotoWithReport(${index})"
+               title="Click to view full report">
+            <div style="position: relative; overflow: hidden; height: 220px;">
+              <img src="${photo.url}" 
+                   alt="${photo.issue || 'Inspection photo'}" 
+                   onerror="this.src='/static/placeholder.jpg'; this.onerror=null;">
               ${photo.severity !== 'info' ? `
-                <span style="padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;
-                  ${photo.severity === 'critical' ? 'background: #fee2e2; color: #dc2626;' : 
-                    photo.severity === 'important' ? 'background: #fef3c7; color: #d97706;' : 
-                    'background: #dbeafe; color: #2563eb;'}">
-                  ${photo.severity.toUpperCase()}
-                </span>
+                <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+                  <span class="severity-badge ${severityClass}">
+                    ${photo.severity}
+                  </span>
+                </div>
               ` : ''}
             </div>
-            <div style="color: #6b7280; font-size: 0.85rem; line-height: 1.4;">
-              ${photo.issue || 'View Details'}
+            <div class="photo-card-content">
+              <div class="photo-card-header">
+                <div class="photo-card-title">${photo.section}</div>
+              </div>
+              <div class="photo-card-description">
+                ${photo.issue || 'Click to view detailed report'}
+              </div>
+              ${photo.location ? `
+                <div class="photo-card-location">
+                  <span>📍</span>
+                  <span>${photo.location}</span>
+                </div>
+              ` : ''}
             </div>
-            ${photo.location ? `<div style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.25rem;">📍 ${photo.location}</div>` : ''}
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
     
-    // Open photo from gallery
-    function openPhotoFromGallery(index) {
+    // Enhanced function to open photo with detailed report
+    function openPhotoWithReport(index) {
       if (index < 0 || index >= galleryPhotos.length) return;
       
       currentPhotoIndex = index;
@@ -1810,38 +1945,90 @@
       img.src = photo.url;
       img.alt = photo.issue || 'Inspection photo';
       
+      // Enhanced report display with more details
       info.innerHTML = `
-        <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem;">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <h3 style="font-size: 1.2rem; font-weight: 600; color: #1f2937; margin: 0;">${photo.section}</h3>
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+              <h2 style="font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0;">${photo.section}</h2>
+              ${photo.location ? `
+                <div style="color: #6b7280; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="color: #e74c3c;">📍</span>
+                  <span style="font-weight: 500;">${photo.location}</span>
+                </div>
+              ` : ''}
+            </div>
             ${photo.severity !== 'info' ? `
-              <span style="padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
-                ${photo.severity === 'critical' ? 'background: #fee2e2; color: #dc2626;' : 
-                  photo.severity === 'important' ? 'background: #fef3c7; color: #d97706;' : 
-                  'background: #dbeafe; color: #2563eb;'}">
+              <span class="severity-badge ${photo.severity === 'critical' ? 'severity-critical' : 
+                                             photo.severity === 'important' ? 'severity-important' : 
+                                             'severity-minor'}" 
+                    style="padding: 6px 16px; font-size: 0.9rem;">
                 ${photo.severity.toUpperCase()}
               </span>
             ` : ''}
           </div>
-          ${photo.location ? `<div style="color: #6b7280; margin-top: 0.5rem;">📍 Location: ${photo.location}</div>` : ''}
         </div>
         
         ${photo.issue ? `
-          <div style="margin-bottom: 1rem;">
-            <h4 style="color: #374151; font-weight: 600; margin-bottom: 0.5rem;">Issue</h4>
-            <p style="color: #4b5563; line-height: 1.6;">${photo.issue}</p>
+          <div style="background: white; border-left: 4px solid #e74c3c; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="color: #e74c3c; font-weight: 600; margin-bottom: 0.75rem; font-size: 1.1rem;">
+              <span style="margin-right: 0.5rem;">⚠️</span>Issue Identified
+            </h3>
+            <p style="color: #374151; line-height: 1.8; font-size: 1rem;">${photo.issue}</p>
           </div>
         ` : ''}
         
         ${photo.description ? `
-          <div>
-            <h4 style="color: #374151; font-weight: 600; margin-bottom: 0.5rem;">Details</h4>
-            <p style="color: #4b5563; line-height: 1.6;">${photo.description}</p>
+          <div style="background: #f9fafb; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 8px;">
+            <h3 style="color: #374151; font-weight: 600; margin-bottom: 0.75rem; font-size: 1.1rem;">
+              <span style="margin-right: 0.5rem;">📋</span>Detailed Observations
+            </h3>
+            <p style="color: #4b5563; line-height: 1.8; font-size: 0.95rem;">${photo.description}</p>
           </div>
         ` : ''}
         
-        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; color: #94a3b8; font-size: 0.85rem;">
-          Photo ${index + 1} of ${galleryPhotos.length}
+        ${currentReportData && currentReportData.metadata ? `
+          <div style="background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <h4 style="color: #92400e; font-weight: 600; margin-bottom: 0.75rem;">
+              <span style="margin-right: 0.5rem;">📊</span>Inspection Summary
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+              <div style="text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;">${currentReportData.metadata.critical_count || 0}</div>
+                <div style="font-size: 0.8rem; color: #92400e;">Critical</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #d97706;">${currentReportData.metadata.important_count || 0}</div>
+                <div style="font-size: 0.8rem; color: #92400e;">Important</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">${galleryPhotos.length}</div>
+                <div style="font-size: 0.8rem; color: #92400e;">Total Photos</div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+          <div style="color: #6b7280; font-size: 0.9rem;">
+            <strong>Photo ${index + 1}</strong> of ${galleryPhotos.length}
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            ${currentInspection && currentInspection.hasPdf ? `
+              <button onclick="event.stopPropagation(); downloadPdf('${currentInspection.report_id}')" 
+                      style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;"
+                      onmouseover="this.style.background='#2563eb'" 
+                      onmouseout="this.style.background='#3b82f6'">
+                📄 Download Full Report
+              </button>
+            ` : ''}
+            <button onclick="closeModal()" 
+                    style="padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;"
+                    onmouseover="this.style.background='#4b5563'" 
+                    onmouseout="this.style.background='#6b7280'">
+              Close
+            </button>
+          </div>
         </div>
       `;
       
@@ -1852,11 +2039,16 @@
       modal.classList.add('active');
     }
     
+    // Keep the original function for backward compatibility
+    function openPhotoFromGallery(index) {
+      openPhotoWithReport(index);
+    }
+    
     // Navigate modal photos
     function navigateModal(direction) {
       const newIndex = currentPhotoIndex + direction;
       if (newIndex >= 0 && newIndex < galleryPhotos.length) {
-        openPhotoFromGallery(newIndex);
+        openPhotoWithReport(newIndex);
       }
     }
     
