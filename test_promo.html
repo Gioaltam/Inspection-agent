@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promo Test - CheckMyRental</title>
+    <style>
+        body { font-family: system-ui; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 30px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Promo System Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="testWithPromo()">Test WITH ?promo=NEW2M</button>
+        <button onclick="testWithoutPromo()">Test WITHOUT promo</button>
+        <button onclick="testPromoForm()">Test Promo Form</button>
+        <button onclick="testPersistence()">Test localStorage Persistence</button>
+        <button onclick="clearPromo()">Clear Promo State</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Live Preview</h2>
+        <iframe id="preview" src="static/landing.html" style="width:100%; height:600px; border:1px solid #ccc;"></iframe>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.insertBefore(div, results.firstChild);
+        }
+
+        function testWithPromo() {
+            log('Testing WITH promo parameter...', 'info');
+            const iframe = document.getElementById('preview');
+            iframe.src = 'static/landing.html?promo=NEW2M';
+            
+            iframe.onload = () => {
+                setTimeout(() => {
+                    const doc = iframe.contentDocument;
+                    const tests = [];
+                    
+                    // Check if promo is active
+                    const promoActive = doc.defaultView.promoIsActive();
+                    tests.push({
+                        name: 'Promo activation via URL',
+                        pass: promoActive === true
+                    });
+                    
+                    // Check promo badges
+                    const badges = doc.querySelectorAll('.promo-badge');
+                    const visibleBadges = Array.from(badges).filter(b => b.style.display !== 'none');
+                    tests.push({
+                        name: 'Promo badges visible',
+                        pass: visibleBadges.length > 0
+                    });
+                    
+                    // Check strikethrough prices
+                    const strikes = doc.querySelectorAll('.price-strike');
+                    const filledStrikes = Array.from(strikes).filter(s => s.textContent.trim() !== '');
+                    tests.push({
+                        name: 'Original prices shown with strikethrough',
+                        pass: filledStrikes.length > 0
+                    });
+                    
+                    // Check promo prices
+                    const promos = doc.querySelectorAll('.price-promo');
+                    const filledPromos = Array.from(promos).filter(p => p.textContent.includes('for first 2 months'));
+                    tests.push({
+                        name: 'Discounted prices shown',
+                        pass: filledPromos.length > 0
+                    });
+                    
+                    // Log results
+                    tests.forEach(test => {
+                        log(`✓ ${test.name}: ${test.pass ? 'PASSED' : 'FAILED'}`, test.pass ? 'pass' : 'fail');
+                    });
+                    
+                    const allPassed = tests.every(t => t.pass);
+                    log(`WITH PROMO: ${allPassed ? 'ALL TESTS PASSED ✅' : 'SOME TESTS FAILED ❌'}`, allPassed ? 'pass' : 'fail');
+                }, 500);
+            };
+        }
+
+        function testWithoutPromo() {
+            log('Testing WITHOUT promo...', 'info');
+            clearPromo();
+            const iframe = document.getElementById('preview');
+            iframe.src = 'static/landing.html';
+            
+            iframe.onload = () => {
+                setTimeout(() => {
+                    const doc = iframe.contentDocument;
+                    const tests = [];
+                    
+                    // Check if promo is inactive
+                    const promoActive = doc.defaultView.promoIsActive();
+                    tests.push({
+                        name: 'Promo inactive by default',
+                        pass: promoActive === false
+                    });
+                    
+                    // Check promo badges hidden
+                    const badges = doc.querySelectorAll('.promo-badge');
+                    const visibleBadges = Array.from(badges).filter(b => b.style.display !== 'none');
+                    tests.push({
+                        name: 'Promo badges hidden',
+                        pass: visibleBadges.length === 0
+                    });
+                    
+                    // Check no strikethrough prices
+                    const strikes = doc.querySelectorAll('.price-strike');
+                    const filledStrikes = Array.from(strikes).filter(s => s.textContent.trim() !== '');
+                    tests.push({
+                        name: 'No strikethrough prices',
+                        pass: filledStrikes.length === 0
+                    });
+                    
+                    // Check no promo prices
+                    const promos = doc.querySelectorAll('.price-promo');
+                    const filledPromos = Array.from(promos).filter(p => p.textContent.trim() !== '');
+                    tests.push({
+                        name: 'No promo prices shown',
+                        pass: filledPromos.length === 0
+                    });
+                    
+                    // Log results
+                    tests.forEach(test => {
+                        log(`✓ ${test.name}: ${test.pass ? 'PASSED' : 'FAILED'}`, test.pass ? 'pass' : 'fail');
+                    });
+                    
+                    const allPassed = tests.every(t => t.pass);
+                    log(`WITHOUT PROMO: ${allPassed ? 'ALL TESTS PASSED ✅' : 'SOME TESTS FAILED ❌'}`, allPassed ? 'pass' : 'fail');
+                }, 500);
+            };
+        }
+
+        function testPromoForm() {
+            log('Testing promo form submission...', 'info');
+            const iframe = document.getElementById('preview');
+            iframe.src = 'static/landing.html';
+            
+            iframe.onload = () => {
+                setTimeout(() => {
+                    const doc = iframe.contentDocument;
+                    const form = doc.querySelector('form[onsubmit*="handlePromoCodeSubmit"]');
+                    const input = form?.querySelector('input[name="promo_code"]');
+                    
+                    if (form && input) {
+                        // Test valid code
+                        input.value = 'NEW2M';
+                        form.dispatchEvent(new Event('submit'));
+                        
+                        setTimeout(() => {
+                            const promoActive = doc.defaultView.promoIsActive();
+                            log(`Form submission with NEW2M: ${promoActive ? 'ACTIVATED ✅' : 'FAILED ❌'}`, promoActive ? 'pass' : 'fail');
+                            
+                            // Check message
+                            const msg = doc.getElementById('promo-msg');
+                            if (msg && msg.textContent.includes('applied')) {
+                                log('Success message displayed ✅', 'pass');
+                            }
+                        }, 100);
+                    } else {
+                        log('Promo form not found ❌', 'fail');
+                    }
+                }, 500);
+            };
+        }
+
+        function testPersistence() {
+            log('Testing localStorage persistence...', 'info');
+            
+            // Set promo active
+            localStorage.setItem('cmr_promo_active', '1');
+            
+            const iframe = document.getElementById('preview');
+            iframe.src = 'static/landing.html';
+            
+            iframe.onload = () => {
+                setTimeout(() => {
+                    const doc = iframe.contentDocument;
+                    const promoActive = doc.defaultView.promoIsActive();
+                    
+                    if (promoActive) {
+                        log('Promo persisted after refresh ✅', 'pass');
+                    } else {
+                        log('Promo did not persist ❌', 'fail');
+                    }
+                    
+                    // Clean up
+                    clearPromo();
+                }, 500);
+            };
+        }
+
+        function clearPromo() {
+            localStorage.removeItem('cmr_promo_active');
+            log('Cleared promo state from localStorage', 'info');
+        }
+
+        function checkConsoleErrors() {
+            const iframe = document.getElementById('preview');
+            const originalError = iframe.contentWindow.console.error;
+            let errorCount = 0;
+            
+            iframe.contentWindow.console.error = function(...args) {
+                errorCount++;
+                log(`Console Error: ${args.join(' ')}`, 'fail');
+                originalError.apply(console, args);
+            };
+            
+            setTimeout(() => {
+                if (errorCount === 0) {
+                    log('No console errors detected ✅', 'pass');
+                } else {
+                    log(`${errorCount} console error(s) found ❌`, 'fail');
+                }
+            }, 2000);
+        }
+
+        // Auto-run basic test on load
+        window.onload = () => {
+            log('Test suite loaded. Click buttons to run tests.', 'info');
+            checkConsoleErrors();
+        };
+    </script>
+</body>
+</html>

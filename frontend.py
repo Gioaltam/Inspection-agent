@@ -25,6 +25,8 @@ from pathlib import Path
 import ctypes
 import platform
 import math
+import zipfile
+import atexit
 
 # Enable DPI awareness for Windows (sharper text)
 if platform.system() == 'Windows':
@@ -38,7 +40,7 @@ if platform.system() == 'Windows':
 
 # GUI
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, simpledialog
 from tkinter import font as tkFont
 
 # Attempt to enable drag & drop if tkinterdnd2 is present
@@ -96,6 +98,9 @@ BRAND_GLOW = "#ff9999"  # Red glow effect (light red instead of transparency)
 OUTPUT_DIR = Path("workspace/outputs")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+# Settings file path
+SETTINGS_FILE = Path.home() / ".checkmyrental_inspector.json"
+
 # Parse lines like: [3/12] IMG_0042.jpg | elapsed 38s  ETA ~72s
 PROGRESS_RE = re.compile(r"\\[(\\d+)\\s*/\\s*(\\d+)\\]")
 START_RE = re.compile(r"Starting analysis of\\s+(\\d+)\\s+images\\b")
@@ -148,7 +153,7 @@ def _get_base_dir() -> Path:
         # Some packed environments may not set __file__
         return Path.cwd()
 
-def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_address: str = "", owner_name: str = "", owner_id: str = "") -> list[str] | None:
+def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_address: str = "", owner_name: str = "", owner_id: str = "", gallery: str = "") -> list[str] | None:
     """
     Best-effort resolution to a command that launches run_report for a given ZIP.
     Order:
@@ -174,6 +179,10 @@ def _resolve_run_report_cmd(zip_path: Path, client_name: str = "", property_addr
     # Add owner ID if provided
     if owner_id:
         args.extend(["--owner-id", owner_id])
+    
+    # Add gallery if provided
+    if gallery:
+        args.extend(["--gallery", gallery])
     
     # 1) Explicit override
     env_cmd = os.getenv("RUN_REPORT_CMD", "").strip()
@@ -254,13 +263,26 @@ class App(BaseTk):  # type: ignore[misc]
         self.zip_list: list[Path] = []
         self.log_queue: "queue.Queue[str]" = queue.Queue()
         self.jobs_state = {}  # path -> dict(total:int|None, done:int, start:float|None, finished:bool, report_id:str|None)
+        self.job_rows: dict[Path, str] = {}  # Maps zip_path to treeview row iid
+        self.proc_map: dict[Path, subprocess.Popen] = {}  # Maps zip_path to running process
         self._state_lock = threading.Lock()
         self._orchestrator = None  # background thread that manages all jobs
+        self.pause_event = threading.Event()
+        self.pause_event.set()  # Start unpaused
+        self.cancel_flags: dict[Path, bool] = {}  # Track which jobs are canceled
+        self.paused = False  # Track pause state for UI
 
         # UI
         self._build_ui()
         self.after(120, self._pump_logs)  # log flusher
         self.after(250, self._poll_parallel_progress)  # progress aggregator
+        
+        # Load and apply settings after UI is built
+        self.load_and_apply_settings()
+        
+        # Register cleanup on window close
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        atexit.register(self.save_settings)
     
     def setup_styles(self):
         """Configure ttk styles for 3D dark mode appearance with shadows"""
@@ -450,9 +472,14 @@ class App(BaseTk):  # type: ignore[misc]
         
         ttk.Button(run_frame, text="✨ GENERATE REPORTS", command=self.start, style='Success.TButton').pack(side="left")
         
-        speed_label = tk.Label(run_frame, text=f"⚡ Fast Processing ({JOB_CONCURRENCY}×{ANALYSIS_CONCURRENCY})", 
+        # Add pause/resume button
+        self.pause_btn = ttk.Button(run_frame, text="⏸️ PAUSE", command=self.toggle_pause, style='Secondary.TButton')
+        self.pause_btn.pack(side="left", padx=(10, 0))
+        self.pause_btn.config(state="disabled")  # Disabled until jobs start
+        
+        self.speed_label = tk.Label(run_frame, text=f"⚡ Fast Processing ({JOB_CONCURRENCY}×{ANALYSIS_CONCURRENCY})", 
                              font=('Segoe UI', 10, 'italic'), fg=BRAND_SUCCESS_LIGHT, bg=BRAND_BG)
-        speed_label.pack(side="left", padx=(12, 0))
+        self.speed_label.pack(side="left", padx=(12, 0))
 
         # Property details with elevated 3D card
         details_shadow = tk.Frame(left, bg=BRAND_SHADOW)
@@ -477,6 +504,19 @@ class App(BaseTk):  # type: ignore[misc]
         self.refresh_btn = ttk.Button(owner_selection_frame, text="🔄", width=3,
                                      command=self.refresh_owners, style='Secondary.TButton')
         self.refresh_btn.pack(side="left", padx=(5, 0))
+        
+        # Gallery selection
+        ttk.Label(client_frame, text="Select Gallery:", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w", pady=(8, 2))
+        
+        gallery_selection_frame = ttk.Frame(client_frame, style='Brand.TFrame')
+        gallery_selection_frame.pack(fill="x", pady=(5, 10))
+        
+        self.gallery_var = tk.StringVar()
+        self.gallery_combo = ttk.Combobox(gallery_selection_frame, textvariable=self.gallery_var, width=28,
+                                         font=('Segoe UI', 10), state='readonly')
+        self.gallery_combo.pack(side="left", fill="x", expand=True)
+        self.gallery_combo.set("Select gallery...")
+        self.gallery_combo['values'] = ["Select an owner first"]
         
         # Owner ID field for specific dashboard routing
         ttk.Label(client_frame, text="Owner ID (for dashboard routing):", font=('Segoe UI', 10), style='Brand.TLabel').pack(anchor="w", pady=(8, 2))
@@ -504,6 +544,27 @@ class App(BaseTk):  # type: ignore[misc]
         self.client_name_var = tk.StringVar()
         self.client_name_entry = ttk.Entry(client_frame, textvariable=self.client_name_var, width=30, font=('Segoe UI', 10))
         self.client_name_entry.pack(fill="x", pady=(5, 0))
+        
+        # Advanced settings (concurrency controls)
+        advanced_frame = ttk.LabelFrame(client_frame, text="⚙️ Advanced Settings (Optional)", style='Brand.TLabelframe')
+        advanced_frame.pack(fill="x", pady=(10, 0))
+        
+        # Job concurrency spinner
+        job_frame = ttk.Frame(advanced_frame, style='Brand.TFrame')
+        job_frame.pack(fill="x", pady=(5, 5))
+        
+        ttk.Label(job_frame, text="Parallel Jobs:", font=('Segoe UI', 9), style='Brand.TLabel').pack(side="left")
+        self.job_concurrency_var = tk.IntVar(value=JOB_CONCURRENCY)
+        self.job_concurrency_spin = ttk.Spinbox(job_frame, from_=1, to=10, textvariable=self.job_concurrency_var, 
+                                               width=5, font=('Segoe UI', 9), command=self.update_concurrency)
+        self.job_concurrency_spin.pack(side="left", padx=(5, 10))
+        
+        # Analysis concurrency spinner
+        ttk.Label(job_frame, text="Images per Job:", font=('Segoe UI', 9), style='Brand.TLabel').pack(side="left")
+        self.analysis_concurrency_var = tk.IntVar(value=ANALYSIS_CONCURRENCY)
+        self.analysis_concurrency_spin = ttk.Spinbox(job_frame, from_=1, to=10, textvariable=self.analysis_concurrency_var,
+                                                    width=5, font=('Segoe UI', 9), command=self.update_concurrency)
+        self.analysis_concurrency_spin.pack(side="left", padx=(5, 0))
         
         # Auto-fetch owners on startup
         self.after(500, self.refresh_owners)
@@ -558,27 +619,65 @@ class App(BaseTk):  # type: ignore[misc]
                               font=('Segoe UI', 10), fg=BRAND_PRIMARY_LIGHT, bg=BRAND_BG)
         portal_label.pack(side="left", padx=(12, 0))
 
-        # Styled listbox with 3D inset effect
-        list_label = ttk.Label(left, text="📸 Inspection Files:", style='Heading.TLabel')
+        # Jobs table with 3D inset effect
+        list_label = ttk.Label(left, text="📸 Inspection Jobs:", style='Heading.TLabel')
         list_label.pack(anchor="w", pady=(6, 2))
         
-        # Create listbox with inset shadow effect
-        listbox_frame = tk.Frame(left, bg=BRAND_SURFACE, relief='sunken', bd=3)
-        listbox_frame.pack(fill="both", expand=True, pady=(2, 0))
+        # Create treeview frame with inset shadow effect
+        tree_frame = tk.Frame(left, bg=BRAND_SURFACE, relief='sunken', bd=3)
+        tree_frame.pack(fill="both", expand=True, pady=(2, 0))
         
-        self.listbox = tk.Listbox(listbox_frame, width=42, height=12, selectmode="extended",
-                                 font=('Segoe UI', 10), bg=BRAND_SURFACE_LIGHT,
-                                 fg=BRAND_TEXT,
-                                 selectbackground=BRAND_PRIMARY, selectforeground='white',
-                                 activestyle='none',
-                                 relief='flat', bd=0, highlightthickness=0)
-        self.listbox.pack(fill="both", expand=True, padx=2, pady=2)
+        # Create scrollbars
+        tree_scroll_y = ttk.Scrollbar(tree_frame, orient="vertical")
+        tree_scroll_y.pack(side="right", fill="y", padx=(0, 2), pady=2)
+        
+        tree_scroll_x = ttk.Scrollbar(tree_frame, orient="horizontal")
+        tree_scroll_x.pack(side="bottom", fill="x", padx=2, pady=(0, 2))
+        
+        # Create the treeview table
+        self.jobs = ttk.Treeview(tree_frame, columns=("property", "owner", "gallery", "progress", "status", "actions"),
+                                 show="tree headings", height=12,
+                                 yscrollcommand=tree_scroll_y.set,
+                                 xscrollcommand=tree_scroll_x.set)
+        
+        # Configure scrollbars
+        tree_scroll_y.config(command=self.jobs.yview)
+        tree_scroll_x.config(command=self.jobs.xview)
+        
+        # Configure column headings
+        self.jobs.heading("#0", text="File", anchor="w")
+        self.jobs.heading("property", text="Property", anchor="w")
+        self.jobs.heading("owner", text="Owner", anchor="w")
+        self.jobs.heading("gallery", text="Gallery", anchor="w")
+        self.jobs.heading("progress", text="Progress", anchor="center")
+        self.jobs.heading("status", text="Status", anchor="center")
+        self.jobs.heading("actions", text="Actions", anchor="center")
+        
+        # Configure column widths
+        self.jobs.column("#0", width=180, minwidth=150, stretch=True)
+        self.jobs.column("property", width=160, minwidth=120, stretch=True)
+        self.jobs.column("owner", width=120, minwidth=100, stretch=True)
+        self.jobs.column("gallery", width=100, minwidth=80, stretch=True)
+        self.jobs.column("progress", width=80, minwidth=60, stretch=False)
+        self.jobs.column("status", width=80, minwidth=60, stretch=False)
+        self.jobs.column("actions", width=80, minwidth=60, stretch=False)
+        
+        # Style the treeview
+        self.jobs.tag_configure("queued", background=BRAND_SURFACE_LIGHT, foreground=BRAND_TEXT_SECONDARY)
+        self.jobs.tag_configure("processing", background=BRAND_SURFACE_HOVER, foreground=BRAND_TEXT)
+        self.jobs.tag_configure("completed", background=BRAND_SUCCESS, foreground="white")
+        self.jobs.tag_configure("failed", background=BRAND_ERROR, foreground="white")
+        
+        self.jobs.pack(fill="both", expand=True, padx=2, pady=2)
+        
+        # Bind click handler for actions column
+        self.jobs.bind("<ButtonRelease-1>", self._on_job_click)
 
         if DND_AVAILABLE:
             # Only register DND when the extension is present
             try:
-                self.listbox.drop_target_register(DND_FILES)  # type: ignore[arg-type]
-                self.listbox.dnd_bind("<<Drop>>", self._on_drop)
+                self.jobs.drop_target_register(DND_FILES)  # type: ignore[arg-type]
+                self.jobs.dnd_bind("<<Drop>>", self._on_drop)
             except Exception:
                 # If anything goes wrong, silently disable DND
                 pass
@@ -638,15 +737,46 @@ class App(BaseTk):  # type: ignore[misc]
                            font=('Segoe UI', 10, 'bold'))
         eta_label.pack(anchor="w", pady=(4, 0))
 
-        # Enhanced status bar with gradient background
+        # Enhanced status bar with connection indicators
         self.status = tk.StringVar(value="✅ Ready")
         status_frame = tk.Frame(self, bg=BRAND_SURFACE, relief='raised', bd=1)
         status_frame.pack(fill="x", side="bottom")
         
-        status_bar = tk.Label(status_frame, textvariable=self.status, anchor="w",
+        # Main status container
+        status_container = tk.Frame(status_frame, bg=BRAND_SURFACE_ELEVATED)
+        status_container.pack(fill="x")
+        
+        # Left side - connection status indicators
+        self.conn_frame = tk.Frame(status_container, bg=BRAND_SURFACE_ELEVATED)
+        self.conn_frame.pack(side="left", padx=10)
+        
+        # Portal status
+        self.portal_status = tk.Label(self.conn_frame, text="⚪ Portal: Checking...", 
+                                     bg=BRAND_SURFACE_ELEVATED, fg=BRAND_TEXT_DIM,
+                                     font=('Segoe UI', 9))
+        self.portal_status.pack(side="left", padx=(0, 15))
+        
+        # run_report status
+        self.runreport_status = tk.Label(self.conn_frame, text="⚪ run_report: Checking...",
+                                        bg=BRAND_SURFACE_ELEVATED, fg=BRAND_TEXT_DIM,
+                                        font=('Segoe UI', 9))
+        self.runreport_status.pack(side="left", padx=(0, 15))
+        
+        # API key status
+        self.apikey_status = tk.Label(self.conn_frame, text="⚪ API Key: Checking...",
+                                     bg=BRAND_SURFACE_ELEVATED, fg=BRAND_TEXT_DIM,
+                                     font=('Segoe UI', 9))
+        self.apikey_status.pack(side="left", padx=(0, 15))
+        
+        # Right side - main status text
+        status_bar = tk.Label(status_container, textvariable=self.status, anchor="e",
                             bg=BRAND_SURFACE_ELEVATED, fg=BRAND_TEXT_SECONDARY,
                             font=('Segoe UI', 9), padx=10, pady=4)
-        status_bar.pack(fill="x")
+        status_bar.pack(side="right", fill="x", expand=True)
+        
+        # Start status checks
+        self.after(500, self._check_all_status)
+        self.after(30000, self._start_status_timer)  # Start recurring checks after 30s
 
     # ----- File list management -----
     def add_files(self):
@@ -662,6 +792,22 @@ class App(BaseTk):  # type: ignore[misc]
         raw = event.data
         items = self.splitlist(raw)
         self._add_paths(items)
+    
+    def add_job_row(self, zip_path: Path, owner_name: str = "", gallery_name: str = ""):
+        """Add a new job row to the treeview table"""
+        # Derive property name from ZIP filename (spaces not underscores)
+        property_name = zip_path.stem.replace('_', ' ')
+        
+        # Insert new row with initial values
+        row_id = self.jobs.insert("", "end", 
+                                  text=zip_path.name,
+                                  values=(property_name, owner_name, gallery_name, "0%", "Queued", ""),
+                                  tags=("queued",))
+        
+        # Store the mapping
+        self.job_rows[zip_path] = row_id
+        
+        return row_id
 
     def _add_paths(self, items):
         added = 0
@@ -669,6 +815,32 @@ class App(BaseTk):  # type: ignore[misc]
         for p in items:
             try:
                 path = Path(str(p).strip("{}"))
+                
+                # If path is a directory, zip it first
+                if path.is_dir():
+                    # Create tmp_zips directory structure
+                    tmp_zip_dir = OUTPUT_DIR / "tmp_zips"
+                    tmp_zip_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Create zip file with the folder name
+                    zip_filename = f"{path.name}.zip"
+                    zip_path = tmp_zip_dir / zip_filename
+                    
+                    # Create the zip file with compression
+                    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                        # Walk through the directory and add all files
+                        for root, dirs, files in os.walk(path):
+                            for file in files:
+                                file_path = Path(root) / file
+                                # Add file with relative path from the folder root
+                                arcname = file_path.relative_to(path)
+                                zipf.write(file_path, arcname)
+                    
+                    # Now treat the created zip as the path to add
+                    path = zip_path
+                    self._log_line(f"📁 Compressed folder to: {zip_filename}")
+                
+                # Process zip files (either original or just created from folder)
                 if path.suffix.lower() == ".zip" and path.exists():
                     # Check for duplicates by comparing absolute paths
                     path_absolute = path.resolve()
@@ -682,10 +854,8 @@ class App(BaseTk):  # type: ignore[misc]
                     
                     if not is_duplicate:
                         self.zip_list.append(path)
-                        # Show filename and extracted property address
-                        property_address = path.stem.replace('_', ' ')
-                        display_text = f"{path.name} → {property_address}"
-                        self.listbox.insert("end", display_text)
+                        # Add row to the jobs table
+                        self.add_job_row(path, owner_name="", gallery_name="")
                         added += 1
             except Exception:
                 continue
@@ -702,14 +872,230 @@ class App(BaseTk):  # type: ignore[misc]
 
     def clear_list(self):
         self.zip_list.clear()
-        self.listbox.delete(0, "end")
+        self.job_rows.clear()
+        # Clear all items from the treeview
+        for item in self.jobs.get_children():
+            self.jobs.delete(item)
         self._log_line("🗑️ File list cleared")
+    
+    def _set_row(self, zip_path: Path, **cols):
+        """Update specific columns in a job row.
+        
+        Args:
+            zip_path: Path to the ZIP file
+            **cols: Keyword arguments for columns to update:
+                   owner, gallery, progress, status, actions
+        """
+        if zip_path not in self.job_rows:
+            return
+        
+        row_id = self.job_rows[zip_path]
+        
+        # Get current values
+        current_values = self.jobs.item(row_id, "values")
+        if not current_values:
+            return
+        
+        # Create list from current values (convert tuple to list)
+        new_values = list(current_values)
+        
+        # Column indices mapping
+        col_indices = {
+            "property": 0,
+            "owner": 1, 
+            "gallery": 2,
+            "progress": 3,
+            "status": 4,
+            "actions": 5
+        }
+        
+        # Update specified columns
+        for col_name, value in cols.items():
+            if col_name in col_indices:
+                new_values[col_indices[col_name]] = value
+        
+        # Determine appropriate tag based on status
+        tag = "queued"
+        if "status" in cols:
+            status = cols["status"].lower()
+            if "running" in status or "processing" in status:
+                tag = "processing"
+            elif "done" in status or "completed" in status:
+                tag = "completed"
+            elif "failed" in status or "error" in status:
+                tag = "failed"
+            elif "waiting" in status or "queued" in status:
+                tag = "queued"
+        
+        # Update the row
+        self.jobs.item(row_id, values=new_values, tags=(tag,))
+        
+        # Update actions whenever row changes
+        self._update_actions_for(zip_path)
+    
+    def _update_actions_for(self, zip_path: Path):
+        """Update the actions column based on job state."""
+        with self._state_lock:
+            state = self.jobs_state.get(zip_path, {})
+        
+        actions = []
+        
+        # If job has a report_id, can view in portal
+        if state.get("report_id"):
+            actions.append("View in Portal")
+            actions.append("Copy Portal Link")
+        
+        # If job has output_dir, can open folder
+        if state.get("output_dir"):
+            actions.append("Open")
+        
+        # If job is not finished, can cancel
+        if not state.get("finished"):
+            actions.append("Cancel")
+        
+        # If job is finished and failed, can retry
+        if state.get("finished") and state.get("return_code", 0) != 0:
+            actions.append("Retry")
+        
+        # Update the actions column with available actions
+        actions_text = " | ".join(actions) if actions else "..."
+        
+        if zip_path in self.job_rows:
+            row_id = self.job_rows[zip_path]
+            current_values = list(self.jobs.item(row_id, "values"))
+            current_values[5] = actions_text  # Update actions column
+            self.jobs.item(row_id, values=current_values)
+
+    # ----- Job Control Methods -----
+    def _on_job_click(self, event):
+        """Handle clicks on the job table, specifically for the Actions column."""
+        # Get the region clicked
+        region = self.jobs.identify("region", event.x, event.y)
+        if region != "cell":
+            return
+            
+        # Get the column clicked
+        column = self.jobs.identify_column(event.x)
+        if column != "#6":  # Actions column is the 6th column (0-indexed as #6)
+            return
+            
+        # Get the item clicked
+        item = self.jobs.identify_row(event.y)
+        if not item:
+            return
+            
+        # Find the zip_path for this row
+        zip_path = None
+        for path, row_id in self.job_rows.items():
+            if row_id == item:
+                zip_path = path
+                break
+                
+        if not zip_path:
+            return
+            
+        # Get the current state
+        with self._state_lock:
+            state = self.jobs_state.get(zip_path, {})
+            finished = state.get("finished", False)
+            return_code = state.get("return_code", 0)
+            
+        # Show appropriate action based on state
+        if not finished:
+            # Job is running, offer to cancel
+            if messagebox.askyesno("Cancel Job", f"Cancel processing of {zip_path.name}?"):
+                self._cancel_job(zip_path)
+        else:
+            # Job is finished, check if it failed
+            if return_code != 0:
+                # Job failed or was canceled, offer to retry
+                if messagebox.askyesno("Retry Job", f"Retry processing of {zip_path.name}?"):
+                    self._retry_job(zip_path)
+    
+    def toggle_pause(self):
+        """Toggle pause/resume for job processing."""
+        if self.paused:
+            self.pause_event.set()  # Resume
+            self.paused = False
+            self.pause_btn.config(text="⏸️ PAUSE")
+            self._log_line("▶️ Processing resumed")
+            self._set_status("🔄 Processing resumed...")
+        else:
+            self.pause_event.clear()  # Pause
+            self.paused = True
+            self.pause_btn.config(text="▶️ RESUME")
+            self._log_line("⏸️ Processing paused (no new jobs will start)")
+            self._set_status("⏸️ Paused - Click RESUME to continue")
+    
+    def _cancel_job(self, zip_path: Path):
+        """Cancel a running job."""
+        with self._state_lock:
+            # Mark as canceled
+            self.cancel_flags[zip_path] = True
+            
+            # Try to terminate the process
+            proc = self.proc_map.get(zip_path)
+            if proc:
+                try:
+                    if sys.platform == "win32":
+                        # On Windows, try CTRL_BREAK_EVENT first, then terminate
+                        try:
+                            import signal
+                            proc.send_signal(signal.CTRL_BREAK_EVENT)
+                        except:
+                            proc.terminate()
+                    else:
+                        # On Unix-like systems, use terminate
+                        proc.terminate()
+                    
+                    self._log_line(f"⚠️ Canceling job: {zip_path.name}")
+                    
+                    # Update job state
+                    state = self.jobs_state.get(zip_path, {})
+                    state["finished"] = True
+                    state["return_code"] = -2  # Special code for canceled
+                    self.jobs_state[zip_path] = state
+                    
+                    # Update UI
+                    self._set_row(zip_path, status="Canceled", progress="--")
+                    
+                except Exception as e:
+                    self._log_line(f"❌ Error canceling job {zip_path.name}: {e}")
+    
+    def _retry_job(self, zip_path: Path):
+        """Retry a failed or canceled job."""
+        with self._state_lock:
+            # Reset job state
+            self.jobs_state[zip_path] = {
+                "total": None, "done": 0, "start": None, 
+                "finished": False, "report_id": None, 
+                "output_dir": None, "return_code": None
+            }
+            
+            # Clear cancel flag if set
+            self.cancel_flags.pop(zip_path, None)
+            
+            # Update UI
+            self._set_row(zip_path, status="Queued (Retry)", progress="0%")
+        
+        self._log_line(f"🔄 Retrying job: {zip_path.name}")
+        
+        # Launch worker thread for retry
+        t = threading.Thread(
+            target=self._run_one_zip_worker,
+            args=(zip_path,),
+            daemon=True
+        )
+        t.start()
 
     # ----- Actions -----
     def start(self):
         if not self.zip_list:
             messagebox.showwarning("No files", "Add or drop at least one ZIP.")
             return
+        
+        # Save settings when starting processing
+        self.save_settings()
         
         # Validate owner selection
         owner_name = self.owner_var.get().strip()
@@ -725,6 +1111,29 @@ class App(BaseTk):  # type: ignore[misc]
             self._log_line("⚠️ No owner selected - reports will be saved locally only")
         else:
             self._log_line(f"✅ Reports will be uploaded to: {owner_name}'s portal")
+        
+        # Handle gallery selection
+        gallery_name = self.gallery_var.get().strip()
+        self.selected_gallery = ""  # Store for later use
+        
+        if gallery_name and gallery_name != "Select gallery..." and gallery_name != "Select an owner first":
+            if gallery_name == "+ Create new gallery...":
+                # Prompt user for new gallery name
+                new_gallery = simpledialog.askstring(
+                    "Create New Gallery",
+                    "Enter a name for the new gallery:",
+                    parent=self
+                )
+                if new_gallery and new_gallery.strip():
+                    self.selected_gallery = new_gallery.strip()
+                    self._log_line(f"📁 Creating new gallery: {self.selected_gallery}")
+                else:
+                    # User cancelled or entered empty name
+                    self._log_line("ℹ️ No gallery selected - using default")
+            else:
+                # Use the selected gallery name
+                self.selected_gallery = gallery_name
+                self._log_line(f"📁 Using gallery: {self.selected_gallery}")
         
         # Property address will be automatically extracted from ZIP filename
 
@@ -746,6 +1155,11 @@ class App(BaseTk):  # type: ignore[misc]
         if self._orchestrator and self._orchestrator.is_alive():
             messagebox.showinfo("Already running", "Please wait for the current run to finish.")
             return
+
+        # Enable pause button
+        self.pause_btn.config(state="normal")
+        self.paused = False
+        self.pause_event.set()  # Start unpaused
 
         self._orchestrator = threading.Thread(
             target=self._run_all_parallel,
@@ -809,22 +1223,183 @@ class App(BaseTk):  # type: ignore[misc]
     
     def refresh_owners(self):
         """Fetch available owners from the API or provide defaults"""
+        # Also update status indicators when refreshing
+        self._check_all_status()
+        
         try:
-            # Try to fetch owners from the backend if available
-            # For now, provide common owner examples
-            default_owners = [
-                "John Smith",
-                "Jane Doe",
-                "Property Management LLC",
-                "ABC Rentals",
-                "XYZ Properties",
-                "Main Street Realty",
-                "Custom Owner"
-            ]
-            self.owner_combo['values'] = default_owners
-            self._log_line("✅ Owner portal list loaded")
+            # Try to fetch owners from the backend API
+            api_url = portal_url("/api/portal/owners")
+            response = requests.get(api_url, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                owners = data.get("owners", [])
+                
+                if owners:
+                    # Create display strings that show both name and owner_id
+                    owner_display = []
+                    self.owner_id_map = {}  # Store mapping of display name to owner_id
+                    self.owner_details = {}  # Store full owner details
+                    
+                    for owner in owners:
+                        name = owner.get("name", owner.get("full_name", ""))
+                        owner_id = owner.get("owner_id", "")
+                        is_paid = owner.get("is_paid", False)
+                        
+                        # Create display string with payment status
+                        if name:
+                            status_icon = "✅" if is_paid else "⚠️"
+                            display = f"{status_icon} {name} ({owner_id})"
+                            owner_display.append(display)
+                            self.owner_id_map[display] = owner_id
+                            # Store full details
+                            self.owner_details[owner_id] = owner
+                        else:
+                            owner_display.append(owner_id)
+                            self.owner_id_map[owner_id] = owner_id
+                            self.owner_details[owner_id] = owner
+                    
+                    self.owner_combo['values'] = owner_display
+                    self._log_line(f"✅ Loaded {len(owners)} owner portal(s) from server")
+                    
+                    # Add event handler to auto-populate owner_id when selection changes
+                    self.owner_combo.bind('<<ComboboxSelected>>', self._on_owner_selected)
+                else:
+                    # No owners registered yet, provide helpful message
+                    self.owner_combo['values'] = ["No owners registered yet"]
+                    self._log_line("ℹ️ No owners registered yet - sign up on the landing page")
+            else:
+                # API not available, use defaults
+                self._use_default_owners()
+                
+        except requests.exceptions.RequestException:
+            # Network error or backend not running, use defaults
+            self._use_default_owners()
         except Exception as e:
             self._log_line(f"⚠️ Could not load owners: {e}")
+            self._use_default_owners()
+    
+    def _use_default_owners(self):
+        """Fallback to default owner list when API is not available"""
+        default_owners = [
+            "DEMO1234",  # This will save to Juliana's dashboard
+            "John Smith",
+            "Jane Doe", 
+            "Property Management LLC",
+            "ABC Rentals",
+            "XYZ Properties",
+            "Main Street Realty",
+            "Custom Owner"
+        ]
+        self.owner_combo['values'] = default_owners
+        self._log_line("ℹ️ Using default owner list (backend not connected)")
+        
+    def _on_owner_selected(self, event=None):
+        """Auto-populate owner_id field when an owner is selected from dropdown"""
+        selected = self.owner_var.get()
+        if hasattr(self, 'owner_id_map') and selected in self.owner_id_map:
+            owner_id = self.owner_id_map[selected]
+            self.owner_id_var.set(owner_id)
+            
+            # Show client details in log
+            if hasattr(self, 'owner_details') and owner_id in self.owner_details:
+                details = self.owner_details[owner_id]
+                self._log_line(f"📋 Selected: {details.get('name', 'Unknown')}")
+                self._log_line(f"   Email: {details.get('email', 'N/A')}")
+                self._log_line(f"   Status: {'✅ Paid' if details.get('is_paid') else '⚠️ Payment Required'}")
+                self._log_line(f"   Properties: {len(details.get('properties', []))}")
+            
+            # Fetch galleries for this owner
+            self._fetch_galleries(owner_id)
+        else:
+            # Clear galleries if no valid owner selected
+            self.gallery_combo['values'] = ["Select an owner first"]
+            self.gallery_combo.set("Select gallery...")
+    
+    def _fetch_galleries(self, owner_id: str):
+        """Fetch galleries for the selected owner"""
+        try:
+            # Try to fetch galleries from the backend API
+            api_url = portal_url(f"/api/portal/owners/{owner_id}/galleries")
+            response = requests.get(api_url, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                galleries = data.get("galleries", [])
+                
+                gallery_names = []
+                for gallery in galleries:
+                    name = gallery.get("name", gallery.get("gallery_name", ""))
+                    if name:
+                        gallery_names.append(name)
+                
+                # Add the sentinel for creating new gallery
+                gallery_names.append("+ Create new gallery...")
+                
+                if gallery_names:
+                    self.gallery_combo['values'] = gallery_names
+                    self.gallery_combo.set("Select gallery...")
+                    self._log_line(f"✅ Loaded {len(gallery_names)-1} galleries for owner")
+                else:
+                    self.gallery_combo['values'] = ["+ Create new gallery..."]
+                    self.gallery_combo.set("Select gallery...")
+            else:
+                # API returned error, use default
+                self.gallery_combo['values'] = ["Default Gallery", "+ Create new gallery..."]
+                self.gallery_combo.set("Select gallery...")
+                
+        except requests.exceptions.RequestException:
+            # Network error or backend not running, use defaults
+            self.gallery_combo['values'] = ["Default Gallery", "+ Create new gallery..."]
+            self.gallery_combo.set("Select gallery...")
+        except Exception as e:
+            self._log_line(f"⚠️ Could not load galleries: {e}")
+            self.gallery_combo['values'] = ["Default Gallery", "+ Create new gallery..."]
+            self.gallery_combo.set("Select gallery...")
+    
+    # ----- Status Checking Methods -----
+    def _check_all_status(self):
+        """Check all connection statuses"""
+        self._check_portal_status()
+        self._check_runreport_status()
+        self._check_apikey_status()
+    
+    def _check_portal_status(self):
+        """Check if the portal API is online"""
+        try:
+            api_url = portal_url("/api/portal/owners")
+            response = requests.get(api_url, timeout=3)
+            if response.status_code == 200:
+                self.portal_status.config(text="✅ Portal: Online", fg=BRAND_SUCCESS_LIGHT)
+            else:
+                self.portal_status.config(text="⚠️ Portal: Error", fg=BRAND_WARNING)
+        except requests.exceptions.RequestException:
+            self.portal_status.config(text="❌ Portal: Offline", fg=BRAND_ERROR)
+        except Exception:
+            self.portal_status.config(text="❌ Portal: Error", fg=BRAND_ERROR)
+    
+    def _check_runreport_status(self):
+        """Check if run_report can be found"""
+        dummy_path = Path("test.zip")
+        cmd = _resolve_run_report_cmd(dummy_path)
+        if cmd:
+            self.runreport_status.config(text="✅ run_report: Found", fg=BRAND_SUCCESS_LIGHT)
+        else:
+            self.runreport_status.config(text="❌ run_report: Not Found", fg=BRAND_ERROR)
+    
+    def _check_apikey_status(self):
+        """Check if API key is present"""
+        key = os.getenv("OPENAI_API_KEY", "").strip()
+        if key:
+            masked = f"{key[:6]}..." if len(key) > 6 else "Present"
+            self.apikey_status.config(text=f"✅ API Key: {masked}", fg=BRAND_SUCCESS_LIGHT)
+        else:
+            self.apikey_status.config(text="❌ API Key: Missing", fg=BRAND_ERROR)
+    
+    def _start_status_timer(self):
+        """Start recurring status checks every 30 seconds"""
+        self._check_all_status()
+        self.after(30000, self._start_status_timer)
 
     # ----- Sequential path -----
     def _run_all_sequential(self):
@@ -934,8 +1509,13 @@ class App(BaseTk):  # type: ignore[misc]
     def _run_all_parallel(self):
         # Reset shared job state
         with self._state_lock:
-            self.jobs_state = {p: {"total": None, "done": 0, "start": None, "finished": False, "report_id": None, "output_dir": None}
+            self.jobs_state = {p: {"total": None, "done": 0, "start": None, "finished": False, "report_id": None, "output_dir": None, "return_code": None}
                                for p in self.zip_list}
+        
+        # Update initial status to "Waiting" for all jobs
+        for zip_path in self.zip_list:
+            self._set_row(zip_path, status="Waiting", progress="")
+        
         self._start_indeterminate("Analyzing (parallel)…")
 
         # Launch workers with a bounded pool
@@ -943,6 +1523,13 @@ class App(BaseTk):  # type: ignore[misc]
         workers = []
 
         def launch(zip_path: Path):
+            # Wait if paused before acquiring semaphore
+            self.pause_event.wait()
+            
+            # Check if job was canceled before starting
+            if self.cancel_flags.get(zip_path, False):
+                return
+            
             with sem:
                 self._run_one_zip_worker(zip_path)
 
@@ -953,6 +1540,9 @@ class App(BaseTk):  # type: ignore[misc]
 
         for t in workers:
             t.join()
+        
+        # Disable pause button when done
+        self.pause_btn.config(state="disabled")
 
         # Show completion status
         self._log_line("")
@@ -992,19 +1582,28 @@ class App(BaseTk):  # type: ignore[misc]
         client_name = self.client_name_var.get().strip()  # Inspector name
         owner_name = self.owner_var.get().strip()  # Owner portal name
         owner_id = self.owner_id_var.get().strip()  # Owner ID for dashboard routing
+        gallery = getattr(self, 'selected_gallery', '')  # Gallery name
         property_address = ""  # Will be extracted from ZIP filename
         
         # Clear placeholder text if still present
         if owner_name == "Select or type owner name...":
             owner_name = ""
         
-        # Log the selected owner and ID
+        # Update the row with owner and gallery information
+        if owner_name:
+            self._set_row(zip_path, owner=owner_name)
+        if gallery:
+            self._set_row(zip_path, gallery=gallery)
+        
+        # Log the selected owner, gallery and ID
         if owner_name:
             self._log_line(f"🏠 Target Owner Portal: {owner_name}")
+        if gallery:
+            self._log_line(f"📁 Gallery: {gallery}")
         if owner_id:
             self._log_line(f"🔑 Owner ID: {owner_id}")
         
-        cmd = _resolve_run_report_cmd(zip_path, client_name, property_address, owner_name, owner_id)
+        cmd = _resolve_run_report_cmd(zip_path, client_name, property_address, owner_name, owner_id, gallery)
         if not cmd:
             self._log_line("ERROR: Could not locate run_report. Set RUN_REPORT_CMD or place run_report.py next to frontend.py")
             with self._state_lock:
@@ -1025,6 +1624,10 @@ class App(BaseTk):  # type: ignore[misc]
                 bufsize=1,
             )
             assert proc.stdout is not None
+            
+            # Store process in map for potential cancellation
+            with self._state_lock:
+                self.proc_map[zip_path] = proc
 
             job_started = False
             for raw in proc.stdout:
@@ -1082,8 +1685,12 @@ class App(BaseTk):  # type: ignore[misc]
 
             rc = proc.wait()
             with self._state_lock:
+                # Remove from process map
+                if zip_path in self.proc_map:
+                    del self.proc_map[zip_path]
                 st = self.jobs_state.get(zip_path, {})
                 st["finished"] = True
+                st["return_code"] = rc  # Track return code for status
                 self.jobs_state[zip_path] = st
 
             if rc == 0:
@@ -1094,8 +1701,12 @@ class App(BaseTk):  # type: ignore[misc]
         except Exception as e:
             self._log_line(f"ERROR running {zip_path.name}: {e}")
             with self._state_lock:
+                # Remove from process map
+                if zip_path in self.proc_map:
+                    del self.proc_map[zip_path]
                 st = self.jobs_state.get(zip_path, {})
                 st["finished"] = True
+                st["return_code"] = -1  # Mark as failed due to exception
                 self.jobs_state[zip_path] = st
 
     # ----- Progress helpers -----
@@ -1156,7 +1767,45 @@ class App(BaseTk):  # type: ignore[misc]
         """Every 250 ms, compute a global progress/ETA across parallel jobs and update the bar."""
         try:
             with self._state_lock:
-                states = list(self.jobs_state.values())
+                states_copy = dict(self.jobs_state)
+                states = list(states_copy.values())
+            
+            # Update individual job rows in the table
+            for zip_path, state in states_copy.items():
+                # Determine status
+                if state.get("finished"):
+                    # Check return code to determine if it failed
+                    rc = state.get("return_code", 0)
+                    if rc == 0:
+                        # Add checkmark if report is ready
+                        if state.get("report_id"):
+                            status = "✅ Done"
+                        else:
+                            status = "Done"
+                        progress_str = "100%"
+                    else:
+                        status = "Failed"
+                        # Show how far it got before failing
+                        if state.get("total") and state.get("done"):
+                            pct = (state.get("done", 0) / state["total"]) * 100
+                            progress_str = f"{pct:.0f}%"
+                        else:
+                            progress_str = "0%"
+                elif state.get("start"):
+                    status = "Running"
+                    # Calculate progress percentage if total is known
+                    if state.get("total"):
+                        pct = (state.get("done", 0) / state["total"]) * 100
+                        progress_str = f"{pct:.0f}%"
+                    else:
+                        progress_str = ""
+                else:
+                    status = "Waiting"
+                    progress_str = ""
+                
+                # Update the row
+                self._set_row(zip_path, progress=progress_str, status=status)
+            
             if states:
                 totals_known = [s["total"] for s in states if s.get("total")]
                 global_total = sum(totals_known) if totals_known else 0
@@ -1335,6 +1984,102 @@ class App(BaseTk):  # type: ignore[misc]
                     pass
                 break
     
+    def _on_job_click(self, event):
+        """Handle clicks on job rows in the treeview"""
+        # Get the clicked item
+        item = self.jobs.identify('item', event.x, event.y)
+        column = self.jobs.identify('column', event.x, event.y)
+        
+        if not item:
+            return
+        
+        # Get the values for this row
+        values = self.jobs.item(item, 'values')
+        if not values or len(values) < 6:
+            return
+        
+        # Check if actions column was clicked (column #6)
+        if column == '#6':
+            actions = values[5]  # Actions is the 6th column (index 5)
+            
+            # Find the corresponding zip_path for this row
+            zip_path = None
+            for path, row_id in self.job_rows.items():
+                if row_id == item:
+                    zip_path = path
+                    break
+            
+            if not zip_path:
+                return
+            
+            # Show context menu with available actions
+            if any(action in actions for action in ["View in Portal", "Copy Portal Link", "Open", "Cancel", "Retry"]):
+                menu = tk.Menu(self, tearoff=0)
+                
+                if "View in Portal" in actions:
+                    menu.add_command(label="View in Portal", command=lambda: self._view_report(zip_path))
+                
+                if "Copy Portal Link" in actions:
+                    menu.add_command(label="Copy Portal Link", command=lambda: self._copy_portal_link(zip_path))
+                
+                if "Open" in actions:
+                    menu.add_command(label="Open Folder", command=lambda: self._open_job_folder(zip_path))
+                
+                if "Cancel" in actions:
+                    menu.add_command(label="Cancel Job", command=lambda: self._cancel_job(zip_path))
+                
+                if "Retry" in actions:
+                    menu.add_command(label="Retry Job", command=lambda: self._retry_job(zip_path))
+                
+                menu.post(event.x_root, event.y_root)
+    
+    def _view_report(self, zip_path: Path):
+        """View the report in the portal"""
+        with self._state_lock:
+            state = self.jobs_state.get(zip_path, {})
+            report_id = state.get("report_id")
+        
+        if report_id:
+            url = portal_url(f'/reports/{report_id}')
+            webbrowser.open(url)
+            self._log_line(f"🌐 Opening report for {zip_path.name} in browser...")
+    
+    def _copy_portal_link(self, zip_path: Path):
+        """Copy the portal link to clipboard"""
+        with self._state_lock:
+            state = self.jobs_state.get(zip_path, {})
+            report_id = state.get("report_id")
+        
+        if report_id:
+            url = portal_url(f'/reports/{report_id}')
+            # Copy to clipboard
+            self.clipboard_clear()
+            self.clipboard_append(url)
+            self._log_line(f"📋 Portal link copied to clipboard for {zip_path.name}")
+    
+    def _open_job_folder(self, zip_path: Path):
+        """Open the output folder for a specific job"""
+        with self._state_lock:
+            state = self.jobs_state.get(zip_path, {})
+            output_dir = state.get("output_dir")
+        
+        if output_dir:
+            p = Path(output_dir) if Path(output_dir).is_absolute() else OUTPUT_DIR / output_dir
+            try:
+                if sys.platform == "win32":
+                    startfile = getattr(os, "startfile", None)
+                    if callable(startfile):
+                        startfile(str(p))
+                    else:
+                        subprocess.run(["explorer", str(p)])
+                elif sys.platform == "darwin":
+                    subprocess.run(["open", str(p)])
+                else:
+                    subprocess.run(["xdg-open", str(p)])
+                self._log_line(f"📁 Opened output folder for {zip_path.name}")
+            except Exception as e:
+                self._log_line(f"⚠️ Could not open folder: {e}")
+    
     def _create_header(self):
         """Create modern CheckMyRental header with gradient and depth"""
         # Create header with shadow effect - significantly increased height
@@ -1484,6 +2229,94 @@ class App(BaseTk):  # type: ignore[misc]
         
         # Continue animation
         self.after(50, lambda: self.animate_logo(canvas, cx, cy))
+    
+    # ----- Settings Persistence Methods -----
+    def load_and_apply_settings(self):
+        """Load settings from JSON file and apply them to the UI"""
+        try:
+            if SETTINGS_FILE.exists():
+                with open(SETTINGS_FILE, 'r') as f:
+                    settings = json.load(f)
+                
+                # Apply loaded settings to UI fields
+                if 'owner_name' in settings:
+                    self.owner_var.set(settings['owner_name'])
+                
+                if 'owner_id' in settings:
+                    self.owner_id_var.set(settings['owner_id'])
+                
+                if 'gallery_name' in settings:
+                    self.gallery_var.set(settings['gallery_name'])
+                    # Update gallery combobox to show saved value
+                    if settings['gallery_name']:
+                        current_values = list(self.gallery_combo['values'])
+                        if settings['gallery_name'] not in current_values:
+                            current_values.insert(0, settings['gallery_name'])
+                            self.gallery_combo['values'] = current_values
+                
+                if 'inspector_name' in settings:
+                    self.client_name_var.set(settings['inspector_name'])
+                
+                # Apply concurrency settings if present
+                global JOB_CONCURRENCY, ANALYSIS_CONCURRENCY
+                if 'job_concurrency' in settings:
+                    JOB_CONCURRENCY = max(1, settings['job_concurrency'])
+                    if hasattr(self, 'job_concurrency_var'):
+                        self.job_concurrency_var.set(JOB_CONCURRENCY)
+                if 'analysis_concurrency' in settings:
+                    ANALYSIS_CONCURRENCY = max(1, settings['analysis_concurrency'])
+                    if hasattr(self, 'analysis_concurrency_var'):
+                        self.analysis_concurrency_var.set(ANALYSIS_CONCURRENCY)
+                
+                # Update speed label with loaded values
+                if hasattr(self, 'speed_label'):
+                    self.speed_label.config(text=f"⚡ Fast Processing ({JOB_CONCURRENCY}×{ANALYSIS_CONCURRENCY})")
+                
+                self._log_line(f"✅ Settings loaded from {SETTINGS_FILE.name}")
+        except Exception as e:
+            # Settings load failed, use defaults
+            self._log_line(f"ℹ️ No previous settings found, using defaults")
+    
+    def update_concurrency(self):
+        """Update concurrency values and speed label when spinners change"""
+        global JOB_CONCURRENCY, ANALYSIS_CONCURRENCY
+        JOB_CONCURRENCY = self.job_concurrency_var.get()
+        ANALYSIS_CONCURRENCY = self.analysis_concurrency_var.get()
+        
+        # Update speed label if it exists
+        if hasattr(self, 'speed_label'):
+            self.speed_label.config(text=f"⚡ Fast Processing ({JOB_CONCURRENCY}×{ANALYSIS_CONCURRENCY})")
+    
+    def save_settings(self):
+        """Save current UI field values to JSON file"""
+        try:
+            settings = {
+                'owner_name': self.owner_var.get().strip(),
+                'owner_id': self.owner_id_var.get().strip(),
+                'gallery_name': self.gallery_var.get().strip(),
+                'inspector_name': self.client_name_var.get().strip(),
+                'job_concurrency': self.job_concurrency_var.get() if hasattr(self, 'job_concurrency_var') else JOB_CONCURRENCY,
+                'analysis_concurrency': self.analysis_concurrency_var.get() if hasattr(self, 'analysis_concurrency_var') else ANALYSIS_CONCURRENCY
+            }
+            
+            # Don't save placeholder text
+            if settings['owner_name'] == "Select or type owner name...":
+                settings['owner_name'] = ""
+            if settings['gallery_name'] in ["Select gallery...", "Select an owner first", "+ Create new gallery..."]:
+                settings['gallery_name'] = ""
+            
+            with open(SETTINGS_FILE, 'w') as f:
+                json.dump(settings, f, indent=2)
+            
+            return True
+        except Exception as e:
+            # Silently fail to save settings
+            return False
+    
+    def on_closing(self):
+        """Handle window close event"""
+        self.save_settings()
+        self.destroy()
 
 if __name__ == "__main__":
     app = App()

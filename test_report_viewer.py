@@ -195,7 +195,7 @@ def setup_test_data():
     print("✅ Test data created successfully!")
     print("\nTest Access:")
     print("- Portal Token: TEST123")
-    print("- Dashboard URL: http://localhost:8000/static/owner-dashboard.html?token=TEST123")
+    print("- Dashboard URL: http://localhost:3000?token=TEST123")
     print("\nTest Reports Created:")
     print("- 3 inspection reports with varying issue counts")
     print("- Interactive report data with multiple sections")

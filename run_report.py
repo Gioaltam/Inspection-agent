@@ -10,6 +10,12 @@ This module handles the complete workflow of processing property inspection phot
 
 import os
 import sys
+
+# Fix Windows console encoding issues with Unicode
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 import json
 import secrets
 import sqlite3
@@ -1191,15 +1197,26 @@ def generate_pdf(address: str, images: List[Path], out_pdf: Path, vision_results
     c.save()
     print(f"PDF saved to: {out_pdf}")
 
-def build_reports(source_path: Path, client_name: str, property_address: str) -> Dict[str, Any]:
+def build_reports(source_path: Path, client_name: str, property_address: str, gallery_name: str = None) -> Dict[str, Any]:
     """
     Main function to build inspection reports from source (ZIP or directory)
     Returns artifacts dictionary with paths to generated files
     """
-    print(f"\n{'='*60}")
-    print(f"Building report for: {property_address}")
-    print(f"Client: {client_name}")
-    print(f"{'='*60}\n")
+    try:
+        print(f"\n{'='*60}")
+        print(f"Building report for: {property_address}")
+        print(f"Client: {client_name}")
+        if gallery_name:
+            # Clean gallery name for console output - remove emojis
+            safe_gallery = ''.join(c if ord(c) < 128 else '' for c in str(gallery_name))
+            if safe_gallery.strip():
+                print(f"Gallery: {safe_gallery.strip()}")
+        print(f"{'='*60}\n")
+    except UnicodeEncodeError as e:
+        # Fallback for any encoding issues
+        print("\n" + "="*60)
+        print("Building report...")
+        print("="*60 + "\n")
     
     # Extract if ZIP, otherwise use as directory
     if source_path.suffix.lower() == '.zip':
@@ -1240,7 +1257,18 @@ def build_reports(source_path: Path, client_name: str, property_address: str) ->
         print(f"OUTPUT_DIR={full_dir_name}")
         
         # Create output directory with descriptive name and organized subfolders
-        report_dir = OUTPUTS_DIR / full_dir_name
+        # If gallery name is provided, organize under gallery folder
+        if gallery_name:
+            # Sanitize gallery name for filesystem - remove emojis and special chars
+            # First remove any emoji/unicode characters
+            clean_gallery = ''.join(c for c in gallery_name if ord(c) < 128)
+            # Then sanitize for filesystem
+            safe_gallery = ''.join(c if c.isalnum() or c in '_- ' else '_' for c in clean_gallery).strip()
+            # Remove any duplicate underscores and clean up
+            safe_gallery = '_'.join(part for part in safe_gallery.split('_') if part)
+            report_dir = OUTPUTS_DIR / safe_gallery / full_dir_name
+        else:
+            report_dir = OUTPUTS_DIR / full_dir_name
         
         # Create organized subfolder structure
         web_dir = ensure_dir(report_dir / 'web')
@@ -1421,6 +1449,7 @@ def main():
     parser.add_argument('--email', type=str, default='', help='Client email')
     parser.add_argument('--property', type=str, default='Property Address', help='Property address')
     parser.add_argument('--owner-id', type=str, default=None, help='Owner ID for routing to specific dashboard')
+    parser.add_argument('--gallery', type=str, default=None, help='Gallery name for organizing reports')
     parser.add_argument('--register', action='store_true', help='Register with portal and generate share link')
     
     args = parser.parse_args()
@@ -1443,7 +1472,8 @@ def main():
     
     try:
         # Generate reports
-        artifacts = build_reports(source, args.client, args.property)
+        gallery = getattr(args, 'gallery', None)
+        artifacts = build_reports(source, args.client, args.property, gallery)
         
         # Register with portal if requested
         if args.register:

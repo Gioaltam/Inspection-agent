@@ -26,6 +26,11 @@ class PortalClient(Base):
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(200), nullable=True)
     is_active = Column(Boolean, default=True)
+    is_paid = Column(Boolean, default=False)  # Has client paid for access
+    payment_date = Column(DateTime, nullable=True)  # When payment was made
+    payment_amount = Column(String(50), nullable=True)  # Payment amount for records
+    stripe_customer_id = Column(String(255), nullable=True)  # For Stripe integration
+    properties_data = Column(Text, nullable=True)  # JSON string of properties data
     created_at = Column(DateTime, default=datetime.utcnow)
 
     tokens = relationship("ClientPortalToken", back_populates="client")

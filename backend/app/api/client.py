@@ -97,6 +97,61 @@ def login_owner(request: OwnerLoginRequest, db: Session = Depends(get_db)):
         owner_id=owner_id
     )
 
+# ---------- Get All Registered Owners ----------
+@router.get("/owners")
+def get_all_owners(db: Session = Depends(get_db)):
+    """Get list of all registered owners for frontend selection"""
+    
+    owner_list = []
+    
+    # Always include Juliana's demo account
+    owner_list.append({
+        "owner_id": "DEMO1234",
+        "name": "Juliana Shewmaker",
+        "full_name": "Juliana Shewmaker",
+        "email": "juliana@checkmyrental.com",
+        "is_paid": True,
+        "properties": [
+            {"name": "Harborview 12B", "address": "4155 Key Thatch Dr, Tampa, FL"},
+            {"name": "Seaside Cottage", "address": "308 Lookout Dr, Apollo Beach"},
+            {"name": "Palm Grove 3C", "address": "Pinellas Park"}
+        ]
+    })
+    
+    # Try to add portal clients if they exist
+    try:
+        import json
+        from ..portal_models import PortalClient
+        
+        portal_clients = db.query(PortalClient).all()
+        for client in portal_clients:
+            # Skip if already added (like Juliana)
+            if client.email == "juliana@checkmyrental.com":
+                continue
+                
+            # Parse properties if available
+            properties = []
+            if hasattr(client, 'properties_data') and client.properties_data:
+                try:
+                    properties = json.loads(client.properties_data)
+                except:
+                    properties = []
+            
+            owner_data = {
+                "owner_id": f"portal_{client.id}",
+                "name": client.full_name or client.email,
+                "full_name": client.full_name or "",
+                "email": client.email,
+                "is_paid": getattr(client, 'is_paid', False),
+                "properties": properties
+            }
+            owner_list.append(owner_data)
+    except Exception as e:
+        # Portal clients table might not exist or have issues
+        print(f"Could not load portal clients: {e}")
+    
+    return {"owners": owner_list}
+
 # ---------- Portal Dashboard (for simple token-based access) ----------
 @router.get("/dashboard")
 def get_portal_dashboard(portal_token: str, db: Session = Depends(get_db)):

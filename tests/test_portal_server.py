@@ -35,10 +35,11 @@ mock_data = load_mock_data()
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Serve the dashboard at root
+# Redirect to Next.js dashboard
 @app.get("/")
 async def serve_root():
-    return FileResponse("static/owner-dashboard.html")
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="http://localhost:3000", status_code=302)
 
 # API endpoint for dashboard data
 @app.get("/api/portal")
