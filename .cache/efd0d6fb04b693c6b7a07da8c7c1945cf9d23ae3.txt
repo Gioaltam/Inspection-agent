@@ -1,14 +1,13 @@
 Location: Exterior jalousie window
 
 What I See:
-- One glass louver is missing (open hole at lower left).
-- Other louvers and frame show dirt buildup.
+- One lower glass louver is missing, leaving an open gap.
+- Frame and tracks look dirty/worn.
 
 Issues to Address:
-- Missing/broken glass louver creating an opening to the interior.
+- Missing/broken glass louver creating an exterior opening.
 
 Recommended Action:
-- Replace the missing glass louver with the correct size (tempered glass recommended).
-- Inspect and replace any damaged louver clips/operator hardware; clean and lubricate tracks for smooth operation.
-- Temporarily cover the opening to prevent water/pest entry until repaired.
-- After repair, check perimeter caulking and reseal if gaps are found.
+- Replace the missing louver with the correct size glass and verify the clips/operators hold it securely.
+- After replacement, test the mechanism for smooth operation and full closure; repair/replace any damaged clips or operator if needed.
+- Clean the tracks and consider recaulking the perimeter if any gaps are found during repair.

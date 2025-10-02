@@ -7,6 +7,105 @@ import sqlite3
 
 router = APIRouter()
 
+@router.get("/{report_id}/{photo_filename}/json")
+def get_photo_analysis_json(report_id: str, photo_filename: str):
+    """Get individual photo analysis as JSON"""
+    try:
+        # Get report from database
+        db_path = Path("../workspace/inspection_portal.db")
+        conn = sqlite3.connect(str(db_path))
+        cur = conn.cursor()
+        
+        cur.execute("SELECT web_dir FROM reports WHERE id = ?", (report_id,))
+        row = cur.fetchone()
+        conn.close()
+        
+        if not row:
+            return {"error": "Report not found"}
+        
+        web_dir = row[0]
+        
+        # Load JSON report
+        json_path = Path("..") / web_dir.replace("\\", "/") / "report.json"
+        
+        if not json_path.exists():
+            return {"error": "Report JSON not found"}
+        
+        with open(json_path, 'r') as f:
+            report_data = json.load(f)
+        
+        # Find the specific item for this photo
+        print(f"Looking for photo: {photo_filename}")
+        
+        # Try different matching strategies
+        for report_item in report_data.get("items", []):
+            image_url = report_item.get("image_url", "")
+            print(f"Checking against: {image_url}")
+            
+            # Try exact match first
+            if image_url == photo_filename:
+                print(f"Found exact match for {photo_filename}")
+                return {
+                    "location": report_item.get("location", "Unknown Location"),
+                    "severity": report_item.get("severity", "informational"),
+                    "observations": report_item.get("observations", []),
+                    "potential_issues": report_item.get("potential_issues", []),
+                    "recommendations": report_item.get("recommendations", [])
+                }
+            
+            # Try endswith match
+            if image_url.endswith(photo_filename):
+                print(f"Found endswith match for {photo_filename}")
+                return {
+                    "location": report_item.get("location", "Unknown Location"),
+                    "severity": report_item.get("severity", "informational"),
+                    "observations": report_item.get("observations", []),
+                    "potential_issues": report_item.get("potential_issues", []),
+                    "recommendations": report_item.get("recommendations", [])
+                }
+            
+            # Try matching just the filename without path
+            if photo_filename in image_url:
+                print(f"Found partial match for {photo_filename}")
+                return {
+                    "location": report_item.get("location", "Unknown Location"),
+                    "severity": report_item.get("severity", "informational"),
+                    "observations": report_item.get("observations", []),
+                    "potential_issues": report_item.get("potential_issues", []),
+                    "recommendations": report_item.get("recommendations", [])
+                }
+            
+            # Try matching with different extensions or naming patterns
+            photo_base = photo_filename.split('.')[0]
+            if photo_base in image_url:
+                print(f"Found base name match for {photo_filename}")
+                return {
+                    "location": report_item.get("location", "Unknown Location"),
+                    "severity": report_item.get("severity", "informational"),
+                    "observations": report_item.get("observations", []),
+                    "potential_issues": report_item.get("potential_issues", []),
+                    "recommendations": report_item.get("recommendations", [])
+                }
+        
+        # If no match found, return the first item as fallback with a note
+        print(f"No match found for {photo_filename}, returning first item as fallback")
+        if report_data.get("items"):
+            first_item = report_data["items"][0]
+            return {
+                "location": first_item.get("location", "Unknown Location"),
+                "severity": first_item.get("severity", "informational"),
+                "observations": first_item.get("observations", []),
+                "potential_issues": first_item.get("potential_issues", []),
+                "recommendations": first_item.get("recommendations", []),
+                "note": f"Using general analysis - specific match not found for {photo_filename}"
+            }
+        
+        return {"error": f"Analysis not found for {photo_filename}"}
+        
+    except Exception as e:
+        print(f"Error getting photo analysis JSON: {e}")
+        return {"error": str(e)}
+
 @router.get("/{report_id}/{photo_filename}")
 def get_photo_analysis(report_id: str, photo_filename: str):
     """Get individual photo analysis from report"""
@@ -36,11 +135,25 @@ def get_photo_analysis(report_id: str, photo_filename: str):
         
         # Find the specific item for this photo
         item = None
+        print(f"[HTML] Looking for photo: {photo_filename}")
+        
         for report_item in report_data.get("items", []):
-            # Match by the image_url field (e.g., "photos/photo_001.jpg")
-            if report_item.get("image_url", "").endswith(photo_filename):
+            image_url = report_item.get("image_url", "")
+            print(f"[HTML] Checking against: {image_url}")
+            
+            # Try different matching strategies
+            if (image_url == photo_filename or 
+                image_url.endswith(photo_filename) or 
+                photo_filename in image_url or
+                photo_filename.split('.')[0] in image_url):
+                print(f"[HTML] Found match for {photo_filename}")
                 item = report_item
                 break
+        
+        if not item and report_data.get("items"):
+            # Use first item as fallback
+            print(f"[HTML] No match found, using first item as fallback")
+            item = report_data["items"][0]
         
         if not item:
             return HTMLResponse(content=f"<h1>404: Analysis not found for {photo_filename}</h1>", status_code=404)
@@ -62,6 +175,19 @@ def get_photo_analysis(report_id: str, photo_filename: str):
                     margin: 0 auto;
                     padding: 20px;
                     background: #f5f5f5;
+                }}
+                .photo-container {{
+                    background: white;
+                    border-radius: 8px;
+                    padding: 10px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+                .photo-container img {{
+                    width: 100%;
+                    height: auto;
+                    border-radius: 4px;
+                    display: block;
                 }}
                 .header {{
                     background: white;
@@ -120,10 +246,13 @@ def get_photo_analysis(report_id: str, photo_filename: str):
             <div class="header">
                 <h1>Inspection Analysis</h1>
                 <div class="photo-info">
-                    <strong>Photo:</strong> {photo_filename}<br>
                     <strong>Property:</strong> {report_data.get('property_address', 'Unknown')}<br>
                     <strong>Date:</strong> {report_data.get('inspection_date', 'Unknown')}
                 </div>
+            </div>
+            
+            <div class="photo-container">
+                <img src="/api/photos/image/{report_id}/{photo_filename}" alt="Inspection photo: {photo_filename}" />
             </div>
             
             <div class="item">

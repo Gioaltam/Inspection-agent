@@ -1,0 +1,768 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Dashboard Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #05070d;
+      --bg-secondary: #11162a;
+      --accent: #ef4444;
+      --accent-soft: rgba(239, 68, 68, 0.12);
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f8fafc;
+      --text-secondary: rgba(248, 250, 252, 0.72);
+      --text-muted: rgba(248, 250, 252, 0.45);
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-primary);
+    }
+
+    .artboard {
+      width: 1280px;
+      height: 720px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: radial-gradient(135% 135% at 8% 4%, rgba(239, 68, 68, 0.16) 0%, rgba(15, 23, 42, 0.92) 42%, rgba(5, 7, 13, 1) 100%);
+      box-shadow: 0 24px 60px rgba(5, 7, 13, 0.45);
+      display: grid;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 100%;
+      background: linear-gradient(115deg, rgba(8, 11, 20, 0.92), rgba(3, 5, 12, 0.98));
+    }
+
+    @media (max-width: 1080px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        padding: 16px;
+      }
+      .sidebar nav {
+        display: none;
+      }
+      .sidebar .sign-out {
+        margin-left: auto;
+      }
+    }
+
+    .sidebar {
+      background: rgba(3, 4, 12, 0.92);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .brand {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span:nth-child(3) {
+      color: var(--accent);
+    }
+
+    .sidebar small {
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      border: 1px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    nav a.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    nav a:hover {
+      border-color: rgba(239, 68, 68, 0.25);
+      color: var(--text-primary);
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    .sign-out {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background 0.25s ease;
+    }
+
+    .sign-out:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(24px);
+      background: rgba(5, 6, 15, 0.82);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 20px 32px;
+    }
+
+    .topbar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .owner-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .owner-pill span {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .top-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      color: var(--text-primary);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .icon-btn::after {
+      content: "";
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .icon-btn.alert::after {
+      opacity: 1;
+    }
+
+    .dashboard-content {
+      flex: 1;
+      padding: 36px 32px 64px;
+    }
+
+    .page-width {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 18px;
+    }
+
+    .summary-card {
+      padding: 20px 22px;
+      border-radius: 18px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .summary-card .label {
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .summary-card .value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .summary-card .support {
+      margin-top: 6px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pill.active {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.45);
+      color: var(--accent);
+    }
+
+    .pill:hover {
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .properties-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .property-card {
+      border-radius: 22px;
+      padding: 26px;
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(10, 13, 24, 0.9));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 24px 60px rgba(5, 7, 13, 0.55);
+      display: grid;
+      gap: 22px;
+    }
+
+    .property-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .property-title h3 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -0.01em;
+    }
+
+    .property-title p {
+      margin: 6px 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .status {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+
+    .status.critical {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: var(--accent);
+    }
+
+    .status.attention {
+      background: rgba(251, 191, 36, 0.18);
+      border: 1px solid rgba(251, 191, 36, 0.5);
+      color: #fbbf24;
+    }
+
+    .status.healthy {
+      background: rgba(34, 197, 94, 0.18);
+      border: 1px solid rgba(34, 197, 94, 0.55);
+      color: #34d399;
+    }
+
+    .pill-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      background: rgba(59, 130, 246, 0.14);
+      color: #93c5fd;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pill-button:hover {
+      background: rgba(59, 130, 246, 0.22);
+    }
+
+    .property-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .meta-item span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .meta-item strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .photo {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 130px;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    }
+
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .photo:hover img {
+      transform: scale(1.05);
+    }
+
+    .photo::after {
+      content: "View";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(0deg, rgba(5, 7, 13, 0.78), rgba(5, 7, 13, 0));
+      opacity: 0;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      transition: opacity 0.2s ease;
+    }
+
+    .photo:hover::after {
+      opacity: 1;
+    }
+
+    .reports {
+      display: grid;
+      gap: 14px;
+    }
+
+    .report-card {
+      border-radius: 14px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .report-card .title {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .report-badges {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .report-badges span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+    }
+
+    .report-link {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+
+    .report-link:hover {
+      background: rgba(59, 130, 246, 0.16);
+    }
+
+    .analysis-callout {
+      border-radius: 18px;
+      padding: 20px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .analysis-callout strong {
+      display: block;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    footer {
+      margin-top: 48px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.35);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 960px) {
+      .dashboard-content {
+        padding: 32px 20px 48px;
+      }
+      .topbar {
+        padding: 18px 20px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        font-size: 15px;
+      }
+      .summary-card .value {
+        font-size: 1.5rem;
+      }
+      .property-card {
+        padding: 20px;
+      }
+      .property-meta {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="artboard">
+    <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <div class="brand"><span>Check</span><span>My</span><span>Rental</span></div>
+        <small>Owner Dashboard</small>
+      </div>
+      <nav>
+        <ul>
+          <li><a class="active" href="#"><span class="nav-icon">🏠</span>Dashboard</a></li>
+          <li><a href="#"><span class="nav-icon">📄</span>Reports</a></li>
+          <li><a href="#"><span class="nav-icon">🖼️</span>Photo Gallery</a></li>
+          <li><a href="#"><span class="nav-icon">⚙️</span>Settings</a></li>
+        </ul>
+      </nav>
+      <a class="sign-out" href="#"><span class="nav-icon">⇦</span>Sign out</a>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="owner-pill">Logged in as <span>John Smith</span></div>
+          <div class="top-actions">
+            <button class="icon-btn alert" aria-label="Notifications">🔔</button>
+            <button class="icon-btn" aria-label="Search reports">🔍</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-content">
+        <div class="page-width">
+          <section>
+            <h1>Dashboard</h1>
+            <p style="color: var(--text-secondary); margin-top: 6px;">Monitor inspections, review photo evidence, and keep every property in view.</p>
+          </section>
+
+          <section class="summary-grid">
+            <article class="summary-card">
+              <div class="label">Next Inspection</div>
+              <div class="value">Sep 14</div>
+              <div class="support">Two site visits scheduled this week</div>
+            </article>
+            <article class="summary-card">
+              <div class="label">Open Issues</div>
+              <div class="value">5</div>
+              <div class="support" style="color: var(--accent);">1 critical repair in progress</div>
+            </article>
+            <article class="summary-card">
+              <div class="label">Last Report Delivered</div>
+              <div class="value">Aug 20</div>
+              <div class="support">PDF and gallery available within 24 hours</div>
+            </article>
+            <article class="summary-card">
+              <div class="label">Photo Evidence</div>
+              <div class="value">184</div>
+              <div class="support">NEW images added across 3 properties</div>
+            </article>
+          </section>
+
+          <section>
+            <div class="filters">
+              <span class="pill active">All properties</span>
+              <span class="pill">Healthy</span>
+              <span class="pill">Needs attention</span>
+              <span class="pill">Critical</span>
+              <span class="pill">Last 30 days</span>
+            </div>
+          </section>
+
+          <section class="properties-grid">
+            <!-- Property Card 1 -->
+            <article class="property-card">
+              <div class="property-header">
+                <div class="property-title">
+                  <h3>Sunset Villas</h3>
+                  <p>842 Market Street &bull; Tampa, FL</p>
+                </div>
+                <div class="badge-row">
+                  <span class="status critical">Critical</span>
+                  <div class="pill-button">HVAC Maintenance</div>
+                  <span class="pill">Last inspection: Aug 20</span>
+                </div>
+              </div>
+
+              <div class="property-meta">
+                <div class="meta-item"><span>Open issues</span><strong>3</strong></div>
+                <div class="meta-item"><span>Critical alerts</span><strong>1</strong></div>
+                <div class="meta-item"><span>Next visit</span><strong>Sep 14, 10:00 AM</strong></div>
+                <div class="meta-item"><span>Inspector</span><strong>A. Rivera</strong></div>
+              </div>
+
+              <div class="photo-grid">
+                <div class="photo"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80" alt="Roof leak"></div>
+                <div class="photo"><img src="https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=600&q=80" alt="Exterior siding"></div>
+                <div class="photo"><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80" alt="Living room"></div>
+                <div class="photo"><img src="https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=600&q=80" alt="Damaged HVAC unit"></div>
+              </div>
+
+              <div class="reports">
+                <div class="report-card">
+                  <div>
+                    <div class="title">Q3 Preventive Inspection</div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Completed Aug 20 &bull; 68 photos &bull; 24h turnaround</div>
+                  </div>
+                  <div class="report-badges">
+                    <span>Critical: Roof leak</span>
+                    <span>Important: Gutter clog</span>
+                    <span>Follow-up scheduled</span>
+                  </div>
+                  <a class="report-link" href="#">View report</a>
+                </div>
+                <div class="analysis-callout">
+                  <div style="font-size: 1.2rem; color: var(--accent);">&#9888;</div>
+                  <div>
+                    <strong>Inspector insight</strong>
+                    Flashing around the east HVAC unit is failing and is the likely source of the ceiling leak. Recommend sealing within 72 hours to prevent structural damage.
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Property Card 2 -->
+            <article class="property-card">
+              <div class="property-header">
+                <div class="property-title">
+                  <h3>Lakeview Row Homes</h3>
+                  <p>1126 Willow Lane &bull; Austin, TX</p>
+                </div>
+                <div class="badge-row">
+                  <span class="status attention">Needs Attention</span>
+                  <span class="pill">Last inspection: Aug 02</span>
+                </div>
+              </div>
+
+              <div class="property-meta">
+                <div class="meta-item"><span>Open issues</span><strong>2</strong></div>
+                <div class="meta-item"><span>Preventive tasks</span><strong>4</strong></div>
+                <div class="meta-item"><span>Next visit</span><strong>Sep 18, 2:30 PM</strong></div>
+                <div class="meta-item"><span>Inspector</span><strong>J. Patel</strong></div>
+              </div>
+
+              <div class="photo-grid">
+                <div class="photo"><img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=80" alt="Exterior"></div>
+                <div class="photo"><img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=600&q=80" alt="Kitchen"></div>
+                <div class="photo"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80" alt="Attic"></div>
+                <div class="photo"><img src="https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=600&q=80" alt="HVAC"></div>
+              </div>
+
+              <div class="reports">
+                <div class="report-card">
+                  <div>
+                    <div class="title">Summer HVAC Tune-up</div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Completed Aug 02 &bull; 42 photos</div>
+                  </div>
+                  <div class="report-badges">
+                    <span>Filter replacement complete</span>
+                    <span>Condensation leak resolved</span>
+                  </div>
+                  <a class="report-link" href="#">Download PDF</a>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <footer>Static preview generated without connecting to the backend.</footer>
+        </div>
+      </main>
+    </div>
+    </div>
+  </div>
+</body>
+</html>
+
+

@@ -41,9 +41,10 @@ class Client(Base):
     name = Column(String, nullable=False)  # Added for compatibility
     email = Column(String, unique=True, nullable=False, index=True)  # Added for portal
     portal_token = Column(String, unique=True, index=True)  # Added for portal authentication
-    # password_hash = Column(String)  # Commented out - column doesn't exist in database
+    password_hash = Column(String, nullable=False, default="")
     phone = Column(String)
     address = Column(Text)
+    is_paid = Column(Boolean, default=False)  # Track if owner has paid for access
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

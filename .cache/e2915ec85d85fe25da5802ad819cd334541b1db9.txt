@@ -1,14 +1,12 @@
-Location: Sloped ceiling near window (upper room)
+Location: Sloped ceiling by window
 
 What I See:
-- Large drywall patch panel on the sloped ceiling
-- Edges torn and not taped/mudded; several exposed screws and gaps at seams
+- Unfinished drywall patch on the sloped ceiling
+- Torn/delaminated drywall paper and open seams at the edge of the patch
 
 Issues to Address:
-- Damaged/loose drywall at patch corner with separation from existing ceiling
-- Unfinished drywall (exposed paper and fasteners)
+- Incomplete/damaged drywall finish (exposed fasteners, gaps, torn paper)
 
 Recommended Action:
-- Have a drywall contractor re-secure the panel to framing or replace the damaged section
-- Tape and mud all seams, set/cover fasteners, sand, prime, and paint to match
-- If this patch was from a prior leak, verify no active moisture before closing up (moisture check/roof review)
+- Have a drywall contractor rework the patch: remove loose material, properly secure to framing, tape/bed joints, skim/texture to match, then prime and paint.
+- Before closing, check the area for any moisture with a meter and inspect exterior roof/wall flashing in this section; correct any source of water intrusion if found.

@@ -65,8 +65,8 @@ def get_current_portal_client(
 
     db = SessionLocal()
     try:
-        # Prefer SA 2.0 style session.get
-        client = db.get(PortalClient, client_id)
+        # Use query instead of get to avoid potential issues
+        client = db.query(PortalClient).filter(PortalClient.id == client_id).first()
         if not client or not client.is_active:
             raise HTTPException(status_code=401, detail="Account disabled or not found")
         return client

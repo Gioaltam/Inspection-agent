@@ -31,6 +31,7 @@ class AuthResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     owner_id: Optional[str] = None
+    is_paid: bool = False
 
 # ---------- Owner Registration & Login ----------
 @router.post("/register-owner", response_model=AuthResponse)
@@ -65,10 +66,11 @@ def register_owner(request: OwnerRegisterRequest, db: Session = Depends(get_db))
     
     # Create access token
     access_token = create_access_token(data={"sub": request.email, "owner_id": request.owner_id})
-    
+
     return AuthResponse(
         access_token=access_token,
-        owner_id=request.owner_id
+        owner_id=request.owner_id,
+        is_paid=False  # New registrations are unpaid by default
     )
 
 @router.post("/login-owner", response_model=AuthResponse)
@@ -91,11 +93,91 @@ def login_owner(request: OwnerLoginRequest, db: Session = Depends(get_db)):
     # Create access token
     owner_id = client.name if client.name else client.email.split('@')[0]
     access_token = create_access_token(data={"sub": client.email, "owner_id": owner_id})
-    
+
+    # Get paid status (default to False if not set)
+    is_paid = getattr(client, 'is_paid', False)
+
     return AuthResponse(
         access_token=access_token,
-        owner_id=owner_id
+        owner_id=owner_id,
+        is_paid=is_paid
     )
+
+# ---------- Get Paid Owners for Inspector GUI ----------
+@router.get("/paid-owners")
+def get_paid_owners(db: Session = Depends(get_db)):
+    """Get list of PAID owners only - for inspector GUI to know where to send reports"""
+
+    paid_owners = []
+
+    # Get all paid clients from the database
+    clients = db.query(Client).filter(Client.is_paid == True).all()
+
+    for client in clients:
+        # Get properties for this client
+        properties = db.query(Property).filter(Property.client_id == client.id).all()
+        property_list = []
+        for prop in properties:
+            property_list.append({
+                "name": prop.label or prop.address,
+                "address": prop.address
+            })
+
+        owner_data = {
+            "owner_id": client.name or client.portal_token,  # Use name as owner_id
+            "name": client.contact_name or client.company_name or client.name,
+            "full_name": client.contact_name or client.company_name,
+            "email": client.email,
+            "is_paid": True,  # Only paid owners are returned
+            "properties": property_list
+        }
+        paid_owners.append(owner_data)
+
+    return {"owners": paid_owners, "message": "Only showing paid customers"}
+
+# ---------- Payment Webhook (Stripe simulation) ----------
+@router.post("/payment-webhook")
+def handle_payment_webhook(request: dict, db: Session = Depends(get_db)):
+    """
+    Webhook endpoint to mark customer as paid when payment is received.
+    In production, this would be called by Stripe/PayPal/etc.
+
+    Expected payload:
+    {
+        "email": "customer@example.com",
+        "payment_status": "completed",
+        "amount": 49.00
+    }
+    """
+
+    email = request.get("email")
+    payment_status = request.get("payment_status")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email required")
+
+    if payment_status != "completed":
+        return {"message": "Payment not completed, no action taken"}
+
+    # Find the client by email
+    client = db.query(Client).filter(Client.email == email).first()
+
+    if not client:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Mark as paid
+    client.is_paid = True
+    db.commit()
+
+    # Log the payment
+    print(f"✅ Payment received for {email} - Customer marked as PAID")
+
+    return {
+        "message": "Payment processed successfully",
+        "customer": email,
+        "status": "paid",
+        "owner_id": client.name or client.portal_token
+    }
 
 # ---------- Get All Registered Owners ----------
 @router.get("/owners")

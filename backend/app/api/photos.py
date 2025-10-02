@@ -1,88 +1,67 @@
-"""Photos API endpoints"""
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from __future__ import annotations
+
 from pathlib import Path
-import sqlite3
-import json
+from typing import List
+from urllib.parse import quote
 
-router = APIRouter()
-# Force reload with updated photo-report mapping
+from fastapi import APIRouter, HTTPException
+from starlette.responses import FileResponse
 
-@router.get("/property/{property_address}")
-def get_property_photos(property_address: str):
-    """Get all photos for a property from ALL reports"""
+from ..lib.paths import (
+    find_latest_report_dir_by_address,
+    photos_dir_for_report_dir,
+    list_photos_in_dir,
+)
+
+router = APIRouter(prefix="/api/photos", tags=["photos"])
+
+def _ensure_within(base: Path, candidate: Path) -> None:
+    """
+    Ensure candidate is inside base to prevent path traversal attacks.
+    """
+    base_r = base.resolve()
+    cand_r = candidate.resolve()
     try:
-        # Connect to database
-        db_path = Path("../workspace/inspection_portal.db")
-        if not db_path.exists():
-            return {"photos": []}
-            
-        conn = sqlite3.connect(str(db_path))
-        cur = conn.cursor()
-        
-        # Get ALL reports for this property
-        cur.execute("""
-            SELECT r.id, r.web_dir, r.created_at
-            FROM reports r
-            JOIN properties p ON r.property_id = p.id
-            WHERE p.address = ?
-            ORDER BY r.created_at DESC
-        """, (property_address,))
-        
-        rows = cur.fetchall()
-        conn.close()
-        
-        if not rows:
-            return {"photos": []}
-            
-        all_photos = []
-        latest_report_id = rows[0][0] if rows else None
-        
-        # Get photos from each report
-        for report_id, web_dir, created_at in rows:
-            web_path = Path("..") / web_dir.replace("\\", "/")
-            photos_dir = web_path / "photos"
-            
-            if photos_dir.exists():
-                for photo_file in sorted(photos_dir.glob("*.jpg")):
-                    all_photos.append({
-                        "filename": photo_file.name,
-                        "url": f"/api/photos/image/{report_id}/{photo_file.name}",
-                        "reportId": report_id  # Each photo linked to its specific report
-                    })
-        
-        return {"photos": all_photos, "report_id": latest_report_id}
-        
-    except Exception as e:
-        print(f"Error fetching photos: {e}")
-        return {"photos": []}
+        cand_r.relative_to(base_r)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid path")
 
-@router.get("/image/{report_id}/{filename}")
-def get_photo_image(report_id: str, filename: str):
-    """Serve a specific photo file"""
-    try:
-        # Get report path from database
-        db_path = Path("../workspace/inspection_portal.db")
-        conn = sqlite3.connect(str(db_path))
-        cur = conn.cursor()
-        
-        cur.execute("SELECT web_dir FROM reports WHERE id = ?", (report_id,))
-        row = cur.fetchone()
-        conn.close()
-        
-        if not row:
-            raise HTTPException(status_code=404, detail="Report not found")
-            
-        web_dir = row[0]
-        
-        # Serve the photo file
-        photo_path = Path("..") / web_dir.replace("\\", "/") / "photos" / filename
-        
-        if not photo_path.exists():
-            raise HTTPException(status_code=404, detail="Photo not found")
-            
-        return FileResponse(str(photo_path), media_type="image/jpeg")
-        
-    except Exception as e:
-        print(f"Error serving photo: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/property/{address}")
+def list_property_photos(address: str):
+    """
+    Returns photo metadata + URLs for the most recent report for this address.
+    """
+    report_dir = find_latest_report_dir_by_address(address)
+    if report_dir is None:
+        return {"address": address, "count": 0, "items": []}
+
+    photos_dir = photos_dir_for_report_dir(report_dir)
+    files = list_photos_in_dir(photos_dir)
+    items = [
+        {
+            "name": f.name,
+            # The URL below is another endpoint in this file that serves the binary
+            "url": f"/api/photos/property/{quote(address)}/{quote(f.name)}",
+        }
+        for f in files
+    ]
+    return {"address": address, "count": len(items), "items": items}
+
+@router.get("/property/{address}/{filename}")
+def serve_property_photo(address: str, filename: str):
+    """
+    Serves an individual photo file from the latest report for this address.
+    """
+    report_dir = find_latest_report_dir_by_address(address)
+    if report_dir is None:
+        raise HTTPException(status_code=404, detail="No report for address")
+
+    photos_dir = photos_dir_for_report_dir(report_dir)
+    file_path = photos_dir / filename
+
+    _ensure_within(photos_dir, file_path)
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Photo not found")
+
+    # Let Starlette guess the media type from the file extension
+    return FileResponse(str(file_path))

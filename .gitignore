@@ -10,6 +10,10 @@ venv/
 .env
 .env*/
 
+# Node.js
+node_modules/
+.next/
+
 # Outputs / large artifacts
 output/
 reports/

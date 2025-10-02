@@ -1,15 +1,12 @@
-Location: Hallway above interior doorway (HVAC wall register)
+Location: Hallway – wall vent above doorway
 
 What I See:
-- Metal register/grille with several bent/deformed louvers.
-- Grille isn’t sitting fully flush; small gap/misalignment at the wall.
+- Wall register with visible dust buildup.
+- Several louvers appear bent/misaligned.
 
 Issues to Address:
-- Bent/damaged louvers.
-- Grille appears loose/not securely fastened.
+- Bent/damaged louvers on the register.
 
 Recommended Action:
-- Replace the register/grille with a new unit of the same size.
-- Secure with proper screws/anchors so it sits flush; caulk/paint the perimeter for a clean seal.
-- If this is a return, use a non-damper grille; if a supply, ensure the new damper operates smoothly.
-- Vacuum the duct opening while the grille is off to remove debris.
+- Remove and clean the register and surrounding opening to improve airflow.
+- Replace the register if louvers are damaged or won’t operate smoothly; use the same size and secure it flush to the wall.

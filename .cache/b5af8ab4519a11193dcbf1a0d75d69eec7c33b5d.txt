@@ -1,14 +1,17 @@
-Location: Front entry step/landing
+Location: Front entry stoop/step
 
 What I See:
-- Surface coating is peeling with multiple spalled patches exposing underlying concrete.
-- Hairline surface cracking and pitting around the worn spots.
+- Surface coating has failed with multiple spalled/pitted areas.
+- Hairline cracks radiating from pits; worn finish on tread.
 
 Issues to Address:
-- Concrete surface delamination/spalling and peeling coating.
+- Concrete surface spalling/delamination on the tread.
+- Multiple cracks and rough edges that could become a trip hazard and worsen with moisture.
 
 Recommended Action:
-- Scrape/grind all loose material back to sound concrete.
-- Patch spalled areas with a polymer‑modified concrete repair mortar; fill hairline cracks as needed.
-- Resurface the landing/step with an exterior concrete resurfacer and apply a non‑slip sealer.
-- Complete within routine maintenance timeframe to prevent further deterioration.
+- Remove all loose/failed coating and weak concrete; clean thoroughly.
+- Patch spalled spots with a polymer‑modified concrete repair mortar; trowel smooth.
+- Route and fill cracks with exterior concrete crack sealant.
+- Consider resurfacing the entire stoop with an exterior-grade overlay and apply a non-slip, breathable sealer.
+- Confirm stoop slopes away from the door and caulk the threshold to limit water intrusion.
+- If large sections sound hollow or keep crumbling, have a concrete contractor evaluate for partial or full replacement.

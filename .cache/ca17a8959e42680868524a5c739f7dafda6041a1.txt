@@ -1,11 +1,13 @@
-Location: Exterior window
+Location: Exterior window and wall below
 
 What I See:
-- Metal-framed window with security bars.
-- Lower-right window screen has a loose/torn corner at the bottom edge.
+- Aluminum windows with security bars; frames generally intact.
+- Exterior electrical receptacle below the window has no cover/plate.
 
 Issues to Address:
-- Damaged/loose insect screen on the lower-right pane.
+- Exterior receptacle missing a weatherproof, in-use cover and faceplate (exposed to moisture; shock hazard).
+- Visible caulk/sealant gaps at lower window joints, including a small opening at the bottom-right corner of the right window.
 
 Recommended Action:
-- Re-screen or replace the affected screen panel and secure it in the track (check spline/tabs).
+- Install a code-compliant weatherproof in-use cover and gasketed faceplate; verify the circuit is GFCI-protected and the box is secure.
+- Clean and reseal the window frame joints and perimeter with exterior-grade sealant; close any openings to prevent water intrusion.

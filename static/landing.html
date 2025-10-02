@@ -253,6 +253,29 @@
             position: relative;
         }
 
+        .skip-link {
+            position: absolute;
+            top: -48px;
+            left: 1.5rem;
+            background: #ffffff;
+            color: #0a0a0f;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0 0 0.75rem 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            transition: top 0.3s ease, box-shadow 0.3s ease;
+            z-index: 2000;
+        }
+        .skip-link:focus {
+            top: 1.25rem;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
+            outline: none;
+        }
+        body.light-mode .skip-link {
+            background: #10121b;
+            color: #f8f9fc;
+        }
+
         body.light-mode .menu a {
             color: rgba(0, 0, 0, 0.75);
         }
@@ -1755,6 +1778,7 @@
     </style>
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <!-- Executive Gradient Mesh Background -->
     <div class="executive-bg"></div>
     
@@ -1780,7 +1804,8 @@
                     <span class="check">Check</span><span class="my">My</span><span class="rental">Rental</span>
                 </div>
             </div>
-            <ul class="menu">
+            <nav class="main-nav" aria-label="Primary navigation">
+                <ul class="menu">
                 <li><a href="#process">How It Works</a></li>
                 <li><a href="#pricing">Pricing</a></li>
                 <li><a href="#contact">Contact</a></li>
@@ -1826,9 +1851,12 @@
                         </div>
                     </div>
                 </li>
-            </ul>
+                </ul>
+            </nav>
         </div>
     </header>
+
+    <main id="main-content" tabindex="-1">
 
     <section class="hero-section">
         <!-- Premium light beam effects -->
@@ -1840,6 +1868,8 @@
           Professional inspectors document your property every visit.
           Get a photo‑rich condition report within 24 hours — catch issues early and avoid costly damage.
         </p>
+
+
     </section>
 
     <section id="gallery" class="gallery-section">
@@ -1949,6 +1979,8 @@
     <section id="portal-access" style="display: none;">
         <!-- Kept for any existing integrations but hidden from view -->
     </section>
+
+    </main>
 
     <footer>
         <div class="footer-content">

@@ -1,17 +1,17 @@
-Location: General (per inspection checklist)
+Location: Property-wide (handwritten inspection checklist)
 
 What I See:
-- Handwritten inspection notes listing multiple defects.
-- Items called out: loose stair handrail, broken upstairs bathroom sink, exterior leak, broken bathroom window.
+- Photo shows notes listing multiple repair items.
+- Also mentions tall grass, ants, and AC filter size 18x20; blinds noted as OK.
 
 Issues to Address:
-- Stair handrail loosening.
-- Upstairs bathroom sink broken.
-- Exterior leak reported.
-- Bathroom window broken.
+- Stair handrail is coming loose.
+- Upstairs bathroom sink is broken.
+- Exterior leak reported (location unspecified).
+- Bathroom window is broken.
 
 Recommended Action:
-- Handrail: Re-secure to wall studs with proper anchors or replace brackets; verify it meets code for height/strength.
-- Upstairs sink: Replace cracked/broken basin and check drain/fixture connections for leaks.
-- Exterior leak: Trace source (roof, siding/trim, flashing, or exterior plumbing), repair/replace failed materials, then dry and inspect interior for water damage or mold.
-- Bathroom window: Replace broken glass/sash; ensure operability and weather sealing. If shards present, make area safe until replacement.
+- Re-secure or replace the stair handrail; tighten anchors into studs and verify stability.
+- Repair/replace the upstairs bathroom sink and inspect plumbing connections; seal with new caulk as needed.
+- Trace the exterior leak (check hose bibs, siding/roof penetrations) and repair the source; dry and remediate any moisture damage.
+- Replace or repair the broken bathroom window; ensure proper glazing and weather seal.

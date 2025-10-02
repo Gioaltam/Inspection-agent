@@ -1391,21 +1391,75 @@ Output Directory Structure:
             except Exception as e:
                 print(f"Warning: Could not clean up temp directory: {e}")
 
-def register_with_portal(artifacts: Dict[str, Any], client_name: str, client_email: str, 
+def upload_to_backend(artifacts: Dict[str, Any], owner_id: str, property_address: str):
+    """
+    Upload report data to FastAPI backend for dashboard display
+    """
+    import requests
+
+    try:
+        # Prepare report data for API
+        report_data = {
+            "report_id": artifacts['report_id'],
+            "owner_id": owner_id,
+            "property_address": property_address,
+            "date": datetime.now().isoformat(),
+            "inspector": "CheckMyRental Inspector",
+            "status": "completed",
+            "web_dir": artifacts['web_dir'],
+            "pdf_path": artifacts['pdf_path']
+        }
+
+        # Read the JSON report to get issue counts
+        json_path = Path(artifacts['web_dir']) / 'report.json'
+        if json_path.exists():
+            with open(json_path, 'r', encoding='utf-8') as f:
+                report_json = json.load(f)
+
+                # Count issues by severity
+                critical_count = 0
+                important_count = 0
+
+                for item in report_json.get('items', []):
+                    severity = item.get('severity', '').lower()
+                    if severity == 'critical':
+                        critical_count += 1
+                    elif severity == 'important':
+                        important_count += 1
+
+                report_data['critical_issues'] = critical_count
+                report_data['important_issues'] = important_count
+
+        # Send to backend API
+        api_url = "http://localhost:5000/api/reports/save"
+        response = requests.post(api_url, json=report_data, timeout=10)
+
+        if response.status_code == 200:
+            print(f"✅ Report uploaded to owner dashboard: {owner_id}")
+        else:
+            print(f"⚠️ Failed to upload report to dashboard: {response.status_code}")
+            print(f"   Response: {response.text}")
+
+    except Exception as e:
+        print(f"⚠️ Error uploading to backend: {e}")
+        # Don't fail the whole process if upload fails
+        pass
+
+def register_with_portal(artifacts: Dict[str, Any], client_name: str, client_email: str,
                         property_address: str, owner_id: str = None, ttl_hours: int = 720) -> Dict[str, Any]:
     """
     Register report with portal and create access token
     """
     db_init()
     conn = db_connect()
-    
+
     try:
         # Create or get client and property
         # If owner_id is provided, use it as the client name for owner-specific galleries
         effective_client_name = owner_id if owner_id else client_name
         client_id = db_upsert_client(conn, effective_client_name, client_email)
         property_id = db_upsert_property(conn, client_id, property_address)
-        
+
         # Insert report
         report_id = db_insert_report(
             conn,
@@ -1414,19 +1468,23 @@ def register_with_portal(artifacts: Dict[str, Any], client_name: str, client_ema
             artifacts['web_dir'],
             artifacts['pdf_path']
         )
-        
+
         # Create view token
         token = db_create_token(conn, kind='view', ttl_hours=ttl_hours, report_id=report_id)
-        
+
         # Build share URL
         share_url = f"{PORTAL_EXTERNAL_BASE_URL}/r/{token}"
-        
+
+        # Upload report to FastAPI backend if owner_id is provided
+        if owner_id:
+            upload_to_backend(artifacts, owner_id, property_address)
+
         print(f"\n{'='*60}")
         print(f"Report registered successfully!")
         print(f"Share URL: {share_url}")
         print(f"Token expires: {(datetime.utcnow() + timedelta(hours=ttl_hours)).strftime('%Y-%m-%d %H:%M UTC')}")
         print(f"{'='*60}\n")
-        
+
         return {
             'report_id': report_id,
             'token': token,

@@ -45,7 +45,7 @@ def test_owner_integration():
         db.commit()
         print(f"   ✅ Owner registered: {new_owner.company_name} (ID: {test_owner_id})")
         
-        # Fetch all owners (simulating what frontend.py will do)
+        # Fetch all owners (simulating what operator_ui.py will do)
         print("\n2. Fetching all registered owners...")
         owners = db.query(Client).filter(
             Client.name.isnot(None),
@@ -62,7 +62,7 @@ def test_owner_integration():
         test_owner_found = any(o.name == test_owner_id for o in owners)
         if test_owner_found:
             print(f"\n✅ SUCCESS: Test owner '{test_owner_id}' found in owners list")
-            print("   This owner will now appear in the frontend.py dropdown!")
+            print("   This owner will now appear in the operator_ui.py dropdown!")
         else:
             print(f"\n❌ FAILURE: Test owner '{test_owner_id}' not found in owners list")
         
@@ -76,7 +76,7 @@ def test_owner_integration():
         print("Integration test completed successfully!")
         print("\nHow the integration works:")
         print("1. User signs up on landing page with owner_id → saved to database")
-        print("2. Frontend.py fetches owners via /api/portal/owners endpoint")
+        print("2. operator_ui.py fetches owners via /api/portal/owners endpoint")
         print("3. Inspector selects owner from dropdown → reports sent to that owner")
         
     except Exception as e:

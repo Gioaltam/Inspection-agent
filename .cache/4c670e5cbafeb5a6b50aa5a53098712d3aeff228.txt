@@ -1,7 +1,14 @@
-Location: Ceiling air register
+Location: Wall/ceiling vent register (HVAC)
 
-What I See: Metal vent with adjustable damper; light dust and a few small rust spots on the louvers. Cover appears secure and intact.
+What I See:
+- Dust/debris buildup on grille
+- Several louvers are bent with light surface rust; damper lever looks slightly bent
 
-Issues to Address: No repairs needed
+Issues to Address:
+- Bent louvers and minor corrosion that may restrict airflow/operation
 
-Recommended Action: None
+Recommended Action:
+- Remove grille and clean thoroughly; vacuum duct opening
+- If damper sticks or airflow is restricted, replace the register
+- If keeping it, straighten fins, remove rust, and repaint with rust-inhibiting primer/paint
+- Ensure mounting screws are snug and the damper operates smoothly

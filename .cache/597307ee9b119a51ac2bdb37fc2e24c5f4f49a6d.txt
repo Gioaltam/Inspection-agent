@@ -1,13 +1,11 @@
-Location: Floor vent/register
+Location: Floor HVAC register (supply vent)
 
-What I See:
-- Metal grille with several bent louvers and light rust spots
-- Noticeable dust/debris buildup inside the vent opening
+What I See: Bent/dented louvers on the metal grille; light rust present. Some dust/debris visible inside the register.
 
 Issues to Address:
-- Bent/damaged register cover
+- Damaged/bent louvers on the register cover
+- Minor corrosion on the grille
 
 Recommended Action:
-- Replace the floor register cover with a same-size unit (measure the duct opening before purchase).
-- While the cover is off, vacuum the duct opening and remove debris; consider a broader duct cleaning if buildup is widespread.
-- If rust returns after replacement, check for moisture sources nearby.
+- Replace the register cover with a new unit of the same size; replace mounting screws if corroded.
+- Vacuum and wipe the register box opening while the cover is off; check/replace the HVAC filter to limit dust buildup.

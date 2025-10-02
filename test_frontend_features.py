@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify frontend.py features
+Test script to verify operator_ui.py features
 """
 import sys
 import io

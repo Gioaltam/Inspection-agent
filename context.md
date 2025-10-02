@@ -31,7 +31,7 @@ I take property photos (ZIP or multiple images). The system automatically:
   - FastAPI/uvicorn, Pillow, ReportLab, OpenAI SDK, etc., are already pinned for local runs. :contentReference[oaicite:3]{index=3}
 
 ### Desktop frontend
-- **`frontend.py`** (Tkinter drag‑and‑drop)  
+- **`operator_ui.py`** (Tkinter drag‑and‑drop)  
   - Accepts ZIPs, launches `run_report.py`, parses the progress regex `[(\d+)/(\d+)]` and consumes `REPORT_ID=` lines to show links.  
   - Provides a log pane with clickable URLs. :contentReference[oaicite:4]{index=4}
 
@@ -131,5 +131,5 @@ I take property photos (ZIP or multiple images). The system automatically:
 
 ## 10) Handy task preface to keep using with Claude
 
-> “Use `CONTEXT.md` as the project brief. Maintain the contracts in §4, security in §7, and DoD in §9. For `run_report.py`, return a full file replacement. Keep progress parsing compatible with `frontend.py`. Do not print secrets from `.env`.”
+> “Use `CONTEXT.md` as the project brief. Maintain the contracts in §4, security in §7, and DoD in §9. For `run_report.py`, return a full file replacement. Keep progress parsing compatible with `operator_ui.py`. Do not print secrets from `.env`.”
 

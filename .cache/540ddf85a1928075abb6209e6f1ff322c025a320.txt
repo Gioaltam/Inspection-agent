@@ -1,15 +1,14 @@
-Location: Exterior wall at foundation
+Location: Exterior lower wall/siding near foundation
 
 What I See:
-- Loose/broken siding panels with building paper exposed.
-- Panel edges warped and not fastened; conduit running across the area.
+- Siding panels are broken/missing, exposing the black building paper.
+- Loose, warped pieces of cladding around a surface-mounted conduit.
 
 Issues to Address:
-- Damaged/detached siding exposing the weather barrier and lower wall.
-- Missing/failed fastening and lack of proper bottom edge/flash detail; siding appears too close to grade.
+- Missing/damaged exterior cladding exposing the weather barrier; risk of moisture intrusion and pest entry.
 
 Recommended Action:
-- Remove loose material and inspect sheathing/framing for moisture damage; repair any rot.
-- Replace siding panels and damaged weather barrier; install proper Z‑flashing/drip edge and maintain 6–8 inches clearance from soil.
-- Refasten securely; seal and flash around any conduit penetrations.
-- Prime and paint repaired area for protection.
+- Remove loose pieces and inspect underlying sheathing/framing for moisture or rot.
+- Replace damaged sections of siding and restore a continuous weather-resistive barrier with proper flashing.
+- Finish/paint new materials and maintain adequate clearance to grade.
+- Use a qualified siding contractor; repair any concealed damage found.

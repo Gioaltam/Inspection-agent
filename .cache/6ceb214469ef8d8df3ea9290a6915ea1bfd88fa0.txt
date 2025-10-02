@@ -1,16 +1,15 @@
-Location: Exterior wall siding (lower course near grade/threshold)
+Location: Exterior lap siding (lower course near base/deck)
 
 What I See:
-- Paint is blistered and peeling with a puncture/tear; siding face looks swollen.
-- Gap along the lap joint; expanding foam visible at the bottom edge.
+- Blistered/peeling paint with swelling in the board.
+- Cracks/holes in the siding and a gap along the lap joint; spray foam visible at the base.
 
 Issues to Address:
-- Siding board shows moisture damage/delamination with a hole and failing paint film.
-- Open joints that can admit water.
-- Exposed spray foam at base is not UV/weather rated and can retain moisture.
+- Damaged siding board (cracked/open and swollen) allowing water intrusion.
+- Open joint/seam needs sealing.
 
 Recommended Action:
-- Probe the area for softness; replace the damaged siding section if deteriorated.
-- Seal joints properly (backer rod + exterior-grade sealant) and ensure correct clearance from grade.
-- Remove or cover the exposed foam with proper flashing/trim; address the moisture source (e.g., splashback, missing kick-out/flashing).
-- Prime and repaint repaired areas with exterior-grade products.
+- Probe the area for softness; replace any deteriorated siding sections. If sound, dry out, scrape to bare, patch with exterior wood epoxy, sand, prime, and repaint.
+- Re-caulk joints with high-quality exterior sealant; ensure proper flashing.
+- Remove/trim exposed spray foam and replace with proper backer rod/sealant or trim detail.
+- Check for water source/splashback and maintain clearance above deck/grade.

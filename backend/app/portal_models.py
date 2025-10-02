@@ -4,19 +4,14 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from sqlalchemy import (
-    create_engine, Column, Integer, String, DateTime, Boolean, ForeignKey,
+    Column, Integer, String, DateTime, Boolean, ForeignKey,
     UniqueConstraint, Text
 )
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.orm import relationship
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
-
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
-)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-Base = declarative_base()
+# Use the same database and Base from the main models
+from .database import engine, SessionLocal
+from .models import Base
 
 
 class PortalClient(Base):
@@ -62,6 +57,7 @@ class PortalCode(Base):
     used_by_client_id = Column(Integer, ForeignKey("portal_clients.id"), nullable=True)
 
 
+# Tables are now created in main.py with all other models
 def init_portal_tables():
-    Base.metadata.create_all(bind=engine)
+    pass  # No longer needed - tables created in main.py
 

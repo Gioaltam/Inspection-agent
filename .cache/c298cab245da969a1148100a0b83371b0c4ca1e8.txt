@@ -1,13 +1,13 @@
-Location: Entry door – bottom corner/threshold
+Location: Entry door – bottom corner at threshold
 
 What I See:
-- Vertical split/delamination at the lower corner of the door slab with paint flaking and exposed substrate.
-- Dirt/wear at the threshold area.
+- Vertical split/crack at the door’s lower edge near the jamb
+- Paint chipped with exposed wood/substrate
 
 Issues to Address:
-- Door slab is damaged at the lower corner (likely moisture-related delamination/incipient rot).
+- Cracked/splitting door corner with exposed material
 
 Recommended Action:
-- Probe the area for softness. If damage is minor/localized: remove loose material, treat with wood hardener, rebuild with exterior epoxy filler, sand, prime, and repaint.
-- If the soft/crumbled area extends more than about an inch or two, plan to replace the door slab.
-- Address moisture entry: inspect and replace door sweep/weatherstripping as needed, and re-caulk the threshold-to-jamb seams to keep water out.
+- Stabilize and repair: dry the area, inject wood glue or use exterior wood epoxy, clamp if possible, then sand, prime, and repaint.
+- If the door feels soft/warped or the crack extends, replace the door slab.
+- Check door sweep/weatherstrip and caulk at the threshold to prevent future moisture intrusion.

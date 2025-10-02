@@ -102,7 +102,7 @@
             
             if not run_report_cmd:
                 tk.Label(guidance_frame,
-                        text="1. Ensure run_report.py is in the same directory as frontend.py\n"
+                        text="1. Ensure run_report.py is in the same directory as operator_ui.py\n"
                              "2. Or set RUN_REPORT_CMD environment variable",
                         font=('Segoe UI', 9), bg=BRAND_SURFACE, fg=BRAND_TEXT_SECONDARY,
                         anchor="w", justify="left").pack(fill="x", pady=2)

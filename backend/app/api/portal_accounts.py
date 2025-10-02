@@ -76,14 +76,20 @@ def portal_register(payload: RegisterIn):
     db = SessionLocal()
     try:
         email_clean = payload.email.strip().lower()
+        
         exists = db.query(PortalClient).filter(PortalClient.email == email_clean).first()
         if exists:
             raise HTTPException(status_code=409, detail="Email already registered")
+        
+        # Create new portal client
         client = PortalClient(
             email=email_clean,
             password_hash=hash_password(payload.password.strip()),
             full_name=payload.full_name or "",
+            is_active=True,
+            is_paid=False
         )
+        
         db.add(client)
         db.commit()
         db.refresh(client)

@@ -1,11 +1,13 @@
-Location: Floor supply vent
+Location: Floor vent cover near wall
 
-What I See: Metal register with visible rust and a bent/damaged corner; paint is flaking.
+What I See:
+- Metal vent cover with a bent/dented corner and chipped paint.
+- Light surface rust on slats and screws; visible dust/debris in the duct.
 
 Issues to Address:
-- Corroded/grimy grille and screws
-- Bent corner creating a sharp edge and poor fit
+- Bent/damaged corner of the vent cover with finish failure.
 
 Recommended Action:
-- Replace the floor register with a new, rust‑resistant model of the same size. Secure with new screws so it sits flush.
-- While the register is off, vacuum the duct opening to remove debris.
+- Replace the vent cover with a same-size rust-resistant model; use stainless/coated screws.
+- While the cover is off, vacuum the duct opening.
+- Ensure the new cover sits flush with the floor and has no sharp edges.

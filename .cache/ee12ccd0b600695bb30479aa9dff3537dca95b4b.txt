@@ -1,11 +1,13 @@
 Location: Ceiling fan/light fixture
 
 What I See:
-- Noticeable dust buildup along blade edges and surfaces
-- Fixture and pull chains appear intact; no visible damage to blades or globe
+- Noticeable dust buildup along blade edges and housing
+- Fixture and blades appear intact; no visible damage
 
 Issues to Address:
 - No repairs needed
 
 Recommended Action:
-- None. Routine cleaning recommended: wipe blades and motor housing; check balance after cleaning and tighten blade screws if needed.
+- Perform routine cleaning of blades and housing to reduce dust and keep the fan balanced
+- Remove the protective film/sticker from the light globe if still present
+- While cleaning, check and snug blade screws and mounting hardware to prevent wobble

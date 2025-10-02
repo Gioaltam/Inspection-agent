@@ -1,11 +1,14 @@
 Location: Wall HVAC vent/register
 
-What I See: Several vent louvers are bent/broken; visible dust buildup inside the register.
+What I See:
+- Center louvers are bent/deformed; left side shows a broken/loose tab.
+- Light dust buildup; faint stain running down the wall below the vent.
 
 Issues to Address:
-- Damaged/bent louvers on the register.
+- Bent/damaged louvers and broken adjustment tab.
+- Possible air leak/condensation at the register causing wall staining.
 
 Recommended Action:
-- Replace the register grille to restore proper airflow and appearance.
-- Clean the duct opening while the grille is off; check/replace HVAC filters.
-- If the wall stain under the vent is fresh or recurring, check for condensation at this supply register and verify duct/boot insulation.
+- Replace the register grille to restore airflow and appearance.
+- Remove the grille and inspect the duct-to-boot connection; seal gaps with mastic or UL-181 foil tape and insulate the boot if it’s in an exterior wall/attic.
+- Clean the opening, then clean/prime/paint the stained wall area after confirming moisture is resolved.

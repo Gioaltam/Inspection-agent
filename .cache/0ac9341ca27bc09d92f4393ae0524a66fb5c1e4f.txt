@@ -1,14 +1,15 @@
-Location: Stair handrail
+Location: Stairway handrail
 
 What I See:
-- Handrail bracket/escutcheon is pulled away from the wall with a visible gap.
-- Minor scuffing/drywall damage around the mount.
+- Handrail bracket at the wall is pulled away; cover plate is not seated.
+- Minor cracking/indentation in drywall around the mount.
 
 Issues to Address:
-- Loose handrail bracket (potential safety hazard).
-- Minor drywall damage at mounting point.
+- Loose handrail bracket.
+- Local drywall damage at the mounting point.
 
 Recommended Action:
-- Remove the cover and re-secure the bracket into solid framing with appropriately long screws (or relocate to a stud). If a stud isn’t available, use heavy‑duty toggle anchors rated for handrails.
-- Tighten all fasteners and test for firmness; inspect the other brackets as well.
-- Patch and touch up the damaged drywall/paint around the mount.
+- Remove the cover plate and resecure the bracket into solid framing using appropriate 2.5–3 in. screws. If no stud is available, install rated heavy‑duty toggle/anchor or add blocking, then refasten.
+- Replace any stripped fasteners and the escutcheon if bent.
+- Patch, sand, prime, and paint the damaged drywall after the bracket is secure.
+- Check all other brackets along the rail for tightness and adequate support.

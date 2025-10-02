@@ -1,14 +1,15 @@
-Location: Ceiling fan/light – room ceiling
+Location: Ceiling fan/light fixture
 
 What I See:
-- Several fan blades are bent/warped with peeling/delaminating edges.
-- Light kit/globe is missing; bare bulb in socket.
+- Fan blades are bent/warped with peeling paint and heavy dust buildup.
+- Light kit is missing a globe/shade; bare bulb exposed.
 
 Issues to Address:
-- Damaged fan blades (warped/delaminated, chipped).
-- Missing light globe/shade (likely missing retaining hardware as well).
+- Warped/damaged blades (likely out of balance; wobble/safety risk).
+- Missing light globe/shade.
+- Excess dust accumulation on motor and blades.
 
 Recommended Action:
-- Replace the entire fan, or at minimum replace all blades with a matching set and balance the unit; avoid using at high speed until repaired.
-- Install the correct light globe and hardware for the fixture.
-- While servicing, verify the fan is securely mounted and wiring connections are sound.
+- Replace the fan, or at minimum replace all blades as a matched set, tighten hardware, and balance the fan.
+- Install a compatible light globe or replace the light kit; use a bulb within the fixture’s rated wattage.
+- Clean the unit thoroughly; verify the fan is secured to a fan-rated electrical box and test on all speeds.

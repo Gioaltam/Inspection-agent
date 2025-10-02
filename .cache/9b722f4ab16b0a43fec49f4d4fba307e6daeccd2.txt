@@ -1,13 +1,14 @@
-Location: Ceiling HVAC vent/register
+Location: Ceiling air register
 
 What I See:
-- Noticeable dust buildup on the grille
-- Several center louvers are bent/deformed
+- Vent cover has visible dust buildup.
+- Several center louvers appear bent/deformed.
 
 Issues to Address:
-- Bent/damaged louvers on the register (may restrict airflow)
+- Bent/damaged louvers on the register.
+- Dust/debris accumulation on the grille.
 
 Recommended Action:
-- Replace the register grille (cheap fix) or carefully straighten the bent louvers if reusable
-- Clean the vent opening and surrounding surface; vacuum visible dust in the duct
-- Check/replace the HVAC filter and monitor for recurring dust buildup
+- Remove cover and clean thoroughly (vacuum/soap and water); wipe surrounding area.
+- If louvers can’t be straightened or damper doesn’t operate smoothly, replace the register with the same size.
+- Replace HVAC filter and monitor; if dust returns quickly, have ducts inspected/cleaned.

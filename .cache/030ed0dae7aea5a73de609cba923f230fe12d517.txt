@@ -1,14 +1,13 @@
-Location: HVAC air handler closet
+Location: HVAC closet – air handler/filter
 
 What I See:
-- 18x20x1 return air filter is very dirty and bowed, not seated tightly in the rack.
-- Light dust/debris on the unit face; filter gap could allow air bypass.
+- 18x20x1 return filter is very dirty and bowed, likely restricting airflow.
+- Cabinet shows normal surface wear; no obvious leaks visible at the filter slot.
 
 Issues to Address:
 - No repairs needed.
 
 Recommended Action:
-- Replace the 18x20x1 filter now; install with airflow arrow toward the unit.
-- Ensure the filter slot seals tightly (use correct-size filter, intact cover/clips) to prevent air bypass and bowing.
-- After replacement, monitor airflow; if weak or coil ices, have an HVAC tech inspect and clean the blower/coil due to possible past dust buildup.
-- Set a regular filter change schedule (about every 1–3 months depending on use).
+- Replace the filter now with a properly fitting 18x20x1 (MERV 8–11). Ensure the airflow arrow points toward the unit and the filter seats fully with no gaps.
+- Vacuum/clean the filter slot and nearby return area; set a 1–3 month replacement reminder.
+- If you’ve noticed weak airflow, unusual noise, or coil icing, have an HVAC tech inspect the blower and evaporator coil since a clogged filter can cause strain.

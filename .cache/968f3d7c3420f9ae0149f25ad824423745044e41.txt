@@ -1,14 +1,14 @@
-Location: Interior flooring (laminate/LVP)
+Location: Interior floor (laminate/vinyl plank)
 
 What I See:
-- Open gaps and misaligned end joints between planks.
-- Edge lifting with minor chipping/fray along the seams.
+- Open seams with visible gaps and slight height mismatch between planks.
+- Edge chipping/fraying along the joint; debris in the seam.
 
 Issues to Address:
-- Loose/lifted planks creating gaps and a small trip/snag hazard.
-- Edge damage at the joint; possible swelling from moisture or an uneven subfloor.
+- Plank separation and lippage at joints.
+- Chipped/damaged plank edges; possible swelling at seams.
 
 Recommended Action:
-- Remove and re-seat the affected row(s) to lock joints tight; replace any planks with damaged locking tabs or swollen edges.
-- Clean debris from joints; use color‑matched seam filler only for hairline gaps after repair.
-- Check for moisture sources (spills, appliance leaks) and verify adequate expansion gaps and subfloor flatness before reinstallation. If multiple areas show the same issue, consider relaying the floor.
+- Check area for moisture intrusion (use a moisture meter; inspect nearby plumbing/doors). Address any source before repairs.
+- If dry, have a flooring installer re-seat or replace the affected planks and clean out debris; verify proper expansion gaps and subfloor flatness to prevent peaking.
+- If moisture is present or edges are swollen, dry the area thoroughly and replace damaged planks.

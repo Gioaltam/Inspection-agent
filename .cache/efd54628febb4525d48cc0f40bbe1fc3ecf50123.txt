@@ -1,13 +1,13 @@
-Location: Frosted window (interior)
+Location: Frosted window (lower sash)
 
 What I See:
-- Lower sash glass has spider‑web cracking from an impact point.
-- Window frame appears intact.
+- Spider‑web cracking radiating from an impact point.
+- Cracks span most of the pane.
 
 Issues to Address:
-- Broken/cracked glass pane (safety hazard).
+- Broken/cracked glass pane posing a safety hazard and compromised weather/insulation seal.
 
 Recommended Action:
-- Avoid operating the window; tape both sides of the pane as a temporary safety measure.
-- Hire a glazing contractor to replace the damaged pane (match the frosted/obscure glass). If this is in a bathroom or other hazardous location, use tempered safety glass.
-- Verify smooth operation and weather seal after replacement.
+- Do not operate the window; tape both sides of the pane to stabilize and prevent loose shards.
+- Hire a glazier to replace the damaged pane (or sash) as soon as practical; specify tempered/safety glass per current code for privacy/wet areas.
+- Inspect/caulk around the glazing during replacement to ensure a proper seal.

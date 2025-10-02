@@ -1,13 +1,14 @@
-Location: Interior doorway/hall
+Location: Hallway doorway wall
 
 What I See:
-- Noticeable gap along the right door casing where it meets the wall/jamb.
-- Hairline cracks visible in the adjacent wall finish.
+- Long hairline crack across the wall surface.
+- Visible gap where the door casing/jamb has pulled away from the wall on the right side.
 
 Issues to Address:
-- Loose/separating door casing.
-- Cosmetic wall cracks.
+- Separation of door casing/jamb from wall.
+- Cracked drywall/plaster.
 
 Recommended Action:
-- Re‑secure the door casing with finish nails/screws; shim as needed to close the gap, then caulk and repaint.
-- Fill hairline wall cracks with joint compound, sand smooth, prime, and paint; monitor for any widening that could indicate movement.
+- Have a carpenter re-secure and shim the door casing/jamb, then caulk and paint.
+- Repair wall crack with joint tape and compound; sand and repaint.
+- Monitor for movement (widening cracks, doors sticking). If movement continues or gaps exceed about 1/8–1/4 in, have a licensed contractor/structural professional evaluate for framing/settlement issues.

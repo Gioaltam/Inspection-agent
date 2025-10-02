@@ -1,14 +1,14 @@
-Location: Exterior door (interior view)
+Location: Back/side exterior door (interior view)
 
 What I See:
-- Latch strike plate on the jamb is missing; wood around the latch area looks chewed/splintered.
-- Prior deadbolt hole on the door is capped with a blank cover (no deadbolt installed).
+- Door hardware area with a cover plate where a deadbolt likely used to be; only a knob is installed.
+- Door jamb has missing/damaged strike/lock hardware and a broken chain lock, with rough cutouts in the wood.
 
 Issues to Address:
-- Missing latch strike plate.
-- Damaged/splintered jamb at the latch area.
+- Missing/damaged strike plate/lock hardware on the jamb; wood is gouged.
+- Broken/missing security chain.
 
 Recommended Action:
-- Install a proper strike plate and reinforce the latch area. Repair the jamb with wood epoxy/filler or replace the damaged section; fasten the strike with 3-inch screws into the framing.
-- After repair, check latch alignment and adjust so the door closes and locks smoothly.
-- Optional for security: install a new deadbolt where the hole is capped.
+- Have a locksmith/carpenter install a proper exterior lockset and deadbolt. Fit a new strike plate and align the latch so the door secures properly.
+- Patch the old cutouts with wood filler/epoxy, sand, prime, and paint.
+- Replace the chain with a modern door guard if additional secondary security is desired.

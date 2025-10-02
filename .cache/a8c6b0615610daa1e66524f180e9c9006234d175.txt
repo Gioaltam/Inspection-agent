@@ -1,12 +1,13 @@
-Location: HVAC air handler/return filter
+Location: HVAC/furnace air handler – return filter
 
-What I See: 
-- Disposable pleated filter (18 x 20 x 1) is heavily soiled and pleats are starting to bow.
+What I See:
+- Pleated filter (18×20×1) is heavily loaded with dust.
+- Some pleats look bowed, indicating airflow restriction.
 
-Issues to Address: 
-- No repairs needed.
+Issues to Address:
+- Clogged/overdue air filter reducing airflow and stressing the HVAC system.
 
 Recommended Action:
-- Replace the filter now with the same size; orient airflow arrow toward the blower.
-- Ensure a snug fit with no gaps and reinstall the cover/panel.
-- Set a reminder to check/replace every 1–3 months (more often with pets, dust, or renovations).
+- Replace the filter now with a new 18×20×1 (use appropriate MERV rating; 8–11 is typical for homes).
+- Install with airflow arrow toward the blower and ensure a snug fit to avoid bypass.
+- Set a schedule to check/replace every 1–3 months; clean any dust in the filter rack/cabinet.
